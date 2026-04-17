@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wherewolf</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" crossorigin="anonymous" href="https://core.ontavio.de/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+<div id="lobby-page">
+    <div class="header-container">
+        <div class="info-icon">
+            <i class="fa-solid fa-circle-info"></i>
+            <span class="tooltip-text">A quick game with bluff and tricks for 3 to 10 players.</span>
+        </div>
+        <h2>Wherewolf App</h2>
+    </div>
+
+    <label>Enter Name
+        <input id="enter-name-input">
+    </label>
+
+    <div id="lobby"></div>
+
+    <button id="create-lobby-button">Create Lobby</button>
+
+    <div id="toast-container"></div>
+</div>
+
+<div id="game">
+    <div id="select-roles"><button id="select-roles-button">Select Roles</button></div>
+    <div id="select-roles-screen"></div>
+    <button id="leave-game-button">Leave Game</button>
+    <div id="night-action">
+        <div id="night-action-text"></div>
+        <div id="night-action-buttons">
+            <button id="ok-button">Ok</button>
+            <button id="do-nothing-button">Do Nothing</button>
+        </div>
+    </div>
+    <h3 id="display-text"></h3>
+    <div id="role-reveal-screen">
+        <div id="role-reveal-card" class="card"></div>
+        <button id="continue-button">Continue</button>
+    </div>
+    <div id="vote-result-screen">
+        <div>Playername</div>
+        <div>Ending Role</div>
+        <div>Voters</div>
+        <div>Votes</div>
+        <button id="restart-game-button">Restart Game</button>
+        <p id="vote-result-text"></p>
+        <p id="vote-result-winning-team"></p>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="index.js" type="module" defer></script>
+</body>
+</html>
