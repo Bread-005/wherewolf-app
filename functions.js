@@ -21,53 +21,65 @@ function showErrorPopup(message) {
 }
 
 function displayCards(lobby, gameContainer) {
-    const youCard = document.createElement("div");
-    youCard.textContent = "You";
-    youCard.className = "player-card you-card";
-    youCard.id = "card" + myId;
+    const players = lobby.cards.filter(card => !card.isMiddleCard);
 
-    const yourVotedBanner = document.createElement("div");
-    yourVotedBanner.className = "voted-banner";
-    yourVotedBanner.textContent = "Voted";
-    yourVotedBanner.id = "voted-banner" + myId;
-    yourVotedBanner.style.top = "-2.5%";
-    youCard.append(yourVotedBanner);
-
-    gameContainer.append(youCard);
-
-    const otherPlayers = lobby.cards.filter(card => card.id !== myId && !card.isMiddleCard);
-    const totalRows = Math.ceil(otherPlayers.length / 2);
-    const startTop = 5;
-    const endTop = 75;
-    const verticalStep = totalRows > 1 ? (endTop - startTop) / (totalRows - 1) : 0;
-
-    otherPlayers.forEach((player, index) => {
+    for (const player of players) {
         const card = document.createElement("div");
-        card.className = "player-card other-card";
         card.id = "card" + player.id;
         card.textContent = player.name;
-
-        const row = Math.floor(index / 2);
-        const side = index % 2 === 0 ? "left" : "right";
-
-        const topPos = startTop + (row * verticalStep);
-        card.style.top = topPos + "%";
-
-        if (side === "left") {
-            card.style.left = "5%";
-        } else {
-            card.style.right = "5%";
+        card.className = "player-card";
+        if (player.id === myId) {
+            card.classList.add("you-card");
         }
-        card.append(name);
 
         const votedBanner = document.createElement("div");
+        votedBanner.id = "voted-banner" + player.id;
         votedBanner.className = "voted-banner";
         votedBanner.textContent = "Voted";
-        votedBanner.id = "voted-banner" + player.id;
-        votedBanner.style.top = "2.5%";
+        votedBanner.style.top = "-2.5%";
         card.append(votedBanner);
 
         gameContainer.append(card);
+    }
+    const youIndex = players.findIndex(player => player.id === myId);
+    const laterOthers = [];
+    const others = [];
+    for (let i = 0; i < players.length; i++) {
+        if (i < youIndex) {
+            laterOthers.push(players[i]);
+        }
+        if (i > youIndex) {
+            others.push(players[i]);
+        }
+    }
+    const otherPlayers = others.concat(laterOthers);
+
+    const leftPlayers = [];
+    const rightPlayers = [];
+
+    for (let i = 0; i < otherPlayers.length; i++) {
+        if (i < Math.ceil(otherPlayers.length / 2)) {
+            leftPlayers.push(otherPlayers[i]);
+        } else {
+            rightPlayers.push(otherPlayers[i]);
+        }
+    }
+
+    const centerY = 40;
+    const verticalGap = 20;
+
+    leftPlayers.reverse().forEach((player, index) => {
+        const groupHeight = (leftPlayers.length - 1) * verticalGap;
+        const startTop = centerY - (groupHeight / 2);
+        document.getElementById("card" + player.id).style.left = "5%";
+        document.getElementById("card" + player.id).style.top = (startTop + (index * verticalGap)) + "%";
+    });
+
+    rightPlayers.forEach((player, index) => {
+        const groupHeight = (rightPlayers.length - 1) * verticalGap;
+        const startTop = centerY - (groupHeight / 2);
+        document.getElementById("card" + player.id).style.right = "5%";
+        document.getElementById("card" + player.id).style.top = (startTop + (index * verticalGap)) + "%";
     });
 
     // center cards
