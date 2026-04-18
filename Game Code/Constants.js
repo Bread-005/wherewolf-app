@@ -1,5 +1,6 @@
 import * as libs from "./GameFunctions.js"
 import * as roles from "./roles.js"
+import * as roleCards from "./Rolecards.js"
 
 export const Faction = {
   UltimateTown : new Set([
@@ -543,3 +544,11 @@ export const EmpathQuestions = [
   "someone you don't think anyone else will point at",
   "the player you think has the best avatar"
 ]
+
+
+export const wikiList = Object.entries(roleCards).map(([key, value]) => {
+  return {
+    name: key,
+    card: value
+  };
+});
