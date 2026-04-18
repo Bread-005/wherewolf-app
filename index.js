@@ -13,6 +13,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("lobby-page").style.display = "flex";
     document.getElementById("game").style.display = "none";
 
+    socket.on("connect", () => {
+        document.getElementById("loading-screen").style.display = "none";
+    });
+
     socket.on("init", (id) => {
         myId = id;
     });
