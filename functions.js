@@ -200,6 +200,7 @@ function setupButtonEvents(socket, lobby) {
 
     document.getElementById("continue-button").addEventListener("click", () => {
         document.getElementById("continue-button").style.display = "none";
+        getCardElement(myId).querySelectorAll("img").forEach(img => img.remove());
 
         socket.emit("check-has-seen-role");
 
@@ -290,12 +291,6 @@ function createLobbyDisplay(lobbies, socket) {
     }
 }
 
-function setupButtonEventsForVotingResult(socket) {
-    document.getElementById("restart-game-button").addEventListener("click", () => {
-        socket.emit("reset-lobby");
-    }, {once: true});
-}
-
 function clearEverything() {
     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
     if (lobby) {
@@ -306,9 +301,6 @@ function clearEverything() {
             document.getElementById("select-roles-button").style.display = "flex";
         }
         document.getElementById("display-text").textContent = "";
-        document.getElementById("role-reveal-screen").style.display = "none";
-        document.getElementById("role-reveal-card").querySelectorAll("img").forEach(img => img.remove());
-        document.getElementById("role-reveal-card").style.cursor = "pointer";
         document.getElementById("night-action-text").style.display = "flex";
         document.getElementById("night-action-text").textContent = "";
         const players = lobby.cards.filter(card => !card.isMiddleCard);
@@ -378,6 +370,6 @@ function showVoteResults() {
     document.getElementById("vote-result-winning-team").textContent = "Team " + lobby.winningTeam + " wins";
 }
 
-export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents,
-    getCardElement, resetNightActionTexts, createLobbyDisplay, setupButtonEventsForVotingResult,
-    setupEventListenerForCards, getPlayers, createStartButton, initialiseVoting, showVoteResults, clearEverything};
+export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
+    resetNightActionTexts, createLobbyDisplay, setupEventListenerForCards, getPlayers, createStartButton,
+    initialiseVoting, showVoteResults, clearEverything};

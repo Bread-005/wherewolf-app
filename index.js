@@ -1,6 +1,6 @@
 import {
-    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, setupButtonEventsForVotingResult,
-    clickSelectCard, viewCard, resetNightActionTexts, initialiseVoting, showVoteResults, clearEverything
+    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
+    resetNightActionTexts, initialiseVoting, showVoteResults, clearEverything, getCardElement
 } from "./functions.js";
 
 let lobbies = [];
@@ -45,6 +45,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         socket.emit("leave");
     });
 
+    document.getElementById("restart-game-button").addEventListener("click", () => {
+        socket.emit("reset-lobby");
+    });
+
     socket.on("send-to-game", (id) => {
         document.getElementById("lobby-page").style.display = "none";
         document.getElementById("game").style.display = "flex";
@@ -62,7 +66,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             lobby = lobbies.find(l => l.cards.find(card => card.id === myId));
             document.getElementById("select-roles-button").style.display = "none";
             document.getElementById("select-roles-screen").style.display = "none";
-            document.getElementById("role-reveal-screen").style.display = "none";
             document.getElementById("game").style.background = "lightblue";
             if (lobby.state === "waiting") {
                 const gameContainer = document.getElementById("game");
@@ -76,12 +79,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                 clickSelectCard(lobby, socket);
             }
             if (lobby.state === "look-at-role") {
-                document.getElementById("role-reveal-screen").style.display = "flex";
-                document.getElementById("role-reveal-card").addEventListener("click", () => {
-                    viewCard(document.getElementById("role-reveal-card"), lobby.cards.find(player => player.id === myId));
-                    setupButtonEvents(socket, lobby);
-                    setupButtonEventsForVotingResult(socket);
-                    document.getElementById("continue-button").style.display = "flex";
+                document.getElementById("display-text").textContent = "Look at your role, by clicking your card";
+                document.getElementById("card" + myId).style.cursor = lobby.cards.find(card => card.id === myId).hasSeenRole ? "default" : "pointer";
+                getCardElement(myId).addEventListener("click", () => {
+                    const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
+                    if (lobby && lobby.state === "look-at-role" && getCardElement(myId).style.cursor === "pointer") {
+                        viewCard(getCardElement(myId), lobby.cards.find(player => player.id === myId));
+                        document.getElementById("continue-button").style.display = "flex";
+                        setupButtonEvents(socket, lobby);
+                    }
                 }, {once: true});
             }
             if (lobby.state === "night") {

@@ -107,12 +107,12 @@ body {
             &:hover {
                 background: linear-gradient(145deg, #34495e, #1a1a1a);
                 box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
-                transform: translateX(-50%) translateY(-3px);
+                transform: translate(-50%, -3px);
                 border-color: rgba(46, 204, 113, 0.5);
             }
 
             &:active {
-                transform: translateX(-50%) translateY(1px);
+                transform: translate(-50%, 1px);
                 box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
             }
         }
@@ -303,42 +303,12 @@ body {
             }
         }
 
-        #role-reveal-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 90vw;
-            height: 85vh;
-            background: beige;
-            z-index: 200;
+        #continue-button {
             display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-
-            .card {
-                width: 30vw;
-                height: 70vh;
-                border-radius: 8px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                border: 2px solid #333;
-                font-weight: bold;
-                background: #f0f0f0;
-                cursor: pointer;
-            }
-
-            button {
-                padding: 4px;
-                font-size: 25px;
-            }
-
-            #continue-button {
-                display: none;
-            }
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         #display-text {
