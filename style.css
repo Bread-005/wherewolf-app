@@ -19,6 +19,13 @@ body {
         display: flex;
         flex-direction: column;
 
+        #go-to-wiki-button {
+            position: absolute;
+            top: 5%;
+            left: 2.5%;
+            padding: 4px;
+        }
+
         .header-container {
             display: flex;
             align-items: center;
@@ -461,5 +468,31 @@ body {
     @keyframes shrink {
         from { width: 100%; }
         to { width: 0; }
+    }
+
+    .wiki-page {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: gray;
+
+        #go-back-button {
+            position: fixed;
+            top: 5%;
+            left: 2.5%;
+            padding: 4px;
+        }
+
+        #wiki-role-selection {
+            padding: 10px;
+            margin: 10px;
+        }
+
+        .wiki-role-container {
+            margin-top: 50px;
+            padding: 5px;
+            text-align: center;
+        }
     }
 }
