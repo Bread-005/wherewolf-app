@@ -45,6 +45,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         socket.emit("leave");
     });
 
+    setupButtonEvents(socket);
+
     document.getElementById("restart-game-button").addEventListener("click", () => {
         socket.emit("reset-lobby");
     });
@@ -84,9 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 getCardElement(myId).addEventListener("click", () => {
                     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
                     if (lobby && lobby.state === "look-at-role" && getCardElement(myId).style.cursor === "pointer") {
-                        viewCard(getCardElement(myId), lobby.cards.find(player => player.id === myId));
+                        viewCard(lobby.cards.find(player => player.id === myId));
                         document.getElementById("continue-button").style.display = "flex";
-                        setupButtonEvents(socket, lobby);
                     }
                 }, {once: true});
             }
