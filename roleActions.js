@@ -39,6 +39,9 @@ function setupRoleAction(roleName, card, nightActionText, maxChooseCenter, mayCh
         if (maxChooseCenter && card1.isMiddleCard) getCardElement(card1.id).style.cursor = cursor;
         if (mayChoosePlayers && !card1.isMiddleCard) getCardElement(card1.id).style.cursor = cursor;
     }
+    if (card.role === "Troublemaker") {
+        getCardElement(card.id).style.cursor = "default";
+    }
 }
 
 export {werewolfAction, setupRoleAction};

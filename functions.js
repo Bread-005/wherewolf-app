@@ -102,6 +102,7 @@ function clickSelectCard(lobby, socket) {
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 6, name: "Seer", text: "Either view 1 player´s card or 2 center cards"},
         {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
+        {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"}
@@ -213,6 +214,8 @@ function setupButtonEvents(socket, lobby) {
                 "Click on the cards to look at them.", true, true, "pointer");
             setupRoleAction("Robber", player, "You may swap your card, with another player's card and then look at your role.",
                 false, true, "grab");
+            setupRoleAction("Troublemaker", player, "You may swap two other players' cards",
+                false, true, "grab");
         }, 2000);
     });
 }
@@ -222,7 +225,7 @@ function resetNightActionTexts(lobby) {
     document.getElementById("do-nothing-button").style.display = "none";
 
     for (const card of lobby.cards) {
-        document.getElementById("card" + card.id).style.border = "2px solid #333";
+        getCardElement(card.id).classList.remove("selected-card");
         getCardElement(card.id).querySelectorAll("img").forEach(img => img.remove());
         getCardElement(card.id).style.cursor = "default";
     }
@@ -357,6 +360,22 @@ function setupEventListenerForCards(socket) {
                     document.getElementById("ok-button").style.display = "flex";
                     document.getElementById("do-nothing-button").style.display = "none";
                     viewCard(getCardElement(player.id), player);
+                }
+                if (player.role === "Troublemaker" && lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card")).length < 2) {
+                    document.getElementById("ok-button").style.display = "none";
+                    document.getElementById("do-nothing-button").style.display = "flex";
+                    if (getCardElement(card.id).classList.contains("selected-card")) {
+                        getCardElement(card.id).classList.remove("selected-card");
+                    } else {
+                        getCardElement(card.id).classList.add("selected-card");
+                    }
+                    const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
+                    if (selectedCards.length === 2) {
+                        socket.emit("add-swap", {priority: 7, swap: selectedCards});
+                        document.getElementById("ok-button").style.display = "flex";
+                        document.getElementById("do-nothing-button").style.display = "none";
+                        document.getElementById("night-action-text").textContent = "You swapped " + selectedCards[0].name + " and " + selectedCards[1].name;
+                    }
                 }
             }
         });

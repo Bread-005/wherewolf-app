@@ -171,6 +171,10 @@ body {
             }
         }
 
+        .selected-card {
+            border: 5px solid brown !important;
+        }
+
         .you-card {
             bottom: 2%;
             left: 50%;
