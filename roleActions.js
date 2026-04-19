@@ -1,11 +1,13 @@
 import {getCardElement, getPlayers} from "./functions.js";
+import {lobbies, myId} from "./index.js";
 
-function werewolfAction(card, player, lobby) {
+function werewolfAction(card) {
     if (!card.role || card.role !== "Werewolf") return;
 
-    const werewolfPlayers = [player.name];
+    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    const werewolfPlayers = [card.name];
     for (const player1 of getPlayers(lobby)) {
-        if (player.id === player1.id) continue;
+        if (card.id === player1.id) continue;
         const card1 = lobby.cards.find(c => c.id === player1.id);
         if (card1.role === "Werewolf") {
             document.getElementById("card" + card1.id).style.border = "5px solid red";
@@ -25,15 +27,18 @@ function werewolfAction(card, player, lobby) {
     }
 }
 
-function seerAction(card, lobby) {
-    if (!card.role || card.role !== "Seer") return;
+function setupRoleAction(roleName, card, nightActionText, maxChooseCenter, mayChoosePlayers, cursor) {
+    if (!card.role || card.role !== roleName) return;
 
-    const nightAction = document.getElementById("night-action");
-    nightAction.style.display = "flex";
-    document.getElementById("night-action-text").textContent = "You may view any player´s card or two cards from the center. \n" +
-        "Click on the cards to look at them.";
+    document.getElementById("night-action").style.display = "flex";
+    document.getElementById("night-action-text").textContent = nightActionText;
     document.getElementById("do-nothing-button").style.display = "flex";
-    lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "pointer");
+    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+
+    for (const card1 of lobby.cards) {
+        if (maxChooseCenter && card1.isMiddleCard) getCardElement(card1.id).style.cursor = cursor;
+        if (mayChoosePlayers && !card1.isMiddleCard) getCardElement(card1.id).style.cursor = cursor;
+    }
 }
 
-export {werewolfAction, seerAction};
+export {werewolfAction, setupRoleAction};

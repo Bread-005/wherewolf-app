@@ -1,4 +1,4 @@
-import {seerAction, werewolfAction} from "./roleActions.js";
+import {setupRoleAction, werewolfAction} from "./roleActions.js";
 import {lobbies, myId} from "./index.js";
 
 function showErrorPopup(message) {
@@ -101,6 +101,7 @@ function clickSelectCard(lobby, socket) {
         {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 6, name: "Seer", text: "Either view 1 player´s card or 2 center cards"},
+        {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"}
@@ -205,13 +206,13 @@ function setupButtonEvents(socket, lobby) {
         socket.emit("check-has-seen-role");
 
         setTimeout(() => {
-            setupEventListenerForCards();
-            for (const player of getPlayers(lobby)) {
-                if (player.id !== myId) continue;
-                const card = lobby.cards.find(c => c.id === player.id);
-                werewolfAction(card, player, lobby);
-                seerAction(card, lobby);
-            }
+            setupEventListenerForCards(socket);
+            const player = lobby.cards.find(player => player.id === myId);
+            werewolfAction(player);
+            setupRoleAction("Seer", player, "You may view any player´s card or two cards from the center. \n" +
+                "Click on the cards to look at them.", true, true, "pointer");
+            setupRoleAction("Robber", player, "You may swap your card, with another player's card and then look at your role.",
+                false, true, "grab");
         }, 2000);
     });
 }
@@ -257,7 +258,6 @@ function getPlayers(lobby) {
 
 function createLobbyDisplay(lobbies, socket) {
     const lobbyDiv = document.getElementById("lobby");
-    lobbyDiv.innerHTML = "";
     lobbyDiv.innerHTML = `<div>Name</div><div>Players</div><div>State</div><div>Action</div>`;
 
     for (const lobby of lobbies) {
@@ -285,6 +285,12 @@ function createLobbyDisplay(lobbies, socket) {
                 showErrorPopup("Name may not be longer than 15 letters");
                 return;
             }
+            for (const card of lobby.cards) {
+                if (card.name === nameInput.trim()) {
+                    showErrorPopup("Name already exists in that Lobby");
+                    return;
+                }
+            }
             socket.emit("join-game", { name: nameInput.trim(), lobbyId: lobby.id });
         });
         lobbyDiv.append(lobbyName, playerCount, state, joinButton);
@@ -310,32 +316,47 @@ function clearEverything() {
     }
 }
 
-function setupEventListenerForCards() {
+function setupEventListenerForCards(socket) {
     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
     if (!lobby) return;
     for (const card of lobby.cards) {
         getCardElement(card.id).addEventListener("click", () => {
             if (document.getElementById("game").style.background !== "royalblue") return;
-            if (getCardElement(card.id).style.cursor !== "pointer") return;
 
-            const currentPlayer = lobby.cards.find(c => c.id === myId);
-            if (currentPlayer.role === "Werewolf" && lobby.cards.filter(c => !c.isMiddleCard && c.role === "Werewolf").length === 1 || currentPlayer.role === "Seer") {
-                viewCard(getCardElement(card.id), card);
+            const player = lobby.cards.find(c => c.id === myId);
+            if (getCardElement(card.id).style.cursor === "pointer") {
+                if (player.role === "Werewolf" && lobby.cards.filter(c => !c.isMiddleCard && c.role === "Werewolf").length === 1 || player.role === "Seer") {
+                    viewCard(getCardElement(card.id), card);
 
-                if (currentPlayer.role === "Werewolf" || currentPlayer.role === "Seer" && !card.isMiddleCard) {
+                    if (player.role === "Werewolf" || player.role === "Seer" && !card.isMiddleCard) {
+                        lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
+                        document.getElementById("ok-button").style.display = "flex";
+                        document.getElementById("do-nothing-button").style.display = "none";
+                    }
+                    if (player.role === "Seer" && card.isMiddleCard) {
+                        lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).style.cursor = "default");
+                        document.getElementById("ok-button").style.display = "flex";
+                        document.getElementById("do-nothing-button").style.display = "none";
+                    }
+                    if (player.role === "Seer" && lobby.cards.filter(c => c.isMiddleCard && getCardElement(c.id).style.cursor === "default").length === 2) {
+                        lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
+                        document.getElementById("ok-button").style.display = "flex";
+                        document.getElementById("do-nothing-button").style.display = "none";
+                    }
+                }
+            }
+            if (getCardElement(card.id).style.cursor === "grab") {
+                if (player.role === "Robber") {
+                    document.getElementById("night-action-text").textContent = "You swapped your card with " + card.name + "\n" +
+                        "Now you are " + player.role;
+                    socket.emit("add-swap", {priority: 6, swap: [player, card]});
+                    const yourRole = player.role;
+                    player.role = card.role;
+                    card.role = yourRole;
                     lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
                     document.getElementById("ok-button").style.display = "flex";
                     document.getElementById("do-nothing-button").style.display = "none";
-                }
-                if (currentPlayer.role === "Seer" && card.isMiddleCard) {
-                    lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).style.cursor = "default");
-                    document.getElementById("ok-button").style.display = "flex";
-                    document.getElementById("do-nothing-button").style.display = "none";
-                }
-                if (currentPlayer.role === "Seer" && lobby.cards.filter(c => c.isMiddleCard && getCardElement(c.id).style.cursor === "default").length === 2) {
-                    lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
-                    document.getElementById("ok-button").style.display = "flex";
-                    document.getElementById("do-nothing-button").style.display = "none";
+                    viewCard(getCardElement(player.id), player);
                 }
             }
         });

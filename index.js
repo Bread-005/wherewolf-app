@@ -8,7 +8,7 @@ let myId = "";
 
 document.addEventListener("DOMContentLoaded", async () => {
     let lobby = {};
-    const socket = io("https://wherewolf-server.onrender.com");
+    const socket = io("https://wherewolf-server-bhut.onrender.com");
     let lobbyId = null;
     document.getElementById("lobby-page").style.display = "flex";
     document.getElementById("game").style.display = "none";
