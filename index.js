@@ -68,6 +68,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             lobby = lobbies.find(l => l.cards.find(card => card.id === myId));
             document.getElementById("select-roles-button").style.display = "none";
             document.getElementById("select-roles-screen").style.display = "none";
+            document.getElementById("restart-game-button").style.display = "none";
+            document.getElementById("vote-result-display").style.display = "none";
             document.getElementById("game").style.background = "lightblue";
             if (lobby.state === "waiting") {
                 const gameContainer = document.getElementById("game");
@@ -109,20 +111,24 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             }
             if (lobby.state === "voting-results") {
-                document.getElementById("restart-game-button").style.display = "none";
+                document.getElementById("vote-result-display").style.display = "grid";
                 if (lobby.cards[3].id === myId) {
                     document.getElementById("restart-game-button").style.display = "flex";
+                }
+                const players = lobby.cards.filter(card => !card.isMiddleCard);
+                for (const player of players) {
+                    document.getElementById("voted-banner" + player.id).style.display = "none";
                 }
             }
         }
     });
 
     socket.on("reset-night-action-texts", () => {
-        resetNightActionTexts(lobby);
+        resetNightActionTexts();
     });
 
     socket.on("initialise-voting", () => {
-        initialiseVoting(lobby, socket);
+        initialiseVoting(socket);
     });
 
     socket.on("everyone-voted", () => {

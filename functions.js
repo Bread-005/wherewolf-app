@@ -36,7 +36,6 @@ function displayCards(lobby, gameContainer) {
         votedBanner.id = "voted-banner" + player.id;
         votedBanner.className = "voted-banner";
         votedBanner.textContent = "Voted";
-        votedBanner.style.top = "-2.5%";
         card.append(votedBanner);
 
         gameContainer.append(card);
@@ -179,25 +178,23 @@ function viewCard(card, as = card.role) {
     img.style.height = "100%";
     img.style.position = "relative";
 
+    if (getCardElement(card.id).querySelectorAll("img").length > 0) {
+        return;
+    }
+
     img.append(name);
     getCardElement(card.id).append(img);
     getCardElement(card.id).style.cursor = "default";
 }
 
-//const storage = JSON.parse(localStorage.getItem("wherewolf-app"));
-
-// function saveLocalStorage() {
-//     localStorage.setItem("wherewolf-app", JSON.stringify(storage));
-// }
-
 function setupButtonEvents(socket) {
     document.getElementById("ok-button").addEventListener("click", () => {
         socket.emit("has-done-night-action");
-        resetNightActionTexts(lobbies.find(lobby => lobby.cards.find(player => player.id === myId)));
+        resetNightActionTexts();
     });
     document.getElementById("do-nothing-button").addEventListener("click", () => {
         socket.emit("has-done-night-action");
-        resetNightActionTexts(lobbies.find(lobby => lobby.cards.find(player => player.id === myId)));
+        resetNightActionTexts();
     });
 
     document.getElementById("continue-button").addEventListener("click", () => {
@@ -221,7 +218,8 @@ function setupButtonEvents(socket) {
     });
 }
 
-function resetNightActionTexts(lobby) {
+function resetNightActionTexts() {
+    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
     document.getElementById("ok-button").style.display = "none";
     document.getElementById("do-nothing-button").style.display = "none";
 
@@ -237,23 +235,31 @@ function getCardElement(id) {
     return document.getElementById("card" + id);
 }
 
-function initialiseVoting(lobby, socket) {
+function initialiseVoting(socket) {
+    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
     document.getElementById("display-text").textContent = "Click on another player to vote for them.";
 
-    lobby.cards.filter(card => !card.isMiddleCard).forEach(card => {
-        if (card.id === myId) return;
-        getCardElement(card.id).style.cursor = "pointer";
-        getCardElement(card.id).addEventListener("click", () => {
-            document.getElementById("display-text").textContent = "You voted for " + card.name;
-            for (const card1 of lobby.cards) {
-                if (!card1.isMiddleCard && card1.id !== myId) {
-                    getCardElement(card1.id).style.background = "gray";
-                }
+    for (const card of lobby.cards) {
+        if (card.isMiddleCard) continue;
+        if (card.id === myId) continue;
+
+        const cardElement = getCardElement(card.id);
+        cardElement.style.cursor = "pointer";
+        cardElement.addEventListener("click", () => {
+            if (cardElement.style.background === "gray") {
+                showErrorPopup("You have already voted!");
+                return;
             }
-            lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
+            for (const card1 of lobby.cards) {
+                if (card1.isMiddleCard) continue;
+
+                getCardElement(card1.id).style.cursor = "default";
+                getCardElement(card1.id).style.background = "gray";
+            }
+            document.getElementById("display-text").textContent = "You voted for " + card.name;
             socket.emit("set-has-voted", card.name);
         });
-    });
+    }
 }
 
 function createLobbyDisplay(lobbies, socket) {
@@ -300,7 +306,6 @@ function createLobbyDisplay(lobbies, socket) {
 function clearEverything() {
     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
     if (lobby) {
-        document.getElementById("vote-result-screen").style.display = "none";
         document.getElementById("game").style.background = "lightblue";
         if (lobby.cards[3].id === myId && lobby.cards.length >= 6) {
             document.getElementById("select-roles").style.display = "flex";
@@ -381,11 +386,16 @@ function setupEventListenerForCards(socket) {
 }
 
 function showVoteResults() {
-    const voteResultScreen = document.getElementById("vote-result-screen");
-    voteResultScreen.querySelectorAll(".dynamic-result").forEach(element => element.remove());
-    voteResultScreen.style.display = "grid";
+    const voteResultDisplay = document.getElementById("vote-result-display");
+    voteResultDisplay.querySelectorAll(".dynamic-result").forEach(element => element.remove());
+    voteResultDisplay.style.display = "grid";
+
     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
     const players = lobby.cards.filter(card => !card.isMiddleCard);
+
+    for (const card of lobby.cards) {
+        viewCard(card);
+    }
 
     for (const player of players) {
         const name = document.createElement("div");
@@ -401,11 +411,11 @@ function showVoteResults() {
         numberOfVotes.textContent = players.filter(p => p.vote === player.name).length;
         numberOfVotes.className = "dynamic-result";
 
-        voteResultScreen.append(name, role, voters, numberOfVotes);
+        voteResultDisplay.append(name, role, voters, numberOfVotes);
     }
 
-    document.getElementById("vote-result-text").textContent = lobby.voteResultText;
-    document.getElementById("vote-result-winning-team").textContent = "Team " + lobby.winningTeam + " wins";
+    document.getElementById("display-text").textContent = lobby.voteResultText;
+    document.getElementById("display-text-2").textContent = "Team " + lobby.winningTeam + " wins";
 }
 
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
