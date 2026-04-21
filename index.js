@@ -70,6 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("select-roles-screen").style.display = "none";
             document.getElementById("restart-game-button").style.display = "none";
             document.getElementById("vote-result-display").style.display = "none";
+            document.getElementById("role-show-stage").style.display = "none";
             document.getElementById("game").style.background = "lightblue";
             if (lobby.state === "waiting") {
                 const gameContainer = document.getElementById("game");
@@ -112,6 +113,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             if (lobby.state === "voting-results") {
                 document.getElementById("vote-result-display").style.display = "grid";
+                document.getElementById("role-show-stage").style.display = "flex";
                 if (lobby.cards[3].id === myId) {
                     document.getElementById("restart-game-button").style.display = "flex";
                 }

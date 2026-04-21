@@ -165,24 +165,13 @@ function createStartButton(lobby, socket) {
 }
 
 function viewCard(card, as = card.role) {
-    const name = document.createElement("span");
-    name.textContent = as;
-    name.style.position = "absolute";
-    name.style.textAlign = "center";
-    name.style.top = "20%";
-    name.style.left = "50%";
-
     const img = document.createElement("img");
-    img.src = "./images/" + name.textContent.toLowerCase() + ".png";
+    img.src = "./images/" + as.toLowerCase() + ".png";
     img.style.width = "100%";
     img.style.height = "100%";
     img.style.position = "relative";
 
-    if (getCardElement(card.id).querySelectorAll("img").length > 0) {
-        return;
-    }
-
-    img.append(name);
+    getCardElement(card.id).querySelectorAll("img").forEach(img => img.remove());
     getCardElement(card.id).append(img);
     getCardElement(card.id).style.cursor = "default";
 }
@@ -312,12 +301,14 @@ function clearEverything() {
             document.getElementById("select-roles-button").style.display = "flex";
         }
         document.getElementById("display-text").textContent = "";
+        document.getElementById("display-text-2").textContent = "";
         document.getElementById("night-action-text").style.display = "flex";
         document.getElementById("night-action-text").textContent = "";
         const players = lobby.cards.filter(card => !card.isMiddleCard);
         for (const player of players) {
             document.getElementById("voted-banner" + player.id).style.display = "none";
         }
+        document.getElementById("role-show-stage").style.display = "none";
     }
 }
 
@@ -402,7 +393,7 @@ function showVoteResults() {
         name.textContent = player.name;
         name.className = "dynamic-result";
         const role = document.createElement("div");
-        role.textContent = player.role;
+        role.textContent = player.roleChain.join(" -> ");
         role.className = "dynamic-result";
         const voters = document.createElement("div");
         voters.textContent = players.filter(p => p.vote === player.name).map(p => p.name).join(", ");
@@ -416,6 +407,29 @@ function showVoteResults() {
 
     document.getElementById("display-text").textContent = lobby.voteResultText;
     document.getElementById("display-text-2").textContent = "Team " + lobby.winningTeam + " wins";
+
+    setTimeout(() => {
+        let showsEndingRoles = true;
+        const toggleShowAllRoles = setInterval(() => {
+            if (document.getElementById("role-show-stage").style.display === "none") {
+                clearInterval(toggleShowAllRoles);
+                return;
+            }
+            if (showsEndingRoles) {
+                for (const card of lobby.cards) {
+                    viewCard(card, card.roleChain[0]);
+                    document.getElementById("role-show-stage").textContent = "Shows Starting Roles";
+                    showsEndingRoles = false;
+                }
+            } else {
+                for (const card of lobby.cards) {
+                    viewCard(card);
+                    document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
+                    showsEndingRoles = true;
+                }
+            }
+        }, 10000);
+    }, 10000);
 }
 
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,

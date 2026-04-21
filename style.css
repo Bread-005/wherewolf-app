@@ -365,8 +365,8 @@ body {
         #vote-result-display {
             position: absolute;
             display: none;
-            grid-template-columns: repeat(4, 1fr);
-            width: 30vw;
+            grid-template-columns: 1fr auto 1fr 40px;
+            width: 40vw;
             top: 15%;
             left: 50%;
             transform: translateX(-50%);
@@ -374,6 +374,21 @@ body {
             background: gray;
             padding: 5px;
             gap: 5px;
+            align-items: center;
+
+            .dynamic-result {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        #role-show-stage {
+            display: none;
+            position: absolute;
+            top: 72.5%;
+            left: 50%;
+            transform: translateX(-50%);
         }
     }
 
