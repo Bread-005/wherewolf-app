@@ -41,6 +41,9 @@ function setupRoleAction(roleName, card, nightActionText, maxChooseCenter, mayCh
     if (card.role === "Troublemaker") {
         getCardElement(card.id).style.cursor = "default";
     }
+    if (card.role === "Drunk") {
+        document.getElementById("do-nothing-button").style.display = "none";
+    }
 }
 
 export {werewolfAction, setupRoleAction};

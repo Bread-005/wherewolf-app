@@ -102,6 +102,7 @@ function clickSelectCard(lobby, socket) {
         {id: 6, name: "Seer", text: "Either view 1 player´s card or 2 center cards"},
         {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
         {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
+        {id: 9, name: "Drunk", text: "Swap your card with center"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"}
@@ -203,6 +204,8 @@ function setupButtonEvents(socket) {
                 false, true, "grab");
             setupRoleAction("Troublemaker", player, "You may swap two other players' cards",
                 false, true, "grab");
+            setupRoleAction("Drunk", player, "You must choose a center card to swap yours with",
+                true, false, "grab");
         }, 2000);
     });
 }
@@ -370,6 +373,12 @@ function setupEventListenerForCards(socket) {
                         document.getElementById("do-nothing-button").style.display = "none";
                         document.getElementById("night-action-text").textContent = "You swapped " + selectedCards[0].name + " and " + selectedCards[1].name;
                     }
+                }
+                if (player.role === "Drunk") {
+                    socket.emit("add-swap", {priority: 8, swap: [player, card]});
+                    document.getElementById("night-action-text").textContent = "You swapped your card with " + card.name;
+                    lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
+                    document.getElementById("ok-button").style.display = "flex";
                 }
             }
         });
