@@ -150,52 +150,54 @@ body {
         position: relative;
         border: 2px dashed rgba(0,0,0,0.1);
 
-        .player-card, .center-card {
-            width: 80px;
-            height: 14vh;
-            max-height: 110px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border: 2px solid #333;
-            font-weight: bold;
-            background: #f0f0f0;
-            position: absolute;
-
-            .voted-banner {
-                display: none;
+        #cards {
+            .player-card, .center-card {
+                width: 80px;
+                height: 14vh;
+                max-height: 110px;
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                border: 2px solid #333;
+                font-weight: bold;
+                background: #f0f0f0;
                 position: absolute;
-                background: saddlebrown;
-                top: -20%;
+
+                .voted-banner {
+                    display: none;
+                    position: absolute;
+                    background: saddlebrown;
+                    top: -20%;
+                }
             }
-        }
 
-        .selected-card {
-            border: 5px solid brown !important;
-        }
+            .selected-card {
+                border: 5px solid brown !important;
+            }
 
-        .you-card {
-            bottom: 2%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: yellow !important;
-        }
+            .you-card {
+                bottom: 2%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: yellow !important;
+            }
 
-        .center-card {
-            top: 60%;
-            transform: translateY(-50%);
-            background: #8b4513;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+            .center-card {
+                top: 60%;
+                transform: translateY(-50%);
+                background: #8b4513;
+                color: white;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
 
-        .other-card {
-            background: white;
+            .other-card {
+                background: white;
+            }
         }
 
         #select-roles {

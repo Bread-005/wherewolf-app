@@ -9,7 +9,6 @@ let myId = "";
 document.addEventListener("DOMContentLoaded", async () => {
     let lobby = {};
     const socket = io("https://wherewolf-server-bhut.onrender.com");
-    let lobbyId = null;
     document.getElementById("lobby-page").style.display = "flex";
     document.getElementById("game").style.display = "none";
 
@@ -62,21 +61,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (document.getElementById("lobby-page").style.display === "flex") {
             createLobbyDisplay(lobbies, socket);
         }
-
-        if (document.getElementById("game").style.display === "flex") {
-            if (!myId) return;
-            lobby = lobbies.find(l => l.cards.find(card => card.id === myId));
+        if (lobby) {
+            const players = lobby.cards.filter(card => !card.isMiddleCard);
+            const you = players.find(p => p.id === myId);
+            document.getElementById("game").style.display = "flex";
+            document.getElementById("cards").style.display = "flex";
+            document.getElementById("lobby-page").style.display = "none";
             document.getElementById("select-roles-button").style.display = "none";
             document.getElementById("select-roles-screen").style.display = "none";
             document.getElementById("restart-game-button").style.display = "none";
             document.getElementById("vote-result-display").style.display = "none";
             document.getElementById("role-show-stage").style.display = "none";
             document.getElementById("game").style.background = "lightblue";
+            for (const player of players) {
+                if (!document.getElementById("card" + player.id)) {
+                    displayCards(lobby, socket);
+                    showRoleActions();
+                }
+            }
             if (lobby.state === "waiting") {
-                const gameContainer = document.getElementById("game");
-                const existingCards = gameContainer.querySelectorAll(".player-card, .center-card");
-                existingCards.forEach(card => card.remove());
-                displayCards(lobby, gameContainer);
+                displayCards(lobby, socket);
                 clearEverything();
             }
             if (lobby.state === "select-roles") {
@@ -85,7 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             if (lobby.state === "look-at-role") {
                 document.getElementById("display-text").textContent = "Look at your role, by clicking your card";
-                document.getElementById("card" + myId).style.cursor = lobby.cards.find(card => card.id === myId).hasSeenRole ? "default" : "pointer";
+                getCardElement(myId).style.cursor = you.hasSeenRole ? "default" : "pointer";
                 getCardElement(myId).addEventListener("click", () => {
                     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
                     if (lobby && lobby.state === "look-at-role" && getCardElement(myId).style.cursor === "pointer") {
@@ -97,6 +101,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lobby.state === "night") {
                 document.getElementById("game").style.background = "royalblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
+                if (you.hasDoneNightAction) {
+                    document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
+                }
             }
             if (lobby.state === "day") {
                 document.getElementById("game").style.background = "lightblue";
@@ -127,10 +134,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket.on("reset-night-action-texts", () => {
         resetNightActionTexts();
-    });
-
-    socket.on("initialise-voting", () => {
-        initialiseVoting(socket);
     });
 
     socket.on("everyone-voted", () => {
