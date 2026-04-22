@@ -200,21 +200,6 @@ function setupButtonEvents(socket) {
         getCardElement(myId).querySelectorAll("img").forEach(img => img.remove());
 
         socket.emit("check-has-seen-role");
-
-        setTimeout(() => {
-            setupEventListenerForCards(socket);
-            const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId))
-            const player = lobby.cards.find(player => player.id === myId);
-            werewolfAction(player);
-            setupRoleAction("Seer", player, "You may view any player´s card or two cards from the center. \n" +
-                "Click on the cards to look at them.", true, true, "pointer");
-            setupRoleAction("Robber", player, "You may swap your card, with another player's card and then look at your role.",
-                false, true, "grab");
-            setupRoleAction("Troublemaker", player, "You may swap two other players' cards",
-                false, true, "grab");
-            setupRoleAction("Drunk", player, "You must choose a center card to swap yours with",
-                true, false, "grab");
-        }, 2000);
     });
 }
 
@@ -222,44 +207,17 @@ function resetNightActionTexts() {
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
     document.getElementById("ok-button").style.display = "none";
     document.getElementById("do-nothing-button").style.display = "none";
+    document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
 
     for (const card of lobby.cards) {
         getCardElement(card.id).classList.remove("selected-card");
         getCardElement(card.id).querySelectorAll("img").forEach(img => img.remove());
         getCardElement(card.id).style.cursor = "default";
     }
-    document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
 }
 
 function getCardElement(id) {
     return document.getElementById("card" + id);
-}
-
-function initialiseVoting(socket) {
-    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
-    document.getElementById("display-text").textContent = "Click on another player to vote for them.";
-
-    for (const card of lobby.cards) {
-        if (card.isMiddleCard) continue;
-        if (card.id === myId) continue;
-
-        const cardElement = getCardElement(card.id);
-        cardElement.style.cursor = "pointer";
-        cardElement.addEventListener("click", () => {
-            if (cardElement.style.background === "gray") {
-                showErrorPopup("You have already voted!");
-                return;
-            }
-            for (const card1 of lobby.cards) {
-                if (card1.isMiddleCard) continue;
-
-                getCardElement(card1.id).style.cursor = "default";
-                getCardElement(card1.id).style.background = "gray";
-            }
-            document.getElementById("display-text").textContent = "You voted for " + card.name;
-            socket.emit("set-has-voted", card.name);
-        });
-    }
 }
 
 function createLobbyDisplay(lobbies, socket) {
@@ -279,9 +237,13 @@ function createLobbyDisplay(lobbies, socket) {
         state.textContent = lobby.state;
 
         const joinButton = document.createElement("button");
-        joinButton.textContent = lobby.state === "waiting" ? "Join" : "Spectate";
+        joinButton.textContent = lobby.state === "waiting" || lobby.state === "select-roles" ? "Join" : "Spectate";
 
         joinButton.addEventListener("click", () => {
+            if (joinButton.textContent === "Spectate") {
+                showErrorPopup("Spectating is currently not available");
+                return;
+            }
             const nameInput = document.getElementById("enter-name-input").value;
             if (!nameInput.trim()) {
                 showErrorPopup("You have to enter a name");

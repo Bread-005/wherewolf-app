@@ -1,7 +1,7 @@
-import {
-    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
-    resetNightActionTexts, initialiseVoting, showVoteResults, clearEverything, getCardElement
+import {showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
+    resetNightActionTexts, showVoteResults, clearEverything, getCardElement
 } from "./functions.js";
+import {showRoleActions} from "./roleActions.js";
 
 let lobbies = [];
 let myId = "";
@@ -110,11 +110,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lobby.state === "day") {
                 document.getElementById("game").style.background = "lightblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
-                document.getElementById("night-action-text").style.display = "none";
+                document.getElementById("night-action-text").textContent = "";
             }
             if (lobby.state === "voting") {
                 document.getElementById("game").style.background = "orange";
-                for (const player of lobby.cards) {
+                if (!you.vote) {
+                    document.getElementById("display-text").textContent = "Click on another player to vote for them.";
+                } else {
+                    document.getElementById("display-text").textContent = "You voted for " + you.vote;
+                }
+                for (const player of players) {
+                    if (player.id !== myId) {
+                        if (!you.vote) {
+                            getCardElement(player.id).style.cursor = "pointer";
+                        } else {
+                            getCardElement(player.id).style.cursor = "default";
+                            getCardElement(player.id).style.background = "gray";
+                        }
+                    }
                     if (player.vote) {
                         document.getElementById("voted-banner" + player.id).style.display = "flex";
                     }

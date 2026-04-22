@@ -14,7 +14,6 @@ function werewolfAction(card) {
             viewCard(player, "Werewolf");
         }
     }
-    document.getElementById("night-action").style.display = "flex";
     document.getElementById("night-action-text").textContent = "These are the werewolves: " + werewolfPlayers.join(", ");
     if (werewolfPlayers.length === 1) {
         document.getElementById("night-action-text").textContent += "\n Because you are the only werewolf, you may click one center card to view it.";
@@ -26,24 +25,45 @@ function werewolfAction(card) {
     }
 }
 
-function setupRoleAction(roleName, card, nightActionText, maxChooseCenter, mayChoosePlayers, cursor) {
-    if (!card.role || card.role !== roleName) return;
+function showNightAction(roleName, player, message, mayChooseCenter, mayChoosePlayers, cursor) {
+    if (!player.role || player.role !== roleName) return;
 
-    document.getElementById("night-action").style.display = "flex";
-    document.getElementById("night-action-text").textContent = nightActionText;
+    document.getElementById("night-action-text").textContent = message;
     document.getElementById("do-nothing-button").style.display = "flex";
+
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
 
-    for (const card1 of lobby.cards) {
-        if (maxChooseCenter && card1.isMiddleCard) getCardElement(card1.id).style.cursor = cursor;
-        if (mayChoosePlayers && !card1.isMiddleCard) getCardElement(card1.id).style.cursor = cursor;
+    for (const card of lobby.cards) {
+        if (mayChooseCenter && card.isMiddleCard) getCardElement(card.id).style.cursor = cursor;
+        if (mayChoosePlayers && !card.isMiddleCard) getCardElement(card.id).style.cursor = cursor;
     }
-    if (card.role === "Troublemaker") {
-        getCardElement(card.id).style.cursor = "default";
+    if (player.role === "Robber" || player.role === "Troublemaker") {
+        getCardElement(player.id).style.cursor = "default";
     }
-    if (card.role === "Drunk") {
+    if (player.role === "Drunk") {
         document.getElementById("do-nothing-button").style.display = "none";
     }
 }
 
-export {werewolfAction, setupRoleAction};
+function showRoleActions() {
+    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    if (!lobby) return;
+    if (lobby.state !== "night") return;
+    const player = lobby.cards.find(player => player.id === myId);
+    if (!player) return;
+    if (player.hasDoneNightAction) {
+        document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
+        return;
+    }
+    werewolfAction(player);
+    showNightAction("Seer", player, "You may view any player´s card or two cards from the center. \n" +
+        "Click on the cards to look at them.", true, true, "pointer");
+    showNightAction("Robber", player, "You may swap your card, with another player's card and then look at your role.",
+        false, true, "grab");
+    showNightAction("Troublemaker", player, "You may swap two other players' cards",
+        false, true, "grab");
+    showNightAction("Drunk", player, "You must choose a center card to swap yours with",
+        true, false, "grab");
+}
+
+export {werewolfAction, showNightAction, showRoleActions};
