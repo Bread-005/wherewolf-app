@@ -17,7 +17,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     socket.on("init", (id) => {
+        const savedId = sessionStorage.getItem("saved-id");
         myId = id;
+        sessionStorage.setItem("saved-id", myId);
+        if (savedId) {
+            socket.emit("reconnect-player", savedId);
+        }
     });
 
     document.getElementById("create-lobby-button").addEventListener("click", () => {
@@ -40,8 +45,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("leave-game-button").addEventListener("click", () => {
         document.getElementById("lobby-page").style.display = "flex";
         document.getElementById("game").style.display = "none";
-        clearEverything();
         socket.emit("leave");
+        clearEverything();
     });
 
     setupButtonEvents(socket);
@@ -50,15 +55,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         socket.emit("reset-lobby");
     });
 
-    socket.on("send-to-game", (id) => {
-        document.getElementById("lobby-page").style.display = "none";
-        document.getElementById("game").style.display = "flex";
-        lobbyId = id;
-    });
-
     socket.on("update-lobbies", (serverLobbies) => {
         lobbies = serverLobbies;
-        if (document.getElementById("lobby-page").style.display === "flex") {
+        lobby = lobbies.find(l => l.cards.find(card => card.id === myId));
+        if (!lobby) {
+            document.getElementById("lobby-page").style.display = "flex";
+            document.getElementById("game").style.display = "none";
             createLobbyDisplay(lobbies, socket);
         }
         if (lobby) {
@@ -138,6 +140,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket.on("everyone-voted", () => {
         showVoteResults();
+    });
+
+    socket.on("broadcast-message", (message) => {
+        showErrorPopup(message);
+    });
+
+    socket.on("setup-night", () => {
+        showRoleActions();
     });
 });
 
