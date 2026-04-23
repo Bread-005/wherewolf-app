@@ -11,7 +11,7 @@ body {
         cursor: pointer;
 
         &:hover {
-            background: lightgreen !important;
+            background: lightgreen;
         }
     }
 
@@ -314,14 +314,6 @@ body {
             }
         }
 
-        #continue-button {
-            display: none;
-            position: absolute;
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
         #display-text, #display-text-2 {
             position: absolute;
             display: flex;
@@ -344,20 +336,56 @@ body {
             text-align: center;
         }
 
-        #ok-button {
+        #continue-button, #ok-button, #do-nothing-button {
             display: none;
             position: absolute;
             top: 37.5%;
-            left: 45%;
-            padding: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 40px;
+            font-size: 1.5rem;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            outline: none;
+            background: linear-gradient(145deg, #a8904d, #7a662e);
+            color: #2c2410;
+            border-radius: 12px;
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.2), -1px -1px 1px rgba(0,0,0,0.5);
+            box-shadow:
+                    0 0 5px #ffcc33,
+                    0 0 15px rgba(255, 174, 0, 0.6),
+                    inset 0 0 10px rgba(0,0,0,0.4);
+            transition: all 0.2s ease-in-out;
+            border: 2px solid #5d4b1a;
+
+            &:hover {
+                background: linear-gradient(145deg, #c5ac66, #8e773a);
+                color: #1a150a;
+            }
+
+            &:active {
+                transform: scale(0.98);
+                box-shadow: 0 0 5px #ffcc33, inset 0 0 15px rgba(0,0,0,0.8);
+            }
         }
 
         #do-nothing-button {
-            display: none;
-            position: absolute;
-            top: 37.5%;
-            left: 52.5%;
-            padding: 4px;
+            background: #2c2c34;
+            color: #7f8c8d;
+            border: 2px solid #1a1a1a;
+            padding: 10px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: #3e3e4a;
+                color: #bdc3c7;
+                border-color: #333;
+            }
         }
 
         #vote-result-display {
