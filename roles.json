@@ -1,0 +1,36 @@
+[
+  {
+    "name": "Villager",
+    "team": "Villager"
+  },
+  {
+    "name": "Werewolf",
+    "team": "Werewolf",
+    "nightAction": "Werewolves wake up and look arround for other werewolves. If you are alone, you may look at a card from the center.",
+    "nightActionDetailed": "When you wake up, all players who are werewolves are shown to you as werewolves. If there are other werewolves click ok to confirm you saw the others. If you woke alone, you may look at a card from the center, by clicking it."
+  },
+  {
+    "name": "Seer",
+    "team": "Villager",
+    "nightAction": "Seer wake up. You may either look at another player's card or two of the center cards. Seer close your eyes.",
+    "nightActionDetailed": "You have 2 options: 1. If you click on another player's card, you will see their role. 2. If you click on a center card, you will see its role and may look at a second center card to view it, too."
+  },
+  {
+    "name": "Robber",
+    "team": "Villager",
+    "nightAction": "Robber wake up. You may exchange your card with another player's card and then view your new card. Robber close your eyes.",
+    "nightActionDetailed": "If you click a card of another player you swap their card with yours. Then you look at your new role. You will not perform that role's action later."
+  },
+  {
+    "name": "Troublemaker",
+    "team": "Villager",
+    "nightAction": "Troublemaker wake up. You may exchange cards between two other players. Troublemaker close your eyes.",
+    "nightActionDetailed": "If you click a card, you select it and it gets a brown border. If you click it again you unselct it and the border resets. Once you selected two other player's cards, those cards get swapped. You do not know the roles of the players you swapped."
+  },
+  {
+    "name": "Drunk",
+    "team": "Villager",
+    "nightAction": "Drunk wake up. You must exchange your card with one from the center. Drunk close your eyes.",
+    "nightActionDetailed": "You have to click a card from the center. You then swap that card with your card. You do not get to look at your new role."
+  }
+]
