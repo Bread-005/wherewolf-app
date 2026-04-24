@@ -7,11 +7,11 @@ function showErrorPopup(message) {
     toast.className = "toast";
 
     toast.innerHTML = `
-        <div class="toast-content">${message}</div>
+        <div>${message}</div>
         <div class="toast-progress progress-animation"></div>
     `;
 
-    container.appendChild(toast);
+    container.append(toast);
 
     setTimeout(() => {
         toast.style.animation = "slideIn 0.5s ease reverse forwards";
@@ -38,7 +38,11 @@ function displayCards(lobby, socket) {
         votedBanner.className = "voted-banner";
         votedBanner.textContent = "Voted";
 
-        card.append(votedBanner);
+        const deathOverlay = document.createElement("div");
+        deathOverlay.id = "death-overlay" + player.id;
+        deathOverlay.className = "death-overlay";
+
+        card.append(votedBanner, deathOverlay);
         cardsContainer.append(card);
 
         setupVotingClickEvent(card, socket);
@@ -282,6 +286,7 @@ function clearEverything() {
         for (const player of players) {
             getCardElement(player.id).style.background = "#f0f0f0";
             document.getElementById("voted-banner" + player.id).style.display = "none";
+            document.getElementById("death-overlay" + player.id).style.display = "none";
         }
         document.getElementById("role-show-stage").style.display = "none";
     }
@@ -372,6 +377,16 @@ function showVoteResults() {
     document.getElementById("display-text").textContent = lobby.voteResultText;
     document.getElementById("display-text-2").textContent = "Team " + lobby.winningTeam + " wins";
 
+    for (const player of players) {
+        if (player.id !== myId) {
+            getCardElement(player.id).style.background = "#f0f0f0";
+        }
+        if (player.dies) {
+            document.getElementById("death-overlay" + player.id).style.display = "flex";
+            getCardElement(player.id).style.filter = "grayscale(80%)";
+        }
+    }
+
     setTimeout(() => {
         let showsEndingRoles = true;
         const toggleShowAllRoles = setInterval(() => {
@@ -383,12 +398,20 @@ function showVoteResults() {
                 for (const card of lobby.cards) {
                     viewCard(card, card.roleChain[0]);
                     document.getElementById("role-show-stage").textContent = "Shows Starting Roles";
+                    if (!card.isMiddleCard) {
+                        document.getElementById("death-overlay" + card.id).style.display = "none";
+                        getCardElement(card.id).style.filter = "";
+                    }
                     showsEndingRoles = false;
                 }
             } else {
                 for (const card of lobby.cards) {
                     viewCard(card);
                     document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
+                    if (card.dies) {
+                        document.getElementById("death-overlay" + card.id).style.display = "flex";
+                        getCardElement(card.id).style.filter = "grayscale(80%)";
+                    }
                     showsEndingRoles = true;
                 }
             }
