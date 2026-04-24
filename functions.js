@@ -290,7 +290,8 @@ function clearEverything() {
 function setCardClickEvent(id) {
     getCardElement(id).addEventListener("click", (event) => {
         const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
-        const card = lobby.cards.find(player => player.id === event.target.id.replace("card", ""));
+        const card = lobby.cards.find(card => card.id === event.target.id.replace("card", ""));
+        if (!card) return;
         if (lobby.state !== "night") return;
         if (document.getElementById("game").style.background !== "royalblue") return;
 
@@ -329,6 +330,7 @@ function setCardClickEvent(id) {
                 }
             }
             if (selectedCards.length === 0) {
+                document.getElementById("confirm-button").style.display = "none";
                 document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.role).nightAction;
                 if (player.role === "Werewolf") {
                     document.getElementById("night-action-text").textContent = "You are the only werewolf, therefore you may click one center card to view it.";
@@ -415,5 +417,54 @@ function setupVotingClickEvent(card, socket) {
     }
 }
 
+function animateCardSwap(card1, card2, text = "", duration = 2000) {
+    const card1Element = getCardElement(card1.id);
+    const card2Element = getCardElement(card2.id);
+
+    if (!card1Element || !card2Element) return Promise.resolve();
+
+    const rect1 = card1Element.getBoundingClientRect();
+    const rect2 = card2Element.getBoundingClientRect();
+
+    const diffX1 = rect2.left - rect1.left;
+    const diffY1 = rect2.top - rect1.top;
+
+    const diffX2 = rect1.left - rect2.left;
+    const diffY2 = rect1.top - rect2.top;
+
+    return new Promise((resolve) => {
+        card1Element.style.transition = `transform ${duration}ms ease-in-out`;
+        card2Element.style.transition = `transform ${duration}ms ease-in-out`;
+
+        // move cards
+        card1Element.style.transform = `translate(${diffX1}px, ${diffY1}px)`;
+        card2Element.style.transform = `translate(${diffX2}px, ${diffY2}px)`;
+
+        setTimeout(() => {
+            // reset styles after swap
+            card1Element.style.transition = "";
+            card2Element.style.transition = "";
+            card1Element.style.transform = "";
+            card2Element.style.transform = "";
+            card1Element.classList.remove("selected-card");
+            card2Element.classList.remove("selected-card");
+
+            document.getElementById("ok-button").style.display = "flex";
+            document.getElementById("night-action-text").textContent = text;
+
+            if (card1.role === "Robber") {
+                const yourRole = card1.role;
+                card1.role = card2.role;
+                card2.role = yourRole;
+                viewCard(card1);
+                document.getElementById("night-action-text").textContent = "You swapped your card with " + card2.name + "\n" +
+                    "Now you are " + card1.role;
+            }
+
+            resolve();
+        }, duration);
+    });
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
-    resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything};
+    resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap};

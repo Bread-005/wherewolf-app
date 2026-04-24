@@ -1,4 +1,4 @@
-import {getCardElement, viewCard} from "./functions.js";
+import {animateCardSwap, getCardElement, viewCard} from "./functions.js";
 import {allRoles, lobbies, myId} from "./index.js";
 
 function werewolfAction(card) {
@@ -68,7 +68,6 @@ function confirmButtonAction(socket) {
     const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
 
     lobby.cards.forEach(card => getCardElement(card.id).style.cursor = "default");
-    document.getElementById("ok-button").style.display = "flex";
     document.getElementById("do-nothing-button").style.display = "none";
     document.getElementById("confirm-button").style.display = "none";
 
@@ -77,24 +76,20 @@ function confirmButtonAction(socket) {
         if (selectedCards.length > 1) {
             viewCard(selectedCards[1]);
         }
+        document.getElementById("ok-button").style.display = "flex";
     }
     if (player.role === "Robber") {
         socket.emit("add-swap", {priority: 6, swap: [player, selectedCards[0]]});
-        const yourRole = player.role;
-        player.role = selectedCards[0].role;
-        selectedCards[0].role = yourRole;
-        viewCard(player);
-        document.getElementById("night-action-text").textContent = "You swapped your card with " + selectedCards[0].name + "\n" +
-            "Now you are " + player.role;
+        animateCardSwap(player, selectedCards[0]);
         return;
     }
     if (player.role === "Troublemaker") {
         socket.emit("add-swap", {priority: 7, swap: selectedCards});
-        document.getElementById("night-action-text").textContent = "You swapped " + selectedCards[0].name + " and " + selectedCards[1].name;
+        animateCardSwap(selectedCards[0], selectedCards[1], "You swapped " + selectedCards[0].name + " and " + selectedCards[1].name);
     }
     if (player.role === "Drunk") {
         socket.emit("add-swap", {priority: 8, swap: [player, selectedCards[0]]});
-        document.getElementById("night-action-text").textContent = "You swapped your card with " + selectedCards[0].name;
+        animateCardSwap(player, selectedCards[0], "You swapped your card with " + selectedCards[0].name);
     }
 }
 
