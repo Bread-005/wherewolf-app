@@ -140,6 +140,13 @@ body {
                 }
             }
         }
+
+        #discord-link {
+            position: absolute;
+            bottom: 5%;
+            right: 2.5%;
+            font-size: 1.2rem;
+        }
     }
 
     #game {
