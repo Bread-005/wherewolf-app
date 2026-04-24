@@ -1,4 +1,4 @@
-import {lobbies, myId} from "./index.js";
+import {allRoles, lobbies, myId} from "./index.js";
 
 function showErrorPopup(message) {
     const container = document.getElementById("toast-container");
@@ -95,7 +95,7 @@ function displayCards(lobby, socket) {
 
     // set night action events
     for (const card of lobby.cards) {
-        setCardClickEvent(card.id, socket);
+        setCardClickEvent(card.id);
     }
 }
 
@@ -205,6 +205,7 @@ function setupButtonEvents(socket) {
 
 function resetNightActionTexts() {
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    document.getElementById("confirm-button").style.display = "none";
     document.getElementById("ok-button").style.display = "none";
     document.getElementById("do-nothing-button").style.display = "none";
     document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
@@ -286,71 +287,52 @@ function clearEverything() {
     }
 }
 
-function setCardClickEvent(id, socket) {
+function setCardClickEvent(id) {
     getCardElement(id).addEventListener("click", (event) => {
         const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
         const card = lobby.cards.find(player => player.id === event.target.id.replace("card", ""));
         if (lobby.state !== "night") return;
         if (document.getElementById("game").style.background !== "royalblue") return;
 
-        const player = lobby.cards.find(c => c.id === myId);
+        const players = lobby.cards.filter(c => !c.isMiddleCard);
+        const player = players.find(p => p.id === myId);
         if (getCardElement(card.id).style.cursor === "pointer") {
-            if (player.role === "Werewolf" && lobby.cards.filter(c => !c.isMiddleCard && c.role === "Werewolf").length === 1 || player.role === "Seer") {
-                viewCard(card);
+            document.getElementById("confirm-button").style.display = "none";
+            if (getCardElement(card.id).classList.contains("selected-card")) {
+                getCardElement(card.id).classList.remove("selected-card");
+            } else {
+                getCardElement(card.id).classList.add("selected-card");
+            }
+            const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
 
-                if (player.role === "Werewolf" || player.role === "Seer" && !card.isMiddleCard) {
-                    lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
-                    document.getElementById("ok-button").style.display = "flex";
-                    document.getElementById("do-nothing-button").style.display = "none";
-                }
-                if (player.role === "Seer" && card.isMiddleCard) {
-                    lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).style.cursor = "default");
-                    document.getElementById("ok-button").style.display = "flex";
-                    document.getElementById("do-nothing-button").style.display = "none";
-                }
-                if (player.role === "Seer" && lobby.cards.filter(c => c.isMiddleCard && getCardElement(c.id).style.cursor === "default").length === 2) {
-                    lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
-                    document.getElementById("ok-button").style.display = "flex";
-                    document.getElementById("do-nothing-button").style.display = "none";
-                }
+            if (player.role === "Werewolf" && players.filter(p => p.role === "Werewolf").length === 1 ||
+                player.role === "Seer" && !card.isMiddleCard || player.role === "Robber" || player.role === "Drunk") {
+                lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
+                document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
+                document.getElementById("confirm-button").style.display = "flex";
             }
-        }
-        if (getCardElement(card.id).style.cursor === "grab") {
-            if (player.role === "Robber") {
-                socket.emit("add-swap", {priority: 6, swap: [player, card]});
-                const yourRole = player.role;
-                player.role = card.role;
-                card.role = yourRole;
-                document.getElementById("night-action-text").textContent = "You swapped your card with " + card.name + "\n" +
-                    "Now you are " + player.role;
-                lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
-                document.getElementById("ok-button").style.display = "flex";
-                document.getElementById("do-nothing-button").style.display = "none";
-                viewCard(player);
-                return;
-            }
-            if (player.role === "Troublemaker" && lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card")).length < 2) {
-                document.getElementById("ok-button").style.display = "none";
-                document.getElementById("do-nothing-button").style.display = "flex";
-                if (getCardElement(card.id).classList.contains("selected-card")) {
-                    getCardElement(card.id).classList.remove("selected-card");
-                } else {
-                    getCardElement(card.id).classList.add("selected-card");
-                }
-                const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
+            if (player.role === "Seer" && card.isMiddleCard) {
+                lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
+                if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more center card";
+                if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select one less center card";
                 if (selectedCards.length === 2) {
-                    socket.emit("add-swap", {priority: 7, swap: selectedCards});
-                    lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
-                    document.getElementById("ok-button").style.display = "flex";
-                    document.getElementById("do-nothing-button").style.display = "none";
-                    document.getElementById("night-action-text").textContent = "You swapped " + selectedCards[0].name + " and " + selectedCards[1].name;
+                    document.getElementById("night-action-text").textContent = "Would you like to view " + selectedCards[0].name + " and " + selectedCards[1].name + "?";
+                    document.getElementById("confirm-button").style.display = "flex";
                 }
             }
-            if (player.role === "Drunk") {
-                socket.emit("add-swap", {priority: 8, swap: [player, card]});
-                document.getElementById("night-action-text").textContent = "You swapped your card with " + card.name;
-                lobby.cards.forEach(c => getCardElement(c.id).style.cursor = "default");
-                document.getElementById("ok-button").style.display = "flex";
+            if (player.role === "Troublemaker") {
+                if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more player's card";
+                if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select one less player's card";
+                if (selectedCards.length === 2) {
+                    document.getElementById("night-action-text").textContent = "Would you like to swap " + selectedCards[0].name + " and " + selectedCards[1].name + "?";
+                    document.getElementById("confirm-button").style.display = "flex";
+                }
+            }
+            if (selectedCards.length === 0) {
+                document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.role).nightAction;
+                if (player.role === "Werewolf") {
+                    document.getElementById("night-action-text").textContent = "You are the only werewolf, therefore you may click one center card to view it.";
+                }
             }
         }
     });

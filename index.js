@@ -1,14 +1,16 @@
 import {showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
     resetNightActionTexts, showVoteResults, clearEverything, getCardElement
 } from "./functions.js";
-import {showRoleActions} from "./roleActions.js";
+import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
 let lobbies = [];
 let myId = "";
+let allRoles = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
     let lobby = {};
     const socket = io("https://wherewolf-server-bhut.onrender.com");
+    allRoles = await fetch("./roles.json").then(res => res.json());
     document.getElementById("lobby-page").style.display = "flex";
     document.getElementById("game").style.display = "none";
 
@@ -162,6 +164,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     socket.on("setup-night", () => {
         showRoleActions();
     });
+
+    document.getElementById("confirm-button").addEventListener("click", () => confirmButtonAction(socket));
 });
 
-export {lobbies, myId};
+export {lobbies, myId, allRoles};

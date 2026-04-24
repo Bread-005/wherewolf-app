@@ -1,5 +1,5 @@
 import {getCardElement, viewCard} from "./functions.js";
-import {lobbies, myId} from "./index.js";
+import {allRoles, lobbies, myId} from "./index.js";
 
 function werewolfAction(card) {
     if (!card.role || card.role !== "Werewolf") return;
@@ -25,17 +25,17 @@ function werewolfAction(card) {
     }
 }
 
-function showNightAction(roleName, player, message, mayChooseCenter, mayChoosePlayers, cursor) {
+function showNightAction(roleName, player, mayChooseCenter, mayChoosePlayers) {
     if (!player.role || player.role !== roleName) return;
 
-    document.getElementById("night-action-text").textContent = message;
+    document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === roleName).nightAction;
     document.getElementById("do-nothing-button").style.display = "flex";
 
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
 
     for (const card of lobby.cards) {
-        if (mayChooseCenter && card.isMiddleCard) getCardElement(card.id).style.cursor = cursor;
-        if (mayChoosePlayers && !card.isMiddleCard) getCardElement(card.id).style.cursor = cursor;
+        if (mayChooseCenter && card.isMiddleCard) getCardElement(card.id).style.cursor = "pointer";
+        if (mayChoosePlayers && !card.isMiddleCard) getCardElement(card.id).style.cursor = "pointer";
     }
     if (player.role === "Robber" || player.role === "Troublemaker") {
         getCardElement(player.id).style.cursor = "default";
@@ -56,14 +56,46 @@ function showRoleActions() {
         return;
     }
     werewolfAction(player);
-    showNightAction("Seer", player, "You may view any player´s card or two cards from the center. \n" +
-        "Click on the cards to look at them.", true, true, "pointer");
-    showNightAction("Robber", player, "You may swap your card, with another player's card and then look at your role.",
-        false, true, "grab");
-    showNightAction("Troublemaker", player, "You may swap two other players' cards",
-        false, true, "grab");
-    showNightAction("Drunk", player, "You must choose a center card to swap yours with",
-        true, false, "grab");
+    showNightAction("Seer", player, true, true);
+    showNightAction("Robber", player, false, true);
+    showNightAction("Troublemaker", player, false, true);
+    showNightAction("Drunk", player, true, false);
 }
 
-export {werewolfAction, showNightAction, showRoleActions};
+function confirmButtonAction(socket) {
+    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    const player = lobby.cards.find(player => player.id === myId);
+    const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
+
+    lobby.cards.forEach(card => getCardElement(card.id).style.cursor = "default");
+    document.getElementById("ok-button").style.display = "flex";
+    document.getElementById("do-nothing-button").style.display = "none";
+    document.getElementById("confirm-button").style.display = "none";
+
+    if (player.role === "Werewolf" || player.role === "Seer") {
+        viewCard(selectedCards[0]);
+        if (selectedCards.length > 1) {
+            viewCard(selectedCards[1]);
+        }
+    }
+    if (player.role === "Robber") {
+        socket.emit("add-swap", {priority: 6, swap: [player, selectedCards[0]]});
+        const yourRole = player.role;
+        player.role = selectedCards[0].role;
+        selectedCards[0].role = yourRole;
+        viewCard(player);
+        document.getElementById("night-action-text").textContent = "You swapped your card with " + selectedCards[0].name + "\n" +
+            "Now you are " + player.role;
+        return;
+    }
+    if (player.role === "Troublemaker") {
+        socket.emit("add-swap", {priority: 7, swap: selectedCards});
+        document.getElementById("night-action-text").textContent = "You swapped " + selectedCards[0].name + " and " + selectedCards[1].name;
+    }
+    if (player.role === "Drunk") {
+        socket.emit("add-swap", {priority: 8, swap: [player, selectedCards[0]]});
+        document.getElementById("night-action-text").textContent = "You swapped your card with " + selectedCards[0].name;
+    }
+}
+
+export {werewolfAction, showNightAction, showRoleActions, confirmButtonAction};
