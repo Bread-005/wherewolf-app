@@ -282,6 +282,10 @@ function clearEverything() {
         document.getElementById("display-text").textContent = "";
         document.getElementById("display-text-2").textContent = "";
         document.getElementById("night-action-text").textContent = "";
+        document.getElementById("continue-button").style.display = "none";
+        document.getElementById("do-nothing-button").style.display = "none";
+        document.getElementById("confirm-button").style.display = "none";
+        document.getElementById("ok-button").style.display = "none";
         const players = lobby.cards.filter(card => !card.isMiddleCard);
         for (const player of players) {
             getCardElement(player.id).style.background = "#f0f0f0";
@@ -441,6 +445,8 @@ function setupVotingClickEvent(card, socket) {
 }
 
 function animateCardSwap(card1, card2, text = "", duration = 2000) {
+    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    const you = lobby.cards.find(player => player.id === myId);
     const card1Element = getCardElement(card1.id);
     const card2Element = getCardElement(card2.id);
 
@@ -475,13 +481,13 @@ function animateCardSwap(card1, card2, text = "", duration = 2000) {
             document.getElementById("ok-button").style.display = "flex";
             document.getElementById("night-action-text").textContent = text;
 
-            if (card1.role === "Robber") {
-                const yourRole = card1.role;
-                card1.role = card2.role;
+            if (you.role === "Robber") {
+                const yourRole = you.role;
+                you.role = card2.role;
                 card2.role = yourRole;
-                viewCard(card1);
+                viewCard(you);
                 document.getElementById("night-action-text").textContent = "You swapped your card with " + card2.name + "\n" +
-                    "Now you are " + card1.role;
+                    "Now you are " + you.role;
             }
 
             resolve();
@@ -489,5 +495,34 @@ function animateCardSwap(card1, card2, text = "", duration = 2000) {
     });
 }
 
+function updateKickMenu(lobby, socket) {
+    const players = lobby.cards.filter(card => !card.isMiddleCard);
+
+    document.getElementById("host-admin-area").style.display = "none";
+    if (players.length > 1 && players[0].id === myId) {
+        document.getElementById("host-admin-area").style.display = "flex";
+        document.getElementById("kick-list").innerHTML = "";
+
+        for (const player of players) {
+            if (player.id === myId) continue;
+
+            const item = document.createElement("div");
+            item.className = "kick-item";
+            const span = document.createElement("span");
+            span.textContent = player.name;
+            const icon = document.createElement("i");
+            icon.className = "fa-solid fa-circle-xmark kick-symbol";
+            icon.addEventListener("click", () => {
+                if (confirm("Do you really want to kick this player?")) {
+                    socket.emit("kick-player", player.id);
+                }
+            });
+            item.append(span, icon);
+            document.getElementById("kick-list").append(item);
+        }
+    }
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
-    resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap};
+    resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
+    updateKickMenu};

@@ -1,5 +1,6 @@
-import {showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
-    resetNightActionTexts, showVoteResults, clearEverything, getCardElement
+import {
+    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
+    resetNightActionTexts, showVoteResults, clearEverything, getCardElement, updateKickMenu
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
@@ -38,6 +39,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
         socket.emit("create-lobby", userName.trim());
+    });
+
+    document.getElementById("open-kick-menu-button").addEventListener("click", () => {
+        document.getElementById("kick-menu-overlay").style.display = "flex";
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!document.getElementById("kick-menu-content").contains(event.target) &&
+            document.getElementById("open-kick-menu-button") !== event.target) {
+            document.getElementById("kick-menu-overlay").style.display = "none";
+        }
     });
 
     document.getElementById("select-roles-button").addEventListener("click", () => {
@@ -83,6 +95,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     showRoleActions();
                 }
             }
+            updateKickMenu(lobby, socket);
             if (lobby.state === "waiting") {
                 displayCards(lobby, socket);
                 clearEverything();
