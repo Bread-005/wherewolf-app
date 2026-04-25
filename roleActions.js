@@ -1,5 +1,5 @@
 import {animateCardSwap, getCardElement, viewCard} from "./functions.js";
-import {allRoles, lobbies, myId} from "./index.js";
+import {allRoles, lobbies, myId, socket} from "./index.js";
 
 function werewolfAction(card) {
     if (!card.role || card.role !== "Werewolf") return;
@@ -62,7 +62,7 @@ function showRoleActions() {
     showNightAction("Drunk", player, true, false);
 }
 
-function confirmButtonAction(socket) {
+function confirmButtonAction() {
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
     const player = lobby.cards.find(player => player.id === myId);
     const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));

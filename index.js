@@ -1,16 +1,16 @@
 import {
     showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
-    resetNightActionTexts, showVoteResults, clearEverything, getCardElement, updateKickMenu
+    resetNightActionTexts, showVoteResults, clearEverything, getCardElement, updateKickMenu, openRolesDisplay
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
 let lobbies = [];
 let myId = "";
 let allRoles = [];
+const socket = io("https://wherewolf-server-bhut.onrender.com");
 
 document.addEventListener("DOMContentLoaded", async () => {
     let lobby = {};
-    const socket = io("https://wherewolf-server-bhut.onrender.com");
     allRoles = await fetch("./roles.json").then(res => res.json());
     document.getElementById("lobby-page").style.display = "flex";
     document.getElementById("game").style.display = "none";
@@ -50,6 +50,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("open-kick-menu-button") !== event.target) {
             document.getElementById("kick-menu-overlay").style.display = "none";
         }
+        if (document.getElementById("show-roles-button") !== event.target) {
+            document.getElementById("roles-display").style.right = "-350px";
+        }
     });
 
     document.getElementById("select-roles-button").addEventListener("click", () => {
@@ -63,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         clearEverything();
     });
 
-    setupButtonEvents(socket);
+    setupButtonEvents();
 
     document.getElementById("restart-game-button").addEventListener("click", () => {
         socket.emit("reset-lobby");
@@ -75,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!lobby) {
             document.getElementById("lobby-page").style.display = "flex";
             document.getElementById("game").style.display = "none";
-            createLobbyDisplay(lobbies, socket);
+            createLobbyDisplay(lobbies);
         }
         if (lobby) {
             const players = lobby.cards.filter(card => !card.isMiddleCard);
@@ -91,21 +94,26 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("game").style.background = "lightblue";
             for (const player of players) {
                 if (!document.getElementById("card" + player.id)) {
-                    displayCards(lobby, socket);
+                    displayCards(lobby);
                     showRoleActions();
                 }
             }
-            updateKickMenu(lobby, socket);
+            updateKickMenu(lobby);
             if (lobby.state === "waiting") {
-                displayCards(lobby, socket);
+                displayCards(lobby);
                 clearEverything();
             }
             if (lobby.state === "select-roles") {
                 document.getElementById("select-roles-screen").style.display = "grid";
-                clickSelectCard(lobby, socket);
+                clickSelectCard(lobby);
             }
             if (lobby.state === "look-at-role") {
-                document.getElementById("display-text").textContent = "Look at your role, by clicking your card";
+                document.getElementById("show-roles-button").style.display = "flex";
+                if (!you.hasSeenRole) {
+                    document.getElementById("display-text").textContent = "Look at your role, by clicking your card";
+                } else {
+                    document.getElementById("display-text").textContent = "Wait for the other players to look at their roles";
+                }
                 getCardElement(myId).style.cursor = you.hasSeenRole ? "default" : "pointer";
                 getCardElement(myId).addEventListener("click", () => {
                     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
@@ -178,7 +186,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         showRoleActions();
     });
 
-    document.getElementById("confirm-button").addEventListener("click", () => confirmButtonAction(socket));
+    document.getElementById("confirm-button").addEventListener("click", () => confirmButtonAction());
+
+    document.getElementById("show-roles-button").addEventListener("click", () => {
+        const lobby = lobbies.find(lobby => lobby.cards.find(card => card.id === myId));
+        if (lobby) {
+            if (document.getElementById("roles-display").style.right === "0px") {
+                document.getElementById("roles-display").style.right = "-350px";
+            } else {
+                openRolesDisplay(lobby);
+            }
+        }
+    });
 });
 
-export {lobbies, myId, allRoles};
+export {lobbies, myId, allRoles, socket};

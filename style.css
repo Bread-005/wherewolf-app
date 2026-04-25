@@ -152,7 +152,7 @@ body {
     #game {
         display: none;
         flex-direction: column;
-        height: 85vh;
+        height: 80vh;
         width: 90vw;
         position: relative;
         border: 2px dashed rgba(0,0,0,0.1);
@@ -345,7 +345,7 @@ body {
             transition: all 0.3s ease;
             text-align: center;
             position: absolute;
-            bottom: -7.5%;
+            bottom: -8%;
 
             &:hover {
                 transform: translateY(-2px);
@@ -361,6 +361,83 @@ body {
 
         #restart-game-button {
             left: 82.5% !important;
+        }
+
+        #show-roles-button {
+            display: none;
+            position: absolute;
+            bottom: -12.5%;
+            right: -2.5%;
+            transform: translateX(-50%);
+            padding: 10px 15px;
+            border-radius: 5px;
+            background: #34495e;
+            color: white;
+
+            &:hover {
+                scale: 1.1;
+            }
+        }
+
+        #roles-display {
+            position: fixed;
+            right: -350px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 320px;
+            max-height: 80vh;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid #f1c40f;
+            border-radius: 15px 0 0 15px;
+            padding: 15px;
+            transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 500;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+
+            #roles-display-title {
+                grid-column: span 3;
+                color: white;
+                font-size: 1rem;
+                text-align: center;
+                margin: 2px;
+            }
+
+            .mini-role-card {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 5px;
+                border-radius: 8px;
+                border: 1px solid #444;
+
+                .mini-role-name {
+                    font-size: 0.65rem;
+                    color: #ecf0f1;
+                    text-align: center;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    width: 100%;
+                }
+
+                .mini-role-img {
+                    width: 100%;
+                    aspect-ratio: 1 / 1;
+                    object-fit: cover;
+                    border-radius: 4px;
+                    margin-bottom: 4px;
+                }
+
+                .mini-role-ability {
+                    font-size: 0.65rem;
+                    color: white;
+                    text-align: center;
+                }
+            }
         }
 
         #select-roles-screen {

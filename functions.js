@@ -1,4 +1,4 @@
-import {allRoles, lobbies, myId} from "./index.js";
+import {allRoles, lobbies, myId, socket} from "./index.js";
 
 function showErrorPopup(message) {
     const container = document.getElementById("toast-container");
@@ -19,7 +19,7 @@ function showErrorPopup(message) {
     }, 5000);
 }
 
-function displayCards(lobby, socket) {
+function displayCards(lobby) {
     const players = lobby.cards.filter(card => !card.isMiddleCard);
     const cardsContainer = document.getElementById("cards");
     cardsContainer.innerHTML = "";
@@ -45,7 +45,7 @@ function displayCards(lobby, socket) {
         card.append(votedBanner, deathOverlay);
         cardsContainer.append(card);
 
-        setupVotingClickEvent(card, socket);
+        setupVotingClickEvent(card);
     }
     const youIndex = players.findIndex(player => player.id === myId);
     const laterOthers = [];
@@ -103,7 +103,7 @@ function displayCards(lobby, socket) {
     }
 }
 
-function clickSelectCard(lobby, socket) {
+function clickSelectCard(lobby) {
     const selectRolesScreen = document.getElementById("select-roles-screen");
     selectRolesScreen.innerHTML = "";
     selectRolesScreen.style.display = "grid";
@@ -139,11 +139,9 @@ function clickSelectCard(lobby, socket) {
         name.textContent = role.name;
 
         const img = document.createElement("img");
-        img.className = "card-img";
         img.src = "./images/" + role.name.toLowerCase() + ".png";
         img.alt = role.name;
 
-        // 3. Role text at the bottom
         const ability = document.createElement("div");
         ability.className = "card-ability";
         ability.textContent = role.text;
@@ -152,19 +150,19 @@ function clickSelectCard(lobby, socket) {
 
         selectRolesScreen.append(container);
 
-        if (lobby.selectedRoles.length === lobby.cards.length) {
-            createStartButton(lobby, socket);
-        }
-
         if (lobby.cards[3].id === myId) {
             container.addEventListener("click", () => {
                 socket.emit("request-update-selected-roles", {lobbyId: lobby.id, role: role});
             }, {once: true});
         }
     }
+
+    if (lobby.selectedRoles.length === lobby.cards.length) {
+        createStartButton(lobby);
+    }
 }
 
-function createStartButton(lobby, socket) {
+function createStartButton(lobby) {
     if (lobby.cards[3].id === myId) {
         const startButton = document.createElement("button");
         startButton.textContent = "Start Game";
@@ -189,7 +187,7 @@ function viewCard(card, as = card.role) {
     getCardElement(card.id).style.cursor = "default";
 }
 
-function setupButtonEvents(socket) {
+function setupButtonEvents() {
     document.getElementById("ok-button").addEventListener("click", () => {
         socket.emit("has-done-night-action");
         resetNightActionTexts();
@@ -202,6 +200,7 @@ function setupButtonEvents(socket) {
     document.getElementById("continue-button").addEventListener("click", () => {
         document.getElementById("continue-button").style.display = "none";
         getCardElement(myId).querySelectorAll("img").forEach(img => img.remove());
+        document.getElementById("display-text").textContent = "Wait for the other players to look at their roles";
 
         socket.emit("check-has-seen-role");
     });
@@ -225,7 +224,7 @@ function getCardElement(id) {
     return document.getElementById("card" + id);
 }
 
-function createLobbyDisplay(lobbies, socket) {
+function createLobbyDisplay(lobbies) {
     const lobbyDiv = document.getElementById("lobby");
     lobbyDiv.innerHTML = `<div>Name</div><div>Players</div><div>State</div><div>Action</div>`;
 
@@ -282,6 +281,7 @@ function clearEverything() {
         document.getElementById("display-text").textContent = "";
         document.getElementById("display-text-2").textContent = "";
         document.getElementById("night-action-text").textContent = "";
+        document.getElementById("show-roles-button").style.display = "none";
         document.getElementById("continue-button").style.display = "none";
         document.getElementById("do-nothing-button").style.display = "none";
         document.getElementById("confirm-button").style.display = "none";
@@ -423,7 +423,7 @@ function showVoteResults() {
     }, 10000);
 }
 
-function setupVotingClickEvent(card, socket) {
+function setupVotingClickEvent(card) {
     if (card.id !== "card" + myId) {
         card.addEventListener("click", () => {
             const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
@@ -495,7 +495,7 @@ function animateCardSwap(card1, card2, text = "", duration = 2000) {
     });
 }
 
-function updateKickMenu(lobby, socket) {
+function updateKickMenu(lobby) {
     const players = lobby.cards.filter(card => !card.isMiddleCard);
 
     document.getElementById("host-admin-area").style.display = "none";
@@ -523,6 +523,51 @@ function updateKickMenu(lobby, socket) {
     }
 }
 
+function openRolesDisplay(lobby) {
+    const display = document.getElementById("roles-display");
+    display.innerHTML = "";
+    display.style.right = "0px";
+
+    const title = document.createElement("p");
+    title.id = "roles-display-title";
+    title.textContent = "Selected Roles in Wake Up Order";
+
+    display.append(title);
+
+    const roles = [];
+
+    for (const role of lobby.selectedRoles) {
+        roles.push({
+            name: role.name,
+            text: role.text,
+            nightOrder: allRoles.find(role1 => role1.name === role.name)?.nightOrder || 100
+        });
+    }
+
+    roles.sort((a, b) => a.nightOrder - b.nightOrder);
+
+    for (const role of roles) {
+        const container = document.createElement("div");
+        container.className = "mini-role-card";
+
+        const name = document.createElement("div");
+        name.className = "mini-role-name";
+        name.textContent = role.name;
+
+        const img = document.createElement("img");
+        img.src = "./images/" + role.name.toLowerCase() + ".png";
+        img.alt = role.name;
+        img.className = "mini-role-img";
+
+        const ability = document.createElement("div");
+        ability.className = "mini-role-ability";
+        ability.textContent = role.text;
+
+        container.append(name, img, ability);
+        display.append(container);
+    }
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
-    updateKickMenu};
+    updateKickMenu, openRolesDisplay};
