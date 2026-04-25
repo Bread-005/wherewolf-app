@@ -71,6 +71,8 @@ function confirmButtonAction() {
     document.getElementById("do-nothing-button").style.display = "none";
     document.getElementById("confirm-button").style.display = "none";
 
+    socket.emit("set-selected-cards", selectedCards.map(card => card.name));
+
     if (player.role === "Werewolf" || player.role === "Seer") {
         viewCard(selectedCards[0]);
         if (selectedCards.length > 1) {

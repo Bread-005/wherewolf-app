@@ -78,14 +78,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!lobby) {
             document.getElementById("lobby-page").style.display = "flex";
             document.getElementById("game").style.display = "none";
-            createLobbyDisplay(lobbies);
+            createLobbyDisplay();
         }
         if (lobby) {
             const players = lobby.cards.filter(card => !card.isMiddleCard);
             const you = players.find(p => p.id === myId);
             document.getElementById("game").style.display = "flex";
-            document.getElementById("cards").style.display = "flex";
             document.getElementById("lobby-page").style.display = "none";
+            document.getElementById("cards").style.display = "flex";
             document.getElementById("select-roles-button").style.display = "none";
             document.getElementById("select-roles-screen").style.display = "none";
             document.getElementById("restart-game-button").style.display = "none";

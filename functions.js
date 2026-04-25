@@ -130,6 +130,38 @@ function clickSelectCard(lobby) {
         selectRolesScreen.append(closeButton);
     }
 
+    // discuss time
+    const div = document.createElement("div");
+    div.className = "discuss-time";
+
+    const timerDisplay = document.createElement("label");
+    timerDisplay.textContent = "Discussion Time: " + (lobby.discussTime || (lobby.cards.length - 3) * 60) + " secs";
+    timerDisplay.htmlFor = "discuss-time-input";
+
+    const discussTimeInput = document.createElement("input");
+    discussTimeInput.id = "discuss-time-input";
+    discussTimeInput.value = lobby.discussTime || (lobby.cards.length - 3) * 60;
+    discussTimeInput.type = "number";
+
+    const discussTimeButton = document.createElement("button");
+    discussTimeButton.textContent = "Save";
+
+    discussTimeButton.addEventListener("click", () => {
+        let discussTime = Number(discussTimeInput.value) || 0;
+        if (discussTime > 900) discussTime = 300;
+        socket.emit("change-discuss-time", discussTime);
+    });
+
+    const div2 = document.createElement("div");
+    div2.append(discussTimeInput, discussTimeButton);
+
+    div.append(timerDisplay);
+    if (lobby.cards[3].id === myId) {
+        div.append(div2);
+    }
+
+    selectRolesScreen.append(div);
+
     for (const role of roles) {
         const container = document.createElement("div");
         container.className = "card";
@@ -224,7 +256,7 @@ function getCardElement(id) {
     return document.getElementById("card" + id);
 }
 
-function createLobbyDisplay(lobbies) {
+function createLobbyDisplay() {
     const lobbyDiv = document.getElementById("lobby");
     lobbyDiv.innerHTML = `<div>Name</div><div>Players</div><div>State</div><div>Action</div>`;
 
