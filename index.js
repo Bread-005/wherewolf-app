@@ -1,6 +1,6 @@
-import {
-    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
-    resetNightActionTexts, showVoteResults, clearEverything, getCardElement, updateKickMenu, openRolesDisplay
+import {showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
+    resetNightActionTexts, showVoteResults, clearEverything, getCardElement, updateKickMenu, openRolesDisplay,
+    setupTokens
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
@@ -134,8 +134,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("game").style.background = "lightblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
                 document.getElementById("night-action-text").textContent = "";
+                if (document.getElementById("tokens-container").children.length === 0) {
+                    setupTokens(lobby);
+                }
             }
             if (lobby.state === "voting") {
+                document.querySelectorAll(".role-token").forEach(token => token.remove());
                 document.getElementById("game").style.background = "orange";
                 if (!you.vote) {
                     document.getElementById("display-text").textContent = "Click on another player to vote for them.";

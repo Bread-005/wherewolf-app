@@ -600,6 +600,55 @@ function openRolesDisplay(lobby) {
     }
 }
 
+function setupTokens(lobby) {
+    const container = document.getElementById("tokens-container");
+    container.innerHTML = "";
+
+    const centerX = window.innerWidth / 2;
+    const totalWidth = lobby.selectedRoles.length * 65;
+    const startX = centerX - (totalWidth / 2);
+
+    lobby.selectedRoles.forEach((role, index) => {
+        const token = document.createElement("div");
+        token.className = "role-token";
+        token.style.backgroundImage = `url('./images/${role.name.toLowerCase()}.png')`;
+
+        const role1 = allRoles.find(role1 => role1.name === role.name);
+
+        if (role1.team === "Werewolf") {
+            token.style.border = "2px solid red";
+        }
+
+        // start positions
+        token.style.left = `${startX + (index * 50)}px`;
+        token.style.top = "20%";
+
+        // Drag & Drop logic
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        token.addEventListener("mousedown", (event) => {
+            isDragging = true;
+            token.style.zIndex = "1500";
+            offsetX = event.clientX - token.offsetLeft;
+            offsetY = event.clientY - token.offsetTop;
+        });
+
+        document.addEventListener("mousemove", (event) => {
+            if (!isDragging) return;
+            token.style.left = `${event.clientX - offsetX}px`;
+            token.style.top = `${event.clientY - offsetY}px`;
+        });
+
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+            token.style.zIndex = "1400";
+        });
+
+        container.appendChild(token);
+    });
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
-    updateKickMenu, openRolesDisplay};
+    updateKickMenu, openRolesDisplay, setupTokens};

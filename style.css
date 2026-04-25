@@ -608,6 +608,33 @@ body {
             }
         }
 
+        #tokens-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            min-height: 60px;
+            width: 100%;
+
+            .role-token {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                border: 2px solid #f1c40f;
+                cursor: grab;
+                position: absolute;
+                z-index: 1400;
+                background-size: cover;
+                background-position: center;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+                touch-action: none;
+
+                &:active {
+                    cursor: grabbing;
+                }
+            }
+        }
+
         #vote-result-display {
             position: absolute;
             display: none;
