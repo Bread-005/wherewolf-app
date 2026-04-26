@@ -3,6 +3,7 @@ import {allRoles, lobbies, myId, socket} from "./index.js";
 
 function werewolfAction(card) {
     if (!card.role || card.role !== "Werewolf") return;
+    if (card.roleChain.length > 0 && card.roleChain[0] !== "Werewolf") return;
 
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
     const players = lobby.cards.filter(card1 => !card1.isMiddleCard);
@@ -27,6 +28,7 @@ function werewolfAction(card) {
 
 function showNightAction(roleName, player, mayChooseCenter, mayChoosePlayers) {
     if (!player.role || player.role !== roleName) return;
+    if (player.roleChain.length > 0 && player.roleChain[0] !== roleName) return;
 
     document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === roleName).nightAction;
     document.getElementById("do-nothing-button").style.display = "flex";
@@ -40,7 +42,7 @@ function showNightAction(roleName, player, mayChooseCenter, mayChoosePlayers) {
     if (player.role === "Robber" || player.role === "Troublemaker") {
         getCardElement(player.id).style.cursor = "default";
     }
-    if (player.role === "Drunk") {
+    if (player.role === "Drunk" || player.role === "Insomniac") {
         document.getElementById("do-nothing-button").style.display = "none";
     }
 }
@@ -60,6 +62,9 @@ function showRoleActions() {
     showNightAction("Robber", player, false, true);
     showNightAction("Troublemaker", player, false, true);
     showNightAction("Drunk", player, true, false);
+    if (player.role === "Insomniac") {
+        document.getElementById("night-action-text").textContent = "wait until everyone else has done their night actions ...";
+    }
 }
 
 function confirmButtonAction() {

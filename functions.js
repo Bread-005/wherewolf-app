@@ -115,6 +115,7 @@ function clickSelectCard(lobby) {
         {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
         {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
         {id: 9, name: "Drunk", text: "Swap your card with center"},
+        {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"}
@@ -325,6 +326,7 @@ function clearEverything() {
             document.getElementById("death-overlay" + player.id).style.display = "none";
         }
         document.getElementById("role-show-stage").style.display = "none";
+        document.querySelectorAll(".role-token").forEach(token => token.remove());
     }
 }
 

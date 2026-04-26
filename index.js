@@ -127,6 +127,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lobby.state === "night") {
                 document.getElementById("game").style.background = "royalblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
+
+                if (you.roleChain[0] === "Insomniac" && players.filter(p => p.hasDoneNightAction).length + 1 === players.length &&
+                    !getCardElement(myId).querySelector("img") && you.mayLookAtTheirCard) {
+                    document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + you.role;
+                    viewCard(you);
+                    document.getElementById("ok-button").style.display = "flex";
+                }
+
                 if (you.hasDoneNightAction) {
                     document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
                 }

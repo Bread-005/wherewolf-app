@@ -364,13 +364,13 @@ body {
         }
 
         #skip-to-vote-button {
-            left: 60%;
+            left: 55%;
         }
 
         #show-roles-button {
             display: none;
             position: absolute;
-            bottom: -12.5%;
+            bottom: -15%;
             right: -2.5%;
             transform: translateX(-50%);
             padding: 10px 15px;
