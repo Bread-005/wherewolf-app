@@ -207,6 +207,9 @@ function createStartButton(lobby) {
         document.getElementById("select-roles-screen").append(startButton);
 
         startButton.addEventListener("click", () => {
+            sendConsoleMessage("");
+            sendConsoleMessage("New Round has started");
+            sendConsoleMessage("");
             socket.emit("set-roles-for-all-cards", lobby.id);
         });
     }
@@ -686,6 +689,37 @@ function setupTokens(lobby) {
     });
 }
 
+function sendMessage() {
+    const chatInput = document.getElementById("chat-input");
+    const message = chatInput.value.trim();
+    if (message) {
+        socket.emit("send-chat-message", message);
+        chatInput.value = "";
+    }
+}
+
+function sendConsoleMessage(message) {
+    socket.emit("send-console-message", message);
+}
+
+function loadMessages(lobby) {
+    if (document.getElementById("chat-messages").children.length < lobby.messages.length) {
+        document.getElementById("chat-messages").innerHTML = "";
+        for (const message of lobby.messages) {
+            receiveMessage(message);
+        }
+    }
+}
+
+function receiveMessage(data) {
+    const messagesBox = document.getElementById("chat-messages");
+    const div = document.createElement("div");
+    div.className = "chat-msg";
+    div.innerHTML = `<b>${data.sender}:</b> ${data.message}`;
+    messagesBox.appendChild(div);
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
-    updateKickMenu, openRolesDisplay, setupTokens};
+    updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage};

@@ -1,6 +1,7 @@
-import {showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
+import {
+    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
     resetNightActionTexts, showVoteResults, clearEverything, getCardElement, updateKickMenu, openRolesDisplay,
-    setupTokens
+    setupTokens, sendMessage, receiveMessage, loadMessages, sendConsoleMessage
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
@@ -93,6 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("vote-result-display").style.display = "none";
             document.getElementById("role-show-stage").style.display = "none";
             document.getElementById("game").style.background = "lightblue";
+            document.getElementById("chat-container").style.display = "flex";
             for (const player of players) {
                 if (!document.getElementById("card" + player.id)) {
                     displayCards(lobby);
@@ -124,6 +126,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         document.getElementById("continue-button").style.display = "flex";
                     }
                 }, {once: true});
+                document.getElementById("chat-container").style.display = "none";
             }
             if (lobby.state === "night") {
                 document.getElementById("game").style.background = "royalblue";
@@ -139,6 +142,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (you.hasDoneNightAction) {
                     document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
                 }
+                document.getElementById("chat-container").style.display = "none";
             }
             if (lobby.state === "day") {
                 document.getElementById("game").style.background = "lightblue";
@@ -172,6 +176,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         document.getElementById("voted-banner" + player.id).style.display = "flex";
                     }
                 }
+                document.getElementById("chat-container").style.display = "none";
             }
             if (lobby.state === "voting-results") {
                 document.getElementById("vote-result-display").style.display = "grid";
@@ -184,6 +189,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     document.getElementById("voted-banner" + player.id).style.display = "none";
                 }
             }
+            loadMessages(lobby);
         }
     });
 
@@ -218,7 +224,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("skip-to-vote-button").addEventListener("click", () => {
         document.getElementById("skip-to-vote-button").style.display = "none";
+        sendConsoleMessage(lobby.cards.find(p => p.id === myId).name + " has skipped to vote " + (lobby.cards.filter(p => p.hasSkippedToVote).length + 1) + "/" + (lobby.cards.length - 3));
         socket.emit("skip-to-vote");
+    });
+
+    document.getElementById("send-chat-button").addEventListener("click", sendMessage);
+    document.getElementById("chat-input").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
+
+    socket.on("receive-chat-message", (data) => {
+        receiveMessage(data);
     });
 });
 
