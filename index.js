@@ -89,6 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("select-roles-button").style.display = "none";
             document.getElementById("select-roles-screen").style.display = "none";
             document.getElementById("restart-game-button").style.display = "none";
+            document.getElementById("skip-to-vote-button").style.display = "none";
             document.getElementById("vote-result-display").style.display = "none";
             document.getElementById("role-show-stage").style.display = "none";
             document.getElementById("game").style.background = "lightblue";
@@ -136,6 +137,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("night-action-text").textContent = "";
                 if (document.getElementById("tokens-container").children.length === 0) {
                     setupTokens(lobby);
+                }
+                if (!you.hasSkippedToVote) {
+                    document.getElementById("skip-to-vote-button").style.display = "flex";
                 }
             }
             if (lobby.state === "voting") {
@@ -201,6 +205,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 openRolesDisplay(lobby);
             }
         }
+    });
+
+    document.getElementById("skip-to-vote-button").addEventListener("click", () => {
+        document.getElementById("skip-to-vote-button").style.display = "none";
+        socket.emit("skip-to-vote");
     });
 });
 
