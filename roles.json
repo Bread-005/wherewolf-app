@@ -44,5 +44,12 @@
     "nightOrder": 9,
     "nightAction": "Look at your card.",
     "nightActionDetailed": "When all players that do their night action before you, have done their night action, you look at your card. Your card gets automatically shown to you. You therefore know what your end role is."
+  },
+  {
+    "name": "Mason",
+    "team": "Villager",
+    "nightOrder": 4,
+    "nightAction": "Wake up and look for the other Mason.",
+    "nightActionDetailed": "When you wake up, all players' cards who are Masons will be shown to you. If only you wake as a Mason, then the other Mason is in the middle."
   }
 ]

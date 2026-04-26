@@ -113,6 +113,8 @@ function clickSelectCard(lobby) {
     const roles = [
         {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
+        {id: 11, name: "Mason", text: "See the other Mason"},
+        {id: 12, name: "Mason", text: "See the other Mason"},
         {id: 6, name: "Seer", text: "Either view 1 player´s card or 2 center cards"},
         {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
         {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
@@ -351,13 +353,13 @@ function setCardClickEvent(id) {
             }
             const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
 
-            if (player.role === "Werewolf" && players.filter(p => p.role === "Werewolf").length === 1 ||
-                player.role === "Seer" && !card.isMiddleCard || player.role === "Robber" || player.role === "Drunk") {
+            if (player.roleChain[0] === "Werewolf" && players.filter(p => p.roleChain[0] === "Werewolf").length === 1 ||
+                player.roleChain[0] === "Seer" && !card.isMiddleCard || player.roleChain[0] === "Robber" || player.roleChain[0] === "Drunk") {
                 lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
                 document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
                 document.getElementById("confirm-button").style.display = "flex";
             }
-            if (player.role === "Seer" && card.isMiddleCard) {
+            if (player.roleChain[0] === "Seer" && card.isMiddleCard) {
                 lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
                 if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more center card";
                 if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select one less center card";
@@ -366,7 +368,7 @@ function setCardClickEvent(id) {
                     document.getElementById("confirm-button").style.display = "flex";
                 }
             }
-            if (player.role === "Troublemaker") {
+            if (player.roleChain[0] === "Troublemaker") {
                 if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more player's card";
                 if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select one less player's card";
                 if (selectedCards.length === 2) {
@@ -376,8 +378,8 @@ function setCardClickEvent(id) {
             }
             if (selectedCards.length === 0) {
                 document.getElementById("confirm-button").style.display = "none";
-                document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.role).nightAction;
-                if (player.role === "Werewolf") {
+                document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.roleChain[0]).nightAction;
+                if (player.roleChain[0] === "Werewolf") {
                     document.getElementById("night-action-text").textContent = "You are the only werewolf, therefore you may click one center card to view it.";
                 }
             }
@@ -517,13 +519,10 @@ function animateCardSwap(card1, card2, text = "", duration = 2000) {
             document.getElementById("ok-button").style.display = "flex";
             document.getElementById("night-action-text").textContent = text;
 
-            if (you.role === "Robber") {
-                const yourRole = you.role;
-                you.role = card2.role;
-                card2.role = yourRole;
-                viewCard(you);
+            if (you.roleChain[0] === "Robber") {
+                viewCard(you, card2.role);
                 document.getElementById("night-action-text").textContent = "You swapped your card with " + card2.name + "\n" +
-                    "Now you are " + you.role;
+                    "Now you are " + card2.role;
             }
 
             resolve();
@@ -535,7 +534,7 @@ function updateKickMenu(lobby) {
     const players = lobby.cards.filter(card => !card.isMiddleCard);
 
     document.getElementById("host-admin-area").style.display = "none";
-    if (players.length > 1 && players[0].id === myId) {
+    if (players.length > 1 && players[0].id === myId && lobby.state !== "voting-results") {
         document.getElementById("host-admin-area").style.display = "flex";
         document.getElementById("kick-list").innerHTML = "";
 
