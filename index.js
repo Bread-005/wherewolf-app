@@ -106,6 +106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             if (lobby.state === "select-roles") {
                 document.getElementById("select-roles-screen").style.display = "grid";
+                document.getElementById("show-roles-button").style.display = "none";
                 clickSelectCard(lobby);
             }
             if (lobby.state === "look-at-role") {
@@ -113,7 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (!you.hasSeenRole) {
                     document.getElementById("display-text").textContent = "Look at your role, by clicking your card";
                 } else {
-                    document.getElementById("display-text").textContent = "Wait for the other players to look at their roles";
+                    document.getElementById("display-text").textContent = "Wait for the other players to look at their cards";
                 }
                 getCardElement(myId).style.cursor = you.hasSeenRole ? "default" : "pointer";
                 getCardElement(myId).addEventListener("click", () => {

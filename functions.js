@@ -1,5 +1,7 @@
 import {allRoles, lobbies, myId, socket} from "./index.js";
 
+let hasShownTokenHint = false;
+
 function showErrorPopup(message) {
     const container = document.getElementById("toast-container");
 
@@ -638,13 +640,47 @@ function setupTokens(lobby) {
 
         document.addEventListener("mousemove", (event) => {
             if (!isDragging) return;
-            token.style.left = `${event.clientX - offsetX}px`;
-            token.style.top = `${event.clientY - offsetY}px`;
+
+            const rect = document.getElementById("game").getBoundingClientRect();
+
+            const paddingX = rect.width * 0.05;
+            const paddingY = rect.height * 0.02;
+
+            let newX = event.clientX - offsetX;
+            let newY = event.clientY - offsetY;
+
+            const minX = rect.left - paddingX;
+            const maxX = rect.right - token.offsetWidth - paddingX;
+            const minY = rect.top - paddingY;
+            const maxY = rect.bottom - token.offsetHeight - paddingY;
+
+            newX = Math.max(minX, Math.min(newX, maxX));
+            newY = Math.max(minY, Math.min(newY, maxY));
+
+            token.style.left = `${newX}px`;
+            token.style.top = `${newY}px`;
         });
 
         document.addEventListener("mouseup", () => {
             isDragging = false;
             token.style.zIndex = "1400";
+        });
+
+        const hint = document.createElement("div");
+        hint.className = "token-hint-popup";
+        hint.textContent = "If you move a token only you see that";
+
+        token.addEventListener("mouseenter", () => {
+            if (!hasShownTokenHint) {
+                hint.style.top = "-15px";
+
+                token.append(hint);
+                hasShownTokenHint = true;
+            }
+        });
+
+        token.addEventListener("mouseleave", () => {
+            hint.remove();
         });
 
         container.appendChild(token);
