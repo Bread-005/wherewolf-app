@@ -17,12 +17,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     function displayWikiRole(role) {
         if (role.team === "Villager") {
             document.getElementById("wiki-role-container").style.background = "green";
-            document.getElementById("wiki-role-team").className = "team-villager";
             document.getElementById("wiki-role-container").style.borderTop = "8px solid #27ae60";
-        } else {
+        } else if (role.team === "Werewolf") {
             document.getElementById("wiki-role-container").style.background = "purple";
-            document.getElementById("wiki-role-team").className = "team-wolf";
             document.getElementById("wiki-role-container").style.borderTop = "8px solid #c0392b";
+        } else if (role.team === "Tanner") {
+            document.getElementById("wiki-role-container").style.background = "orange";
+            document.getElementById("wiki-role-container").style.borderTop = "8px solid yellow";
         }
         document.getElementById("wiki-role-name").textContent = "Name: " + role.name;
         document.getElementById("wiki-role-team").textContent = "Team: " + role.team;

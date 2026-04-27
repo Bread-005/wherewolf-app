@@ -64,5 +64,13 @@
     "team": "Tanner",
     "nightOrder": 103,
     "description": "During voting when the Tanner dies, the Tanner wins."
+  },
+  {
+    "name": "Minion",
+    "team": "Werewolf",
+    "nightOrder": 3,
+    "nightAction": "Werewolves stick out your thumbs so the Minion can see who you are.",
+    "nightActionDetailed": "When you wake up, you see who the werewolves are. They however do not know who you are.",
+    "votingRules": "If you die during voting and there are werewolves, the werewolf team wins. If you die and there are no werewolves, the Villager team wins."
   }
 ]

@@ -113,6 +113,7 @@ function clickSelectCard(lobby) {
     const roles = [
         {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
+        {id: 15, name: "Minion", text: "Sees other werewolves, but they not him"},
         {id: 11, name: "Mason", text: "See the other Mason"},
         {id: 12, name: "Mason", text: "See the other Mason"},
         {id: 6, name: "Seer", text: "Either view 1 player´s card or 2 center cards"},
@@ -399,19 +400,11 @@ function showVoteResults() {
     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
     const players = lobby.cards.filter(card => !card.isMiddleCard);
 
-    for (const card of lobby.cards) {
-        viewCard(card);
-    }
-
     showVoteResultBoard(lobby, players);
 
     for (const player of players) {
         if (player.id !== myId) {
             getCardElement(player.id).style.background = "#f0f0f0";
-        }
-        if (player.dies) {
-            document.getElementById("death-overlay" + player.id).style.display = "flex";
-            getCardElement(player.id).style.filter = "grayscale(80%)";
         }
     }
 }
@@ -566,7 +559,19 @@ function setupTokens(lobby) {
     const totalWidth = lobby.selectedRoles.length * 65;
     const startX = centerX - (totalWidth / 2);
 
-    lobby.selectedRoles.forEach((role, index) => {
+    const roles = [];
+
+    for (const role of lobby.selectedRoles) {
+        roles.push({
+            name: role.name,
+            text: role.text,
+            nightOrder: allRoles.find(role1 => role1.name === role.name)?.nightOrder || 150
+        });
+    }
+
+    roles.sort((a, b) => a.nightOrder - b.nightOrder);
+
+    roles.forEach((role, index) => {
         const token = document.createElement("div");
         token.className = "role-token";
         token.style.backgroundImage = `url('./images/${role.name.toLowerCase()}.png')`;
@@ -575,6 +580,9 @@ function setupTokens(lobby) {
 
         if (role1.team === "Werewolf") {
             token.style.border = "2px solid red";
+        }
+        if (role1.team === "Tanner") {
+            token.style.border = "2px solid #f1c40f";
         }
 
         // start positions
@@ -701,36 +709,46 @@ function showVoteResultBoard(lobby, players) {
         }
     }
 
+    showEndingRoles(lobby);
+
     setTimeout(() => {
         let showsEndingRoles = true;
         const toggleShowAllRoles = setInterval(() => {
             const lobby1 = lobbies.find(l => l.id === lobby.id);
-            if (document.getElementById("role-show-stage").style.display === "none") {
+            if (document.getElementById("role-show-stage").style.display === "none" || !lobby1) {
                 clearInterval(toggleShowAllRoles);
                 return;
             }
             if (showsEndingRoles) {
-                for (const card of lobby1.cards) {
-                    viewCard(card, card.roleChain[0]);
-                    document.getElementById("role-show-stage").textContent = "Shows Starting Roles";
-                    if (!card.isMiddleCard) {
-                        document.getElementById("death-overlay" + card.id).style.display = "none";
-                        getCardElement(card.id).style.filter = "";
-                    }
-                }
+                showEndingRoles(lobby1);
             } else {
-                for (const card of lobby1.cards) {
-                    viewCard(card);
-                    document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
-                    if (card.dies) {
-                        document.getElementById("death-overlay" + card.id).style.display = "flex";
-                        getCardElement(card.id).style.filter = "grayscale(80%)";
-                    }
-                }
+                showStartingRoles(lobby1);
             }
             showsEndingRoles = !showsEndingRoles;
         }, 10000);
     }, 10000);
+}
+
+function showEndingRoles(lobby) {
+    for (const card of lobby.cards) {
+        viewCard(card);
+        document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
+        if (card.dies) {
+            document.getElementById("death-overlay" + card.id).style.display = "flex";
+            getCardElement(card.id).style.filter = "grayscale(80%)";
+        }
+    }
+}
+
+function showStartingRoles(lobby) {
+    for (const card of lobby.cards) {
+        viewCard(card, card.roleChain[0]);
+        document.getElementById("role-show-stage").textContent = "Shows Starting Roles";
+        if (!card.isMiddleCard) {
+            document.getElementById("death-overlay" + card.id).style.display = "none";
+            getCardElement(card.id).style.filter = "";
+        }
+    }
 }
 
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,

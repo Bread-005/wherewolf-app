@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("display-text").textContent = lobby.displayText;
 
                 if (you.roleChain[0] === "Insomniac" && players.every(p => p.hasDoneNightAction || p.roleChain[0] === "Insomniac") &&
-                    !getCardElement(myId).querySelector("img") && you.mayLookAtTheirCard) {
+                    !getCardElement(myId).querySelector("img") && you.mayLookAtTheirCard && !you.hasDoneNightAction) {
                     document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + you.role;
                     viewCard(you);
                     document.getElementById("ok-button").style.display = "flex";
@@ -182,10 +182,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 displayCards(lobby);
                 document.getElementById("vote-result-display").style.display = "grid";
                 document.getElementById("role-show-stage").style.display = "flex";
-                if (lobby.cards[3].id === myId) {
+                if (players.filter(p => !p.id.includes("-disconnected"))[0].id === myId) {
                     document.getElementById("restart-game-button").style.display = "flex";
                 }
-                const players = lobby.cards.filter(card => !card.isMiddleCard);
                 for (const player of players) {
                     document.getElementById("voted-banner" + player.id).style.display = "none";
                 }
