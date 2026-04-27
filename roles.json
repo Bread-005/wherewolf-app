@@ -72,5 +72,12 @@
     "nightAction": "Werewolves stick out your thumbs so the Minion can see who you are.",
     "nightActionDetailed": "When you wake up, you see who the werewolves are. They however do not know who you are.",
     "votingRules": "If you die during voting and there are werewolves, the werewolf team wins. If you die and there are no werewolves, the Villager team wins."
+  },
+  {
+    "name": "Doppelganger",
+    "team": "Villager",
+    "nightOrder": 1,
+    "nightAction": "Look at another players card. You are now that role. If your new role has a night action, do it now.",
+    "nightActionDetailed": "The Doppelganger has to look at another players card. They then copy the ability and team of that role. For some roles the Doppelganger immediately does their night action."
   }
 ]

@@ -111,6 +111,7 @@ function clickSelectCard(lobby) {
     selectRolesScreen.style.display = "grid";
 
     const roles = [
+        {id: 16, name: "Doppelganger", text: "Look at another player's card. Copy their role"},
         {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 15, name: "Minion", text: "Sees other werewolves, but they not him"},
@@ -360,13 +361,14 @@ function setCardClickEvent(id) {
             }
             const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
 
-            if (player.roleChain[0] === "Werewolf" && players.filter(p => p.roleChain[0] === "Werewolf").length === 1 ||
-                player.roleChain[0] === "Seer" && !card.isMiddleCard || player.roleChain[0] === "Robber" || player.roleChain[0] === "Drunk") {
+            if (player.startingRole === "Werewolf" && players.filter(p => p.startingRole === "Werewolf").length === 1 ||
+                player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Robber" || player.startingRole === "Drunk" ||
+                player.startingRole === "Doppelganger") {
                 lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
                 document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
                 document.getElementById("confirm-button").style.display = "flex";
             }
-            if (player.roleChain[0] === "Seer" && card.isMiddleCard) {
+            if (player.startingRole === "Seer" && card.isMiddleCard) {
                 lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
                 if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more center card";
                 if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select one less center card";
@@ -375,7 +377,7 @@ function setCardClickEvent(id) {
                     document.getElementById("confirm-button").style.display = "flex";
                 }
             }
-            if (player.roleChain[0] === "Troublemaker") {
+            if (player.startingRole === "Troublemaker") {
                 if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more player's card";
                 if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select one less player's card";
                 if (selectedCards.length === 2) {
@@ -385,8 +387,8 @@ function setCardClickEvent(id) {
             }
             if (selectedCards.length === 0) {
                 document.getElementById("confirm-button").style.display = "none";
-                document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.roleChain[0]).nightAction;
-                if (player.roleChain[0] === "Werewolf") {
+                document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
+                if (player.startingRole === "Werewolf") {
                     document.getElementById("night-action-text").textContent = "You are the only werewolf, therefore you may click one center card to view it.";
                 }
             }
@@ -467,7 +469,7 @@ function animateCardSwap(card1, card2, text = "", duration = 2000) {
             document.getElementById("ok-button").style.display = "flex";
             document.getElementById("night-action-text").textContent = text;
 
-            if (you.roleChain[0] === "Robber") {
+            if (you.startingRole === "Robber") {
                 viewCard(you, card2.role);
                 document.getElementById("night-action-text").textContent = "You swapped your card with " + card2.name + "\n" +
                     "Now you are " + card2.role;

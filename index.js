@@ -132,8 +132,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("game").style.background = "royalblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
 
-                if (you.roleChain[0] === "Insomniac" && players.every(p => p.hasDoneNightAction || p.roleChain[0] === "Insomniac") &&
-                    !getCardElement(myId).querySelector("img") && you.mayLookAtTheirCard && !you.hasDoneNightAction) {
+                if (you.startingRole === "Insomniac" && players.every(p => p.hasDoneNightAction || p.startingRole === "Insomniac") &&
+                    !getCardElement(myId).querySelector("img") && you.mayLookAtTheirCard && !you.hasDoneNightAction &&
+                    (!lobby.cards.find(card => card.role === "Doppelganger") || lobby.nightTimer > 20)) {
                     document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + you.role;
                     viewCard(you);
                     document.getElementById("ok-button").style.display = "flex";
@@ -141,6 +142,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 if (you.hasDoneNightAction) {
                     document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
+                }
+                if (you.nightActionText) {
+                    document.getElementById("night-action-text").textContent = you.nightActionText;
                 }
                 document.getElementById("chat-container").style.display = "none";
             }
@@ -238,6 +242,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket.on("receive-chat-message", (data) => {
         receiveMessage(data);
+    });
+
+    socket.on("doppelganger-show-role-night-action", () => {
+        showRoleActions();
     });
 });
 
