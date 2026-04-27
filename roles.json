@@ -1,7 +1,8 @@
 [
   {
     "name": "Villager",
-    "team": "Villager"
+    "team": "Villager",
+    "nightOrder": 101
   },
   {
     "name": "Werewolf",
@@ -51,5 +52,17 @@
     "nightOrder": 4,
     "nightAction": "Wake up and look for the other Mason.",
     "nightActionDetailed": "When you wake up, all players' cards who are Masons will be shown to you. If only you wake as a Mason, then the other Mason is in the middle."
+  },
+  {
+    "name": "Hunter",
+    "team": "Villager",
+    "nightOrder": 102,
+    "description": "During voting when the Hunter dies, the player the Hunter voted for dies as well."
+  },
+  {
+    "name": "Tanner",
+    "team": "Tanner",
+    "nightOrder": 103,
+    "description": "During voting when the Tanner dies, the Tanner wins."
   }
 ]

@@ -1,7 +1,7 @@
 import {
     showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
     resetNightActionTexts, showVoteResults, clearEverything, getCardElement, updateKickMenu, openRolesDisplay,
-    setupTokens, sendMessage, receiveMessage, loadMessages, sendConsoleMessage
+    setupTokens, sendMessage, receiveMessage, loadMessages, sendConsoleMessage, showVoteResultBoard
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("game").style.background = "royalblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
 
-                if (you.roleChain[0] === "Insomniac" && players.filter(p => p.hasDoneNightAction).length + 1 === players.length &&
+                if (you.roleChain[0] === "Insomniac" && players.every(p => p.hasDoneNightAction || p.roleChain[0] === "Insomniac") &&
                     !getCardElement(myId).querySelector("img") && you.mayLookAtTheirCard) {
                     document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + you.role;
                     viewCard(you);
@@ -179,6 +179,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("chat-container").style.display = "none";
             }
             if (lobby.state === "voting-results") {
+                displayCards(lobby);
                 document.getElementById("vote-result-display").style.display = "grid";
                 document.getElementById("role-show-stage").style.display = "flex";
                 if (lobby.cards[3].id === myId) {
@@ -188,6 +189,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 for (const player of players) {
                     document.getElementById("voted-banner" + player.id).style.display = "none";
                 }
+                showVoteResultBoard(lobby, players);
             }
             loadMessages(lobby);
         }

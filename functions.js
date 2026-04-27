@@ -122,7 +122,9 @@ function clickSelectCard(lobby) {
         {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
-        {id: 3, name: "Villager", text: "No special ability"}
+        {id: 3, name: "Villager", text: "No special ability"},
+        {id: 13, name: "Hunter", text: "If killed, player they voted for dies, too"},
+        {id: 14, name: "Tanner", text: "Wins if dies"}
     ];
 
     if (lobby.cards[3].id === myId) {
@@ -320,6 +322,7 @@ function clearEverything() {
         }
         document.getElementById("display-text").textContent = "";
         document.getElementById("display-text-2").textContent = "";
+        document.getElementById("display-text-3").textContent = "";
         document.getElementById("night-action-text").textContent = "";
         document.getElementById("show-roles-button").style.display = "none";
         document.getElementById("continue-button").style.display = "none";
@@ -391,9 +394,7 @@ function setCardClickEvent(id) {
 }
 
 function showVoteResults() {
-    const voteResultDisplay = document.getElementById("vote-result-display");
-    voteResultDisplay.querySelectorAll(".dynamic-result").forEach(element => element.remove());
-    voteResultDisplay.style.display = "grid";
+    document.getElementById("vote-result-display").style.display = "grid";
 
     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
     const players = lobby.cards.filter(card => !card.isMiddleCard);
@@ -402,25 +403,7 @@ function showVoteResults() {
         viewCard(card);
     }
 
-    for (const player of players) {
-        const name = document.createElement("div");
-        name.textContent = player.name;
-        name.className = "dynamic-result";
-        const role = document.createElement("div");
-        role.textContent = player.roleChain.join(" -> ");
-        role.className = "dynamic-result";
-        const voters = document.createElement("div");
-        voters.textContent = players.filter(p => p.vote === player.name).map(p => p.name).join(", ");
-        voters.className = "dynamic-result";
-        const numberOfVotes = document.createElement("div");
-        numberOfVotes.textContent = players.filter(p => p.vote === player.name).length;
-        numberOfVotes.className = "dynamic-result";
-
-        voteResultDisplay.append(name, role, voters, numberOfVotes);
-    }
-
-    document.getElementById("display-text").textContent = lobby.voteResultText;
-    document.getElementById("display-text-2").textContent = "Team " + lobby.winningTeam + " wins";
+    showVoteResultBoard(lobby, players);
 
     for (const player of players) {
         if (player.id !== myId) {
@@ -431,37 +414,6 @@ function showVoteResults() {
             getCardElement(player.id).style.filter = "grayscale(80%)";
         }
     }
-
-    setTimeout(() => {
-        let showsEndingRoles = true;
-        const toggleShowAllRoles = setInterval(() => {
-            if (document.getElementById("role-show-stage").style.display === "none") {
-                clearInterval(toggleShowAllRoles);
-                return;
-            }
-            if (showsEndingRoles) {
-                for (const card of lobby.cards) {
-                    viewCard(card, card.roleChain[0]);
-                    document.getElementById("role-show-stage").textContent = "Shows Starting Roles";
-                    if (!card.isMiddleCard) {
-                        document.getElementById("death-overlay" + card.id).style.display = "none";
-                        getCardElement(card.id).style.filter = "";
-                    }
-                    showsEndingRoles = false;
-                }
-            } else {
-                for (const card of lobby.cards) {
-                    viewCard(card);
-                    document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
-                    if (card.dies) {
-                        document.getElementById("death-overlay" + card.id).style.display = "flex";
-                        getCardElement(card.id).style.filter = "grayscale(80%)";
-                    }
-                    showsEndingRoles = true;
-                }
-            }
-        }, 10000);
-    }, 10000);
 }
 
 function setupVotingClickEvent(card) {
@@ -703,7 +655,7 @@ function sendConsoleMessage(message) {
 }
 
 function loadMessages(lobby) {
-    if (document.getElementById("chat-messages").children.length < lobby.messages.length) {
+    if (document.getElementById("chat-messages").children.length <= lobby.messages.length) {
         document.getElementById("chat-messages").innerHTML = "";
         for (const message of lobby.messages) {
             receiveMessage(message);
@@ -720,6 +672,68 @@ function receiveMessage(data) {
     messagesBox.scrollTop = messagesBox.scrollHeight;
 }
 
+function showVoteResultBoard(lobby, players) {
+    document.getElementById("vote-result-display").querySelectorAll(".dynamic-result").forEach(element => element.remove());
+
+    for (const player of players) {
+        const name = document.createElement("div");
+        name.textContent = player.name;
+        name.className = "dynamic-result";
+        const role = document.createElement("div");
+        role.textContent = player.roleChain.join(" -> ");
+        role.className = "dynamic-result";
+        const voters = document.createElement("div");
+        voters.textContent = players.filter(p => p.vote === player.name).map(p => p.name).join(", ");
+        voters.className = "dynamic-result";
+        const numberOfVotes = document.createElement("div");
+        numberOfVotes.textContent = players.filter(p => p.vote === player.name).length;
+        numberOfVotes.className = "dynamic-result";
+
+        document.getElementById("vote-result-display").append(name, role, voters, numberOfVotes);
+    }
+
+    document.getElementById("display-text").textContent = lobby.voteResultText;
+    document.getElementById("display-text-2").textContent = (lobby.winningTeam !== "No-one" ? "Team " : "") + lobby.winningTeam + " wins";
+    document.getElementById("display-text-3").textContent = "You lose";
+    for (const team of lobby.winningTeam.split(" and ")) {
+        if (team === players.find(p => p.id === myId).team) {
+            document.getElementById("display-text-3").textContent = "You win";
+        }
+    }
+
+    setTimeout(() => {
+        let showsEndingRoles = true;
+        const toggleShowAllRoles = setInterval(() => {
+            const lobby1 = lobbies.find(l => l.id === lobby.id);
+            if (document.getElementById("role-show-stage").style.display === "none") {
+                clearInterval(toggleShowAllRoles);
+                return;
+            }
+            if (showsEndingRoles) {
+                for (const card of lobby1.cards) {
+                    viewCard(card, card.roleChain[0]);
+                    document.getElementById("role-show-stage").textContent = "Shows Starting Roles";
+                    if (!card.isMiddleCard) {
+                        document.getElementById("death-overlay" + card.id).style.display = "none";
+                        getCardElement(card.id).style.filter = "";
+                    }
+                }
+            } else {
+                for (const card of lobby1.cards) {
+                    viewCard(card);
+                    document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
+                    if (card.dies) {
+                        document.getElementById("death-overlay" + card.id).style.display = "flex";
+                        getCardElement(card.id).style.filter = "grayscale(80%)";
+                    }
+                }
+            }
+            showsEndingRoles = !showsEndingRoles;
+        }, 10000);
+    }, 10000);
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
-    updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage};
+    updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
+    showVoteResultBoard};
