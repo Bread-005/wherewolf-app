@@ -10,13 +10,7 @@
 <div id="lobby-page">
     <button id="go-to-wiki-button" onclick='window.location = "wiki.html"'>go to wiki</button>
 
-    <div class="header-container">
-        <div class="info-icon">
-            <i class="fa-solid fa-circle-info"></i>
-            <span class="tooltip-text">A quick game with bluff and tricks for 3 to 10 players.</span>
-        </div>
-        <h2>Wherewolf App</h2>
-    </div>
+    <h2 style="margin-bottom: 25px">Wherewolf App</h2>
 
     <label>Enter Name
         <input id="enter-name-input">
@@ -36,6 +30,35 @@
             <i class="fa-solid fa-spinner fa-spin"></i>
             <p>Connecting to Server...</p>
         </div>
+    </div>
+    <div id="how-to-play-container">
+        <div id="how-to-play-text">
+            <p>
+                Each player gets a hidden role card, while three additional cards are placed face-down in the center of the table.
+                After everyone has secretly looked at their own role, the night phase begins.
+                The most important rule to remember is: One Night, One Day.
+                Unlike other social deduction games, there is only one single night and one single day.
+                Nobody is eliminated until the very end.
+            </p>
+            <p>
+                During the night, the Werewolves wake up to identify each other, and most Villager roles perform a special action.
+                For example, the Troublemaker may swap the cards of two other players without them knowing.
+            </p>
+            <p>
+                When everyone has finished their night actions, all players wakes up.
+                It is now day.
+                Players discuss who they are, what they did, and who might be a Werewolf.
+                This is the heart of the game: Villagers try to find a Werewolf, while the Werewolves lie about their identity to stay hidden.
+            </p>
+            <p>
+                When the day ends, everyone votes for another player.
+                The player with the most votes dies. If at least one Werewolf dies, the Villagers win.
+                If all Werewolves survive, the Werewolf team wins.
+                Since a round usually takes only 5 to 15 minutes, there is always enough time for another game!
+            </p>
+        </div>
+        <div>How to Play:</div>
+        <i id="how-to-play-icon" class="fa-solid fa-circle-info"></i>
     </div>
 </div>
 

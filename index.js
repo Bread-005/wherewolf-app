@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("game").style.display = "none";
         socket.emit("leave");
         clearEverything();
+        document.getElementById("chat-messages").innerHTML = "";
     });
 
     setupButtonEvents();
@@ -256,6 +257,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("game-rules-icon").addEventListener("mouseout", () => {
         document.getElementById("game-rules-popup").style.display = "none";
+    });
+
+    document.getElementById("how-to-play-icon").addEventListener("mouseover", () => {
+        document.getElementById("how-to-play-text").style.display = "block";
+    });
+
+    document.getElementById("how-to-play-icon").addEventListener("mouseout", () => {
+        document.getElementById("how-to-play-text").style.display = "none";
     });
 });
 
