@@ -116,7 +116,7 @@ function confirmButtonAction() {
     document.getElementById("do-nothing-button").style.display = "none";
     document.getElementById("confirm-button").style.display = "none";
 
-    socket.emit("set-selected-cards", selectedCards.map(card => {
+    socket.emit("add-selected-cards", selectedCards.map(card => {
         return {
             name: card.name,
             role: card.role,

@@ -201,6 +201,7 @@ function clickSelectCard(lobby) {
     if (lobby.selectedRoles.length === lobby.cards.length) {
         createStartButton(lobby);
     }
+    validateRoleSelection(lobby);
 }
 
 function createStartButton(lobby) {
@@ -750,6 +751,30 @@ function showStartingRoles(lobby) {
             document.getElementById("death-overlay" + card.id).style.display = "none";
             getCardElement(card.id).style.filter = "";
         }
+    }
+}
+
+function validateRoleSelection(lobby) {
+    const warningContainer = document.getElementById("roles-warning-container");
+    const tooltip = document.getElementById("roles-warning-tooltip");
+    let errors = [];
+
+    const counts = {};
+    lobby.selectedRoles.forEach(r => counts[r.name] = (counts[r.name] || 0) + 1);
+
+    if (!counts["Werewolf"]) {
+        errors.push("• No Werewolves selected!");
+    }
+
+    if (counts["Mason"] === 1) {
+        errors.push("• A single Mason is useless. Usually, you play with two.");
+    }
+
+    if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.length) {
+        warningContainer.style.display = "flex";
+        tooltip.innerHTML = errors.join("<br>");
+    } else {
+        warningContainer.style.display = "none";
     }
 }
 
