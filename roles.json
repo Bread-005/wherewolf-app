@@ -2,56 +2,64 @@
   {
     "name": "Villager",
     "team": "Villager",
-    "nightOrder": 101
+    "nightOrder": 101,
+    "description": "The Villager doesn't wake up during the night."
   },
   {
     "name": "Werewolf",
     "team": "Werewolf",
     "nightOrder": 2,
-    "nightAction": "Werewolves wake up and look around for other werewolves. If you are alone, you may look at a card from the center.",
-    "nightActionDetailed": "When you wake up, all players who are werewolves are shown to you as werewolves. If there are other werewolves click ok to confirm you saw the others. If you woke alone, you may look at a card from the center, by clicking it."
+    "description": "The Werewolf learns who the other werewolves are. If there is only one werewolf player, they may look at one of the centre cards.",
+    "nightAction": "Werewolves wake up and look for other werewolves. If there is only one werewolf, you may look at a card from the center.",
+    "nightActionDetailed": "When you wake up, all players who are werewolves are shown to you as werewolves. If there are other werewolves click 'ok' to confirm you saw the others. If you woke alone, you may click a center card to select it. If you click 'confirm', you view your selected card."
   },
   {
     "name": "Seer",
     "team": "Villager",
     "nightOrder": 5,
+    "description": "The Seer may view another player's card, or two of the centre cards.",
     "nightAction": "You may either look at another player's card or two of the center cards.",
-    "nightActionDetailed": "You have 2 options: 1. If you click on another player's card, you will see their role. 2. If you click on a center card, you will see its role and may look at a second center card to view it, too."
+    "nightActionDetailed": "If you click another player's card, you select it (and unselect all selected center cards). If you click a center card, you select it (and unselect a selected player's card). If you select 1 player's card or exactly 2 center cards, a 'confirm' button appears. If you click 'confirm', you view the selected cards."
   },
   {
     "name": "Robber",
     "team": "Villager",
     "nightOrder": 6,
+    "description": "The Robber may swap their card with another player's card. They then view their new card.",
     "nightAction": "You may exchange your card with another player's card and then view your new card.",
-    "nightActionDetailed": "If you click a card of another player you swap their card with yours. Then you look at your new role. You will not perform that role's action later."
+    "nightActionDetailed": "If you click the card of another player you select it. If you click 'confirm', you perform the swap."
   },
   {
     "name": "Troublemaker",
     "team": "Villager",
     "nightOrder": 7,
+    "description": "The Troublemaker may swap the cards of any two other players, without viewing them.",
     "nightAction": "You may exchange cards between two other players.",
-    "nightActionDetailed": "If you click a card, you select it and it gets a brown border. If you click it again you unselct it and the border resets. Once you selected two other player's cards, those cards get swapped. You do not know the roles of the players you swapped."
+    "nightActionDetailed": "If you click a card, you select it and it. If you click it again you unselect it. If you selected exactly two other player's cards, a confirm button appears. If you click 'confirm', your two selected cards get swapped."
   },
   {
     "name": "Drunk",
     "team": "Villager",
     "nightOrder": 8,
+    "description": "The Drunk must swap their card with one of the centre cards, without viewing their new card.",
     "nightAction": "You must exchange your card with one from the center.",
-    "nightActionDetailed": "You have to click a card from the center. You then swap that card with your card. You do not get to look at your new role."
+    "nightActionDetailed": "If you click a card, you select it. If you click 'confirm', you swap your card with the selected card."
   },
   {
     "name": "Insomniac",
     "team": "Villager",
     "nightOrder": 9,
+    "description": "The Insomniac views their own card at the end of the night.",
     "nightAction": "Look at your card.",
-    "nightActionDetailed": "When all players that do their night action before you, have done their night action, you look at your card. Your card gets automatically shown to you. You therefore know what your end role is."
+    "nightActionDetailed": "When all players that do their night action before you, have done their night action, your card gets automatically shown to you."
   },
   {
     "name": "Mason",
     "team": "Villager",
     "nightOrder": 4,
+    "description": "The Mason learns who the other Mason(s) are.",
     "nightAction": "Wake up and look for the other Mason.",
-    "nightActionDetailed": "When you wake up, all players' cards who are Masons will be shown to you. If only you wake as a Mason, then the other Mason is in the middle."
+    "nightActionDetailed": "When you wake up, all players who are Masons will be shown to you. If only you wake as a Mason, then the other Mason is in the middle."
   },
   {
     "name": "Hunter",
@@ -63,21 +71,24 @@
     "name": "Tanner",
     "team": "Tanner",
     "nightOrder": 103,
-    "description": "During voting when the Tanner dies, the Tanner wins."
+    "description": "During voting when the Tanner dies, the Tanner wins.",
+    "specialRules": "If the Tanner dies, the Werewolf Team loses. If the Tanner dies and a werewolf dies, the Tanner and Villager Team wins."
   },
   {
     "name": "Minion",
     "team": "Werewolf",
     "nightOrder": 3,
+    "description": "The Minion learns who the werewolves are, but the werewolves don't learn who the minion is.",
     "nightAction": "Werewolves stick out your thumbs so the Minion can see who you are.",
-    "nightActionDetailed": "When you wake up, you see who the werewolves are. They however do not know who you are.",
+    "nightActionDetailed": "When you wake up, all players who are werewolves are shown to you as werewolves.",
     "votingRules": "If you die during voting and there are werewolves, the werewolf team wins. If you die and there are no werewolves, the Villager team wins."
   },
   {
     "name": "Doppelganger",
     "team": "Villager",
     "nightOrder": 1,
+    "description": "The Doppelganger must look at another player's card, which causes them to take on the properties of the card they looked at. If they viewed a card that has a night action, they immediately do that action (with some exceptions).",
     "nightAction": "Look at another players card. You are now that role. If your new role has a night action, do it now.",
-    "nightActionDetailed": "The Doppelganger has to look at another players card. They then copy the ability and team of that role. For some roles the Doppelganger immediately does their night action."
+    "nightActionDetailed": ""
   }
 ]

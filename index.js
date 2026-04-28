@@ -1,7 +1,7 @@
 import {
     showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
     resetNightActionTexts, showVoteResults, clearEverything, getCardElement, updateKickMenu, openRolesDisplay,
-    setupTokens, sendMessage, receiveMessage, loadMessages, sendConsoleMessage, showVoteResultBoard
+    setupTokens, sendMessage, receiveMessage, loadMessages, sendConsoleMessage, showVoteResultBoard, showRoleExplanation
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
@@ -95,6 +95,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("role-show-stage").style.display = "none";
             document.getElementById("game").style.background = "lightblue";
             document.getElementById("chat-container").style.display = "flex";
+            document.getElementById("roles-warning-container").style.display = "none";
             for (const player of players) {
                 if (!document.getElementById("card" + player.id)) {
                     displayCards(lobby);
@@ -123,6 +124,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
                     if (lobby && lobby.state === "look-at-role" && getCardElement(myId).style.cursor === "pointer") {
                         viewCard(lobby.cards.find(player => player.id === myId));
+                        showRoleExplanation(you, lobby.selectedRoles);
                         document.getElementById("continue-button").style.display = "flex";
                     }
                 }, {once: true});
@@ -246,6 +248,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket.on("doppelganger-show-role-night-action", () => {
         showRoleActions();
+    });
+
+    document.getElementById("game-rules-icon").addEventListener("mouseover", () => {
+        document.getElementById("game-rules-popup").style.display = "flex";
+    });
+
+    document.getElementById("game-rules-icon").addEventListener("mouseout", () => {
+        document.getElementById("game-rules-popup").style.display = "none";
     });
 });
 

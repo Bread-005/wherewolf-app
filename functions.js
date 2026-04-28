@@ -245,6 +245,7 @@ function setupButtonEvents() {
     document.getElementById("continue-button").addEventListener("click", () => {
         document.getElementById("continue-button").style.display = "none";
         getCardElement(myId).querySelectorAll("img").forEach(img => img.remove());
+        document.getElementById("role-explanation").textContent = "";
         document.getElementById("display-text").textContent = "Wait for the other players to look at their roles";
 
         socket.emit("check-has-seen-role");
@@ -778,7 +779,26 @@ function validateRoleSelection(lobby) {
     }
 }
 
+function showRoleExplanation(you, selectedRoles) {
+    const text = document.getElementById("role-explanation");
+    text.textContent = allRoles.find(role => role.name === you.role).description + "\n How you win: ";
+
+    if (you.team === "Villager") {
+        text.textContent += "During voting, if a werewolf dies, your team wins.";
+    }
+    if (you.team === "Werewolf") {
+        text.textContent += "During voting, if all werewolves survive";
+        if (selectedRoles.find(role => role.name === "Tanner")) {
+            text.textContent += " and the Tanner survives";
+        }
+        text.textContent += ", your team wins.";
+    }
+    if (you.team === "Tanner") {
+        text.textContent += "During voting, if you die, you win.";
+    }
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
-    showVoteResultBoard};
+    showVoteResultBoard, showRoleExplanation};

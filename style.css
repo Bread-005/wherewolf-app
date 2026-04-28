@@ -778,6 +778,50 @@ body {
         #roles-warning-container:hover #roles-warning-tooltip {
             display: flex;
         }
+
+        #role-explanation {
+            display: flex;
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: pre-line;
+            text-align: center;
+        }
+    }
+
+    #game-info-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 1.5rem;
+        color: blue;
+        cursor: help;
+        z-index: 1000;
+
+        #game-rules-popup {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            width: 300px;
+            background: rgba(44, 62, 80, 0.95);
+            border: 2px solid purple;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9rem;
+
+            h4 {
+                text-align: center;
+                margin: 0;
+            }
+
+            li {
+                margin-top: 5px;
+            }
+        }
     }
 
     #toast-container {
@@ -859,43 +903,43 @@ body {
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease;
             box-sizing: border-box;
-        }
 
-        #wiki-role-name {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #f1c40f;
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
+            #wiki-role-name {
+                font-size: 2.5rem;
+                font-weight: bold;
+                color: #f1c40f;
+                margin-bottom: 5px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
 
-        #wiki-role-team {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 20px;
-        }
+            #wiki-role-team {
+                display: inline-block;
+                padding: 5px 15px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 20px;
+            }
 
-        #wiki-role-night-action {
-            font-style: italic;
-            font-size: 1.1rem;
-            color: #bdc3c7;
-            border-left: 4px solid #f1c40f;
-            padding-left: 15px;
-            margin: 20px 0;
-            line-height: 1.4;
-        }
+            #wiki-role-night-action {
+                font-style: italic;
+                font-size: 1.1rem;
+                color: #bdc3c7;
+                border-left: 4px solid #f1c40f;
+                padding-left: 15px;
+                margin: 20px 0;
+                line-height: 1.4;
+            }
 
-        #wiki-role-night-action-detailed {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: #ecf0f1;
+            #wiki-role-night-action-detailed {
+                background: rgba(0, 0, 0, 0.3);
+                padding: 15px;
+                border-radius: 10px;
+                font-size: 0.95rem;
+                line-height: 1.6;
+                color: #ecf0f1;
+            }
         }
     }
 }

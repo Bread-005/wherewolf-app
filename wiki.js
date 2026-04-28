@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         document.getElementById("wiki-role-name").textContent = "Name: " + role.name;
         document.getElementById("wiki-role-team").textContent = "Team: " + role.team;
-        document.getElementById("wiki-role-description").textContent = "Description: nothing here yet";
+        document.getElementById("wiki-role-description").textContent = "Description: " + role.description;
         document.getElementById("wiki-role-night-action").textContent = "Night Action: " + (role.nightAction ? role.nightAction : "none");
         document.getElementById("wiki-role-night-action-detailed").textContent = role.nightActionDetailed ? "Detailed: " + role.nightActionDetailed : "";
     }
