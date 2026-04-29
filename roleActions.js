@@ -79,14 +79,14 @@ function showRoleActions() {
     }
 
     if (player.startingRole !== "Seer" && player.startingRole !== "Robber" && player.startingRole !== "Troublemaker" && player.startingRole !== "Drunk" &&
-        player.startingRole !== "Doppelganger") {
+        player.startingRole !== "Doppelganger" && player.startingRole !== "Apprentice Seer") {
         return;
     }
 
     const middleCards = lobby.cards.filter(card => card.isMiddleCard);
     const otherPlayerCards = lobby.cards.filter(card => !card.isMiddleCard && card.id !== myId);
 
-    if (player.startingRole === "Seer" || player.startingRole === "Drunk") {
+    if (player.startingRole === "Seer" || player.startingRole === "Drunk" || player.startingRole === "Apprentice Seer") {
         for (const card of middleCards) {
             getCardElement(card.id).style.cursor = "pointer";
         }
@@ -124,7 +124,7 @@ function confirmButtonAction() {
         }
     }));
 
-    if (player.startingRole === "Werewolf" || player.startingRole === "Seer" || player.startingRole === "Doppelganger") {
+    if (player.startingRole === "Werewolf" || player.startingRole === "Seer" || player.startingRole === "Doppelganger" || player.startingRole === "Apprentice Seer") {
         viewCard(selectedCards[0]);
         if (selectedCards.length > 1) {
             viewCard(selectedCards[1]);

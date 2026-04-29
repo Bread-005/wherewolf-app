@@ -221,7 +221,7 @@ body {
 
             .center-card {
                 top: 60%;
-                transform: translateY(-50%);
+                transform: translate(-10%, -50%);
                 background: #8b4513;
                 color: white;
                 display: flex;
@@ -466,7 +466,7 @@ body {
 
             .close-button {
                 position: absolute;
-                top: 2.5%;
+                top: 6%;
                 right: -5%;
                 padding: 5px;
             }

@@ -118,6 +118,7 @@ function clickSelectCard(lobby) {
         {id: 11, name: "Mason", text: "See the other Mason"},
         {id: 12, name: "Mason", text: "See the other Mason"},
         {id: 6, name: "Seer", text: "Either view 1 player´s card or 2 center cards"},
+        {id: 17, name: "Apprentice Seer", text: "View 1 center card"},
         {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
         {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
         {id: 9, name: "Drunk", text: "Swap your card with center"},
@@ -180,7 +181,7 @@ function clickSelectCard(lobby) {
         name.textContent = role.name;
 
         const img = document.createElement("img");
-        img.src = "./images/" + role.name.toLowerCase() + ".png";
+        img.src = "./images/" + role.name.toLowerCase().replace(" ", "_") + ".png";
         img.alt = role.name;
 
         const ability = document.createElement("div");
@@ -222,7 +223,7 @@ function createStartButton(lobby) {
 
 function viewCard(card, as = card.role) {
     const img = document.createElement("img");
-    img.src = "./images/" + as.toLowerCase() + ".png";
+    img.src = "./images/" + as.toLowerCase().replace(" ", "_") + ".png";
     img.style.width = "100%";
     img.style.height = "100%";
     img.style.position = "relative";
@@ -365,7 +366,7 @@ function setCardClickEvent(id) {
 
             if (player.startingRole === "Werewolf" && players.filter(p => p.startingRole === "Werewolf").length === 1 ||
                 player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Robber" || player.startingRole === "Drunk" ||
-                player.startingRole === "Doppelganger") {
+                player.startingRole === "Doppelganger" || player.startingRole === "Apprentice Seer") {
                 lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
                 document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
                 document.getElementById("confirm-button").style.display = "flex";
@@ -445,19 +446,22 @@ function animateCardSwap(card1, card2, text = "", duration = 2000) {
     const rect1 = card1Element.getBoundingClientRect();
     const rect2 = card2Element.getBoundingClientRect();
 
-    const diffX1 = rect2.left - rect1.left;
-    const diffY1 = rect2.top - rect1.top;
+    const style1 = window.getComputedStyle(card1Element);
+    const style2 = window.getComputedStyle(card2Element);
 
-    const diffX2 = rect1.left - rect2.left;
-    const diffY2 = rect1.top - rect2.top;
+    const transform1 = style1.transform !== "none" ? style1.transform : "";
+    const transform2 = style2.transform !== "none" ? style2.transform : "";
+
+    const deltaX = rect2.left - rect1.left;
+    const deltaY = rect2.top - rect1.top;
 
     return new Promise((resolve) => {
         card1Element.style.transition = `transform ${duration}ms ease-in-out`;
         card2Element.style.transition = `transform ${duration}ms ease-in-out`;
 
         // move cards
-        card1Element.style.transform = `translate(${diffX1}px, ${diffY1}px)`;
-        card2Element.style.transform = `translate(${diffX2}px, ${diffY2}px)`;
+        card1Element.style.transform = `translate(${deltaX}px, ${deltaY}px) ${transform1}`;
+        card2Element.style.transform = `translate(${-deltaX}px, ${-deltaY}px) ${transform2}`;
 
         setTimeout(() => {
             // reset styles after swap
@@ -542,7 +546,7 @@ function openRolesDisplay(lobby) {
         name.textContent = role.name;
 
         const img = document.createElement("img");
-        img.src = "./images/" + role.name.toLowerCase() + ".png";
+        img.src = "./images/" + role.name.toLowerCase().replace(" ", "_") + ".png";
         img.alt = role.name;
         img.className = "mini-role-img";
 
@@ -578,7 +582,7 @@ function setupTokens(lobby) {
     roles.forEach((role, index) => {
         const token = document.createElement("div");
         token.className = "role-token";
-        token.style.backgroundImage = `url('./images/${role.name.toLowerCase()}.png')`;
+        token.style.backgroundImage = `url('./images/${role.name.toLowerCase().replace(" ", "_")}.png')`;
 
         const role1 = allRoles.find(role1 => role1.name === role.name);
 
@@ -763,12 +767,18 @@ function validateRoleSelection(lobby) {
     const counts = {};
     lobby.selectedRoles.forEach(r => counts[r.name] = (counts[r.name] || 0) + 1);
 
-    if (!counts["Werewolf"]) {
-        errors.push("• No Werewolves selected!");
+    if (!counts["Werewolf"] && !counts["Minion"]) {
+        errors.push("• No evil roles selected!");
     }
 
     if (counts["Mason"] === 1) {
         errors.push("• A single Mason is useless. Usually, you play with two.");
+    }
+
+    if (counts["Insomniac"]) {
+        if (!counts["Robber"] && !counts["Troublemaker"]) {
+            errors.push("• Insomniac is useless. There are no roles that swap players' cards.");
+        }
     }
 
     if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.length) {

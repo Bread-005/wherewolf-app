@@ -9,7 +9,7 @@
     "name": "Werewolf",
     "team": "Werewolf",
     "nightOrder": 2,
-    "description": "The Werewolf learns who the other werewolves are. If there is only one werewolf player, they may look at one of the centre cards.",
+    "description": "The Werewolf learns who the other werewolves are. If there is only one werewolf player, they may look at one of the center cards.",
     "nightAction": "Werewolves wake up and look for other werewolves. If there is only one werewolf, you may look at a card from the center.",
     "nightActionDetailed": "When you wake up, all players who are werewolves are shown to you as werewolves. If there are other werewolves click 'ok' to confirm you saw the others. If you woke alone, you may click a center card to select it. If you click 'confirm', you view your selected card."
   },
@@ -17,7 +17,7 @@
     "name": "Seer",
     "team": "Villager",
     "nightOrder": 5,
-    "description": "The Seer may view another player's card, or two of the centre cards.",
+    "description": "The Seer may view another player's card, or two of the center cards.",
     "nightAction": "You may either look at another player's card or two of the center cards.",
     "nightActionDetailed": "If you click another player's card, you select it (and unselect all selected center cards). If you click a center card, you select it (and unselect a selected player's card). If you select 1 player's card or exactly 2 center cards, a 'confirm' button appears. If you click 'confirm', you view the selected cards."
   },
@@ -27,7 +27,7 @@
     "nightOrder": 6,
     "description": "The Robber may swap their card with another player's card. They then view their new card.",
     "nightAction": "You may exchange your card with another player's card and then view your new card.",
-    "nightActionDetailed": "If you click the card of another player you select it. If you click 'confirm', you perform the swap."
+    "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you perform the swap."
   },
   {
     "name": "Troublemaker",
@@ -35,15 +35,15 @@
     "nightOrder": 7,
     "description": "The Troublemaker may swap the cards of any two other players, without viewing them.",
     "nightAction": "You may exchange cards between two other players.",
-    "nightActionDetailed": "If you click a card, you select it and it. If you click it again you unselect it. If you selected exactly two other player's cards, a confirm button appears. If you click 'confirm', your two selected cards get swapped."
+    "nightActionDetailed": "If you click a card, you select it. If you click it again you unselect it. If you selected exactly two other player's cards, a confirm button appears. If you click 'confirm', your two selected cards get swapped."
   },
   {
     "name": "Drunk",
     "team": "Villager",
     "nightOrder": 8,
-    "description": "The Drunk must swap their card with one of the centre cards, without viewing their new card.",
+    "description": "The Drunk must swap their card with one of the center cards, without viewing their new card.",
     "nightAction": "You must exchange your card with one from the center.",
-    "nightActionDetailed": "If you click a card, you select it. If you click 'confirm', you swap your card with the selected card."
+    "nightActionDetailed": "If you click a center card, you select it. If you click 'confirm', you swap your card with the selected card."
   },
   {
     "name": "Insomniac",
@@ -88,7 +88,15 @@
     "team": "Villager",
     "nightOrder": 1,
     "description": "The Doppelganger must look at another player's card, which causes them to take on the properties of the card they looked at. If they viewed a card that has a night action, they immediately do that action (with some exceptions).",
-    "nightAction": "Look at another players card. You are now that role. If your new role has a night action, do it now.",
-    "nightActionDetailed": ""
+    "nightAction": "Look at another player's card. You are now a copy of that role. If your new role has a night action, do it now.",
+    "nightActionDetailed": "If you click another player's card you select. If you click 'confirm' you view that card and copy it. If your viewed card has a night action, you immediately do it (with some exceptions)."
+  },
+  {
+    "name": "Apprentice Seer",
+    "team": "Villager",
+    "nightOrder": 5.1,
+    "description": "The Apprentice Seer may view one of the center cards.",
+    "nightAction": "You may look at one of the center cards.",
+    "nightActionDetailed": "If you click a center card, you select it. If you click 'confirm', you view your selected card."
   }
 ]
