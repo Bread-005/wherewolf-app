@@ -1,7 +1,7 @@
 import {
-    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard,
-    resetNightActionTexts, showVoteResults, clearEverything, getCardElement, updateKickMenu, openRolesDisplay,
-    setupTokens, sendMessage, receiveMessage, loadMessages, sendConsoleMessage, showVoteResultBoard, showRoleExplanation
+    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard, resetNightActionTexts,
+    showVoteResults, clearEverything, getCardElement, updateKickMenu, openRolesDisplay, setupTokens, sendMessage,
+    receiveMessage, loadMessages, sendConsoleMessage, showVoteResultBoard, showRoleExplanation, allMainRolesActed
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
@@ -135,12 +135,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("game").style.background = "royalblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
 
-                if (you.startingRole === "Insomniac" && players.every(p => p.hasDoneNightAction || p.startingRole === "Insomniac") &&
-                    !getCardElement(myId).querySelector("img") && you.mayLookAtTheirCard && !you.hasDoneNightAction &&
-                    (!lobby.cards.find(card => card.role === "Doppelganger") || lobby.nightTimer > 20)) {
+                if (you.startingRole === "Insomniac" && allMainRolesActed(players) && !you.hasDoneNightAction &&
+                    !getCardElement(myId).querySelector("img") && (!lobby.cards.find(card => card.role === "Doppelganger") || lobby.nightTimer > 20)) {
                     document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + you.role;
                     viewCard(you);
                     document.getElementById("ok-button").style.display = "flex";
+                }
+                if (you.startingRole === "Insomniac" && you.hasDoneNightAction && getCardElement(myId).querySelector("img")) {
+                    resetNightActionTexts();
+                }
+                if (you.startingRole === "Revealer" && allMainRolesActed(players) && document.getElementById("do-nothing-button").style.display === "none" &&
+                    !you.hasDoneNightAction && (!lobby.cards.find(card => card.role === "Doppelganger") || lobby.nightTimer > 20)) {
+                    showRoleActions();
                 }
 
                 if (you.hasDoneNightAction) {
@@ -160,6 +166,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
                 if (!you.hasSkippedToVote) {
                     document.getElementById("skip-to-vote-button").style.display = "flex";
+                }
+                for (const card of lobby.cards) {
+                    if (card.isRevealed && getCardElement(card.id).querySelectorAll("img").length === 0) {
+                        viewCard(card);
+                    }
                 }
             }
             if (lobby.state === "voting") {
@@ -201,7 +212,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    socket.on("reset-night-action-texts", () => {
+    socket.on("start-day", () => {
         resetNightActionTexts();
     });
 
@@ -217,7 +228,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         showRoleActions();
     });
 
-    document.getElementById("confirm-button").addEventListener("click", () => confirmButtonAction());
+    document.getElementById("confirm-button").addEventListener("click", confirmButtonAction);
 
     document.getElementById("show-roles-button").addEventListener("click", () => {
         const lobby = lobbies.find(lobby => lobby.cards.find(card => card.id === myId));

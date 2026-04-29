@@ -98,5 +98,13 @@
     "description": "The Apprentice Seer may view one of the center cards.",
     "nightAction": "You may look at one of the center cards.",
     "nightActionDetailed": "If you click a center card, you select it. If you click 'confirm', you view your selected card."
+  },
+  {
+    "name": "Revealer",
+    "team": "Villager",
+    "nightOrder": 10,
+    "description": "The Revealer may turn over any other player's card. If they reveal the card of a player that is not on Team Town, they must turn it face down again; otherwise, they leave it face up.",
+    "nightAction": "You may turn any other player's card face up. If the card you reveal is not on the villager's team, turn it back over face down.",
+    "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you turn it over. If that card is not on the Villager Team, the card turns face down again."
   }
 ]

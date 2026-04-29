@@ -123,6 +123,7 @@ function clickSelectCard(lobby) {
         {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
         {id: 9, name: "Drunk", text: "Swap your card with center"},
         {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
+        {id: 18, name: "Revealer", text: "Turn over 1 other player's card if village"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"},
@@ -366,7 +367,7 @@ function setCardClickEvent(id) {
 
             if (player.startingRole === "Werewolf" && players.filter(p => p.startingRole === "Werewolf").length === 1 ||
                 player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Robber" || player.startingRole === "Drunk" ||
-                player.startingRole === "Doppelganger" || player.startingRole === "Apprentice Seer") {
+                player.startingRole === "Doppelganger" || player.startingRole === "Apprentice Seer" || player.startingRole === "Revealer") {
                 lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
                 document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
                 document.getElementById("confirm-button").style.display = "flex";
@@ -808,7 +809,11 @@ function showRoleExplanation(you, selectedRoles) {
     }
 }
 
+function allMainRolesActed(players) {
+    return players.every(p => p.hasDoneNightAction || p.startingRole === "Insomniac" || p.startingRole === "Revealer");
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
-    showVoteResultBoard, showRoleExplanation};
+    showVoteResultBoard, showRoleExplanation, allMainRolesActed};
