@@ -117,8 +117,8 @@ function clickSelectCard(lobby) {
         {id: 15, name: "Minion", text: "Sees other werewolves, but they not him"},
         {id: 11, name: "Mason", text: "See the other Mason"},
         {id: 12, name: "Mason", text: "See the other Mason"},
-        {id: 6, name: "Seer", text: "Either view 1 player´s card or 2 center cards"},
-        {id: 17, name: "Apprentice Seer", text: "View 1 center card"},
+        {id: 6, name: "Seer", text: "May either view 1 player´s card or 2 center cards"},
+        {id: 17, name: "Apprentice Seer", text: "May view 1 center card"},
         {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
         {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
         {id: 9, name: "Drunk", text: "Swap your card with center"},
@@ -235,22 +235,23 @@ function viewCard(card, as = card.role) {
 }
 
 function setupButtonEvents() {
-    document.getElementById("ok-button").addEventListener("click", () => {
-        socket.emit("has-done-night-action");
-        resetNightActionTexts();
+    document.getElementById("continue-button").addEventListener("click", () => {
+        document.getElementById("continue-button").style.display = "none";
+        getCardElement(myId).querySelectorAll("img").forEach(img => img.remove());
+        document.getElementById("display-text").textContent = "Wait for the other players to look at their roles";
+        socket.emit("check-has-seen-role");
     });
+    document.getElementById("confirm-waiting-button").addEventListener("click", () => {
+        document.getElementById("confirm-waiting-button").style.display = "none";
+        socket.emit("saw-wait-message");
+    })
     document.getElementById("do-nothing-button").addEventListener("click", () => {
         socket.emit("has-done-night-action");
         resetNightActionTexts();
     });
-
-    document.getElementById("continue-button").addEventListener("click", () => {
-        document.getElementById("continue-button").style.display = "none";
-        getCardElement(myId).querySelectorAll("img").forEach(img => img.remove());
-        document.getElementById("role-explanation").textContent = "";
-        document.getElementById("display-text").textContent = "Wait for the other players to look at their roles";
-
-        socket.emit("check-has-seen-role");
+    document.getElementById("ok-button").addEventListener("click", () => {
+        socket.emit("has-done-night-action");
+        resetNightActionTexts();
     });
 }
 
@@ -259,6 +260,7 @@ function resetNightActionTexts() {
     document.getElementById("confirm-button").style.display = "none";
     document.getElementById("ok-button").style.display = "none";
     document.getElementById("do-nothing-button").style.display = "none";
+    document.getElementById("confirm-waiting-button").style.display = "none";
     document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
 
     for (const card of lobby.cards) {
@@ -335,6 +337,7 @@ function clearEverything() {
         document.getElementById("do-nothing-button").style.display = "none";
         document.getElementById("confirm-button").style.display = "none";
         document.getElementById("ok-button").style.display = "none";
+        document.getElementById("confirm-waiting-button").style.display = "none";
         const players = lobby.cards.filter(card => !card.isMiddleCard);
         for (const player of players) {
             getCardElement(player.id).style.background = "#f0f0f0";
@@ -343,6 +346,7 @@ function clearEverything() {
         }
         document.getElementById("role-show-stage").style.display = "none";
         document.querySelectorAll(".role-token").forEach(token => token.remove());
+        document.getElementById("general-rules-list").querySelectorAll(".dynamic-rule").forEach(element => element.remove());
     }
 }
 
@@ -790,9 +794,16 @@ function validateRoleSelection(lobby) {
     }
 }
 
-function showRoleExplanation(you, selectedRoles) {
-    const text = document.getElementById("role-explanation");
-    text.textContent = allRoles.find(role => role.name === you.role).description + "\n How you win: ";
+function setupGeneralInfo(you, selectedRoles) {
+    const list = document.getElementById("general-rules-list");
+
+    const yourRoleDescription = document.createElement("li");
+    yourRoleDescription.innerHTML = `<b>Your Role: </b>` + allRoles.find(role => role.name === you.role).description;
+    yourRoleDescription.className = "dynamic-rule";
+
+    const text = document.createElement("li");
+    text.innerHTML = `<b>How you win: </b>`;
+    text.className = "dynamic-rule";
 
     if (you.team === "Villager") {
         text.textContent += "During voting, if a werewolf dies, your team wins.";
@@ -807,13 +818,11 @@ function showRoleExplanation(you, selectedRoles) {
     if (you.team === "Tanner") {
         text.textContent += "During voting, if you die, you win.";
     }
-}
 
-function allMainRolesActed(players) {
-    return players.every(p => p.hasDoneNightAction || p.startingRole === "Insomniac" || p.startingRole === "Revealer");
+    list.append(yourRoleDescription, text);
 }
 
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
-    showVoteResultBoard, showRoleExplanation, allMainRolesActed};
+    showVoteResultBoard, setupGeneralInfo};

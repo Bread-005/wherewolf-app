@@ -94,6 +94,7 @@
         <button id="confirm-button">Confirm</button>
         <button id="ok-button">Ok</button>
         <button id="do-nothing-button">Do Nothing</button>
+        <button id="confirm-waiting-button">Confirm Waiting</button>
     </div>
     <div id="tokens-container"></div>
     <button id="skip-to-vote-button">Skip to Vote</button>
@@ -115,17 +116,15 @@
         <div>Votes</div>
     </div>
     <div id="role-show-stage">Shows Ending Roles</div>
-    <div id="role-explanation"></div>
 </div>
 
 <div id="game-info-icon">
     <i id="game-rules-icon" class="fa-solid fa-circle-question"></i>
     <div id="game-rules-popup">
         <h4>General Rules</h4>
-        <ul>
+        <ul id="general-rules-list">
             <li><b>Roles:</b> Players only perform the action of the role they saw when the game begins. (Exceptions: Copycat, Doppelganger)</li>
-            <li><b>Voting:</b> When the day ends, you must click another player to vote. You cannot vote for yourself.</li>
-            <li><b>Death:</b> The player(s) with the most votes die. If the highest amount of votes is only 1, no one dies.</li>
+            <li><b>Reloading:</b> If you reload the page during the night you might not get your info or do your night action</li>
         </ul>
     </div>
 </div>

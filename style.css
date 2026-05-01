@@ -373,7 +373,7 @@ body {
         #show-roles-button {
             display: flex;
             position: absolute;
-            bottom: -15%;
+            bottom: -7.5%;
             right: -2.5%;
             transform: translateX(-50%);
             padding: 10px 15px;
@@ -572,7 +572,7 @@ body {
             align-items: center;
             gap: 10px;
 
-            #continue-button, #ok-button, #do-nothing-button, #confirm-button {
+            #continue-button, #ok-button, #do-nothing-button, #confirm-button, #confirm-waiting-button {
                 display: none;
                 padding: 12px 40px;
                 font-size: 1.5rem;
@@ -788,16 +788,6 @@ body {
 
         #roles-warning-container:hover #roles-warning-tooltip {
             display: flex;
-        }
-
-        #role-explanation {
-            display: flex;
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: pre-line;
-            text-align: center;
         }
     }
 

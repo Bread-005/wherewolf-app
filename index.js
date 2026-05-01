@@ -1,7 +1,23 @@
 import {
-    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents, clickSelectCard, viewCard, resetNightActionTexts,
-    showVoteResults, clearEverything, getCardElement, updateKickMenu, openRolesDisplay, setupTokens, sendMessage,
-    receiveMessage, loadMessages, sendConsoleMessage, showVoteResultBoard, showRoleExplanation, allMainRolesActed
+    showErrorPopup,
+    createLobbyDisplay,
+    displayCards,
+    setupButtonEvents,
+    clickSelectCard,
+    viewCard,
+    resetNightActionTexts,
+    showVoteResults,
+    clearEverything,
+    getCardElement,
+    updateKickMenu,
+    openRolesDisplay,
+    setupTokens,
+    sendMessage,
+    receiveMessage,
+    loadMessages,
+    sendConsoleMessage,
+    showVoteResultBoard,
+    setupGeneralInfo
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
@@ -100,15 +116,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             for (const player of players) {
                 if (!document.getElementById("card" + player.id)) {
                     displayCards(lobby);
-                    showRoleActions();
                 }
             }
             updateKickMenu(lobby);
+            if (document.getElementById("general-rules-list").querySelectorAll(".dynamic-rule").length === 0 && you.role) {
+                setupGeneralInfo(you, lobby.selectedRoles);
+            }
             if (lobby.state === "waiting") {
                 displayCards(lobby);
                 clearEverything();
             }
             if (lobby.state === "select-roles") {
+                displayCards(lobby);
                 document.getElementById("select-roles-screen").style.display = "grid";
                 document.getElementById("show-roles-button").style.display = "none";
                 clickSelectCard(lobby);
@@ -125,7 +144,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
                     if (lobby && lobby.state === "look-at-role" && getCardElement(myId).style.cursor === "pointer") {
                         viewCard(lobby.cards.find(player => player.id === myId));
-                        showRoleExplanation(you, lobby.selectedRoles);
                         document.getElementById("continue-button").style.display = "flex";
                     }
                 }, {once: true});
@@ -134,27 +152,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lobby.state === "night") {
                 document.getElementById("game").style.background = "royalblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
-
-                if (you.startingRole === "Insomniac" && allMainRolesActed(players) && !you.hasDoneNightAction &&
-                    !getCardElement(myId).querySelector("img") && (!lobby.cards.find(card => card.role === "Doppelganger") || lobby.nightTimer > 20)) {
-                    document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + you.role;
-                    viewCard(you);
-                    document.getElementById("ok-button").style.display = "flex";
-                }
-                if (you.startingRole === "Insomniac" && you.hasDoneNightAction && getCardElement(myId).querySelector("img")) {
-                    resetNightActionTexts();
-                }
-                if (you.startingRole === "Revealer" && allMainRolesActed(players) && document.getElementById("do-nothing-button").style.display === "none" &&
-                    !you.hasDoneNightAction && (!lobby.cards.find(card => card.role === "Doppelganger") || lobby.nightTimer > 20)) {
-                    showRoleActions();
-                }
-
-                if (you.hasDoneNightAction) {
-                    document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
-                }
-                if (you.nightActionText) {
-                    document.getElementById("night-action-text").textContent = you.nightActionText;
-                }
+                showRoleActions();
                 document.getElementById("chat-container").style.display = "none";
             }
             if (lobby.state === "day") {
@@ -224,10 +222,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         showErrorPopup(message);
     });
 
-    socket.on("setup-night", () => {
-        showRoleActions();
-    });
-
     document.getElementById("confirm-button").addEventListener("click", confirmButtonAction);
 
     document.getElementById("show-roles-button").addEventListener("click", () => {
@@ -256,10 +250,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket.on("receive-chat-message", (data) => {
         receiveMessage(data);
-    });
-
-    socket.on("doppelganger-show-role-night-action", () => {
-        showRoleActions();
     });
 
     document.getElementById("game-rules-icon").addEventListener("mouseover", () => {

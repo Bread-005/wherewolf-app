@@ -1,8 +1,7 @@
-import {allMainRolesActed, animateCardSwap, getCardElement, viewCard} from "./functions.js";
+import {animateCardSwap, getCardElement, viewCard} from "./functions.js";
 import {allRoles, lobbies, myId, socket} from "./index.js";
 
-function wakeUpMultiple(player, roleName) {
-    if (player.startingRole !== roleName) return;
+function wakeUpMultiple(roleName) {
 
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
     const players = lobby.cards.filter(card1 => !card1.isMiddleCard);
@@ -11,14 +10,21 @@ function wakeUpMultiple(player, roleName) {
     players.forEach(p => {
         if (p.startingRole === roleName) {
             samePlayers.push(p.name);
-            viewCard(p, roleName);
+            if (getCardElement(p.id).querySelectorAll("img").length === 0 && p.id !== myId) {
+                viewCard(p, roleName);
+            }
         }
     });
 
     if (roleName === "Werewolf") {
-        document.getElementById("night-action-text").textContent = "These are the werewolves: " + samePlayers.join(", ");
+        const hasSelectedCard = document.getElementById("cards").querySelectorAll(".selected-card").length > 0;
+        if (!hasSelectedCard) {
+            document.getElementById("night-action-text").textContent = "These are the werewolves: " + samePlayers.join(", ");
+        }
         if (samePlayers.length === 1) {
-            document.getElementById("night-action-text").textContent += "\n Because you are the only werewolf, you may click one center card to view it.";
+            if (!hasSelectedCard) {
+                document.getElementById("night-action-text").textContent += "\n Because you are the only werewolf, you may click one center card to view it.";
+            }
             document.getElementById("do-nothing-button").style.display = "flex";
             lobby.cards.filter(c => c.isMiddleCard).forEach(c => getCardElement(c.id).style.cursor = "pointer");
         }
@@ -32,8 +38,7 @@ function wakeUpMultiple(player, roleName) {
     }
 }
 
-function minionSeeWerewolves(player) {
-    if (player.startingRole !== "Minion") return;
+function minionSeeWerewolves() {
 
     const lobby = lobbies.find(lobby => lobby.cards.find(p => p.id === myId));
     const players = lobby.cards.filter(card1 => !card1.isMiddleCard);
@@ -57,62 +62,111 @@ function showRoleActions() {
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
     if (!lobby) return;
     lobby.cards.forEach(card => getCardElement(card.id).style.cursor = "default");
+    document.getElementById("confirm-waiting-button").style.display = "none";
     if (lobby.state !== "night") return;
     const players = lobby.cards.filter(card => !card.isMiddleCard);
     const player = players.find(player => player.id === myId);
     if (!player) return;
-    if (document.getElementById("ok-button").style.display === "flex") return;
     if (player.hasDoneNightAction) {
+        document.getElementById("ok-button").style.display = "none";
+        document.getElementById("do-nothing-button").style.display = "none";
         document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
         return;
     }
-    if (lobby.cards.find(card => card.role === "Doppelganger") && lobby.nightTimer < 21 && player.roleChain[0] !== "Doppelganger") {
-        document.getElementById("night-action-text").textContent = "waiting for a potential Doppelganger to perform their action ...";
-        return;
+    if (allRoles.find(role => role.name === player.startingRole).nightOrder > 100) {
+        document.getElementById("night-action-text").textContent = "You do not have a night action.";
+        document.getElementById("ok-button").style.display = "flex";
     }
-    if (player.roleChain[0] !== "Doppelganger" || lobby.nightTimer > 20) {
-        wakeUpMultiple(player, "Werewolf");
-        wakeUpMultiple(player, "Mason");
-        minionSeeWerewolves(player);
+    if (document.getElementById("ok-button").style.display === "flex") return;
+    if (lobby.cards.find(card => getCardElement(card.id).style.transition)) return;
+
+    if (document.getElementById("do-nothing-button").style.display !== "flex" && document.getElementById("confirm-button").style.display !== "flex") {
+        document.getElementById("night-action-text").textContent = "waiting for some roles to perform their action before you ...";
+    }
+
+    const length = players.filter(p => p.hasClickedConfirm || p.sawWaitMessage || p.startingRole === "Werewolf" || p.startingRole === "Minion" ||
+        p.startingRole === "Mason").length;
+
+    if (players.find(p => p.startingRole === "Doppelganger") || lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger") &&
+        (length < players.length - 1 || lobby.nightTimer < (5 + Math.floor(Math.random() * 10)))) {
+        if (player.roleChain[0] === "Minion" || player.roleChain[0] === "Mason") {
+            return;
+        }
+    }
+
+    if (players.find(p => p.startingRole === "Doppelganger") ||
+        players.find(p => p.roleChain[0] === "Doppelganger" && !p.hasDoneNightAction && (p.startingRole === "Robber" || p.startingRole === "Troublemaker" || p.startingRole === "Drunk")) ||
+        lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger") && length < players.length - 1) {
+        if (player.roleChain[0] === "Werewolf" || player.roleChain[0] === "Seer" || player.roleChain[0] === "Apprentice Seer" ||
+            player.roleChain[0] === "Robber") {
+            if (!player.sawWaitMessage) {
+                document.getElementById("confirm-waiting-button").style.display = "flex";
+            }
+            return;
+        }
     }
 
     if (player.startingRole === "Insomniac" || player.startingRole === "Revealer") {
-        document.getElementById("night-action-text").textContent = "wait until everyone else has done their night actions ...";
-    }
-
-    const wikiRole = allRoles.find(role => role.name === player.startingRole);
-
-    if (!wikiRole) return;
-    if (wikiRole.nightOrder < 5 && player.startingRole !== "Doppelganger") return;
-    if (wikiRole.nightOrder > 8 && (player.startingRole !== "Revealer" || !allMainRolesActed(players))) return;
-
-    const middleCards = lobby.cards.filter(card => card.isMiddleCard);
-    const otherPlayerCards = lobby.cards.filter(card => !card.isMiddleCard && card.id !== myId);
-
-    if (player.startingRole === "Seer" || player.startingRole === "Drunk" || player.startingRole === "Apprentice Seer") {
-        for (const card of middleCards) {
-            getCardElement(card.id).style.cursor = "pointer";
+        if (length < players.length - 1 || !player.mayDoLateAction || lobby.nightTimer < (10 + Math.floor(Math.random() * 7))) {
+            if (!player.sawWaitMessage) {
+                document.getElementById("confirm-waiting-button").style.display = "flex";
+            }
+            return;
         }
     }
 
-    if (player.startingRole === "Seer" || player.startingRole === "Robber" || player.startingRole === "Troublemaker" ||
-        player.startingRole === "Doppelganger" || player.startingRole === "Revealer") {
-        for (const card of otherPlayerCards) {
-            getCardElement(card.id).style.cursor = "pointer";
-        }
+    if (!player.sawWaitMessage) {
+        socket.emit("saw-wait-message");
     }
 
-    document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
-    document.getElementById("do-nothing-button").style.display = "flex";
+    if (player.startingRole === "Werewolf") {
+        wakeUpMultiple("Werewolf");
+    }
+    if (player.startingRole === "Minion") {
+        minionSeeWerewolves();
+    }
+    if (player.startingRole === "Mason") {
+        wakeUpMultiple("Mason");
+    }
 
+    if (player.startingRole === "Doppelganger" || player.startingRole === "Seer" || player.startingRole === "Robber" ||
+        player.startingRole === "Troublemaker") {
+        makeCardsClickable("players");
+    }
+
+    if (player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" || player.startingRole === "Drunk") {
+        makeCardsClickable("center");
+    }
+    if (player.startingRole === "Insomniac") {
+        document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + player.role;
+        viewCard(player);
+        document.getElementById("ok-button").style.display = "flex";
+    }
+    if (player.startingRole === "Revealer") {
+        makeCardsClickable("players");
+    }
     if (player.startingRole === "Drunk" || player.startingRole === "Doppelganger") {
         document.getElementById("do-nothing-button").style.display = "none";
+    }
+
+    function makeCardsClickable(type = "") {
+        if (!player.hasClickedConfirm) {
+            const cards = lobby.cards.filter(card => !card.isMiddleCard && type === "players" && card.id !== myId || card.isMiddleCard && type === "center");
+            for (const card of cards) {
+                getCardElement(card.id).style.cursor = "pointer";
+            }
+            if (document.getElementById("cards").querySelectorAll(".selected-card").length === 0) {
+                document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
+                document.getElementById("do-nothing-button").style.display = "flex";
+            }
+        }
     }
 }
 
 function confirmButtonAction() {
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
-    const player = lobby.cards.find(player => player.id === myId);
+    const players = lobby.cards.filter(card => !card.isMiddleCard);
+    const player = players.find(player => player.id === myId);
     const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
 
     lobby.cards.forEach(card => getCardElement(card.id).style.cursor = "default");
@@ -127,19 +181,14 @@ function confirmButtonAction() {
         }
     }));
 
-    if (player.startingRole === "Werewolf" || player.startingRole === "Seer" || player.startingRole === "Doppelganger" || player.startingRole === "Apprentice Seer" ||
-        player.startingRole === "Revealer") {
-        viewCard(selectedCards[0]);
+    if (player.startingRole === "Doppelganger" || player.startingRole === "Werewolf" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer") {
+        viewCard(selectedCards[0], selectedCards[0].viewableStartingRole);
         if (selectedCards.length > 1) {
-            viewCard(selectedCards[1]);
+            viewCard(selectedCards[1], selectedCards[1].viewableStartingRole);
         }
         document.getElementById("ok-button").style.display = "flex";
         if (player.startingRole === "Doppelganger") {
             document.getElementById("night-action-text").textContent = "You look at " + selectedCards[0].name + "'s card and see " + selectedCards[0].role;
-            socket.emit("doppelganger-clicked-confirm");
-        }
-        if (player.startingRole === "Revealer" && selectedCards.at(-1).team === "Villager") {
-            socket.emit("turn-over-card");
         }
     }
     if (player.startingRole === "Robber") {
@@ -154,6 +203,15 @@ function confirmButtonAction() {
         socket.emit(player.roleChain[0] === "Doppelganger" ? "perform-swap" : "add-swap", {priority: 8, swap: [player, selectedCards[0]]});
         animateCardSwap(player, selectedCards[0], "You swapped your card with " + selectedCards[0].name);
     }
+    if (player.startingRole === "Revealer") {
+        viewCard(selectedCards.at(-1));
+        document.getElementById("ok-button").style.display = "flex";
+        if (selectedCards.at(-1).team === "Villager") {
+            socket.emit("turn-over-card");
+        }
+    }
+
+    socket.emit("has-clicked-confirm");
 }
 
 export {wakeUpMultiple, showRoleActions, confirmButtonAction};
