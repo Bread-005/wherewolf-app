@@ -106,5 +106,13 @@
     "description": "The Revealer may turn over any other player's card. If they reveal the card of a player that is not on Team Town, they must turn it face down again; otherwise, they leave it face up.",
     "nightAction": "You may turn any other player's card face up. If the card you reveal is not on the villager's team, turn it back over face down.",
     "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you turn it over. If that card is not on the Villager Team, the card turns face down again."
+  },
+  {
+    "name": "Sentinel",
+    "team": "Villager",
+    "nightOrder": 0,
+    "description": "The Sentinel may place a Shield Token on any other player's card. A card with a Shield Token cannot be moved or viewed by any player.",
+    "nightAction": "You place a shield token on any player's card except your own.",
+    "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you place a shield token onto your selected card."
   }
 ]

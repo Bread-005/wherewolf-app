@@ -17,7 +17,7 @@ import {
     loadMessages,
     sendConsoleMessage,
     showVoteResultBoard,
-    setupGeneralInfo
+    setupGeneralInfo, displaySentinelShieldToken
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
@@ -116,6 +116,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             for (const player of players) {
                 if (!document.getElementById("card" + player.id)) {
                     displayCards(lobby);
+                }
+                if (player.isSentinelled && getCardElement(player.id).querySelectorAll(".shield-token").length === 0) {
+                    displaySentinelShieldToken(player);
                 }
             }
             updateKickMenu(lobby);

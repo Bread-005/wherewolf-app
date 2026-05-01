@@ -84,6 +84,14 @@ function showRoleActions() {
         document.getElementById("night-action-text").textContent = "waiting for some roles to perform their action before you ...";
     }
 
+    if (players.find(p => p.startingRole === "Sentinel" && !p.hasDoneNightAction) && player.startingRole !== "Sentinel") {
+        return;
+    }
+    if (players.find(p => p.startingRole === "Doppelganger") && players.find(p => p.startingRole === "Sentinel") &&
+        player.startingRole !== "Sentinel" && player.startingRole !== "Doppelganger") {
+        return;
+    }
+
     const length = players.filter(p => p.hasClickedConfirm || p.sawWaitMessage || p.startingRole === "Werewolf" || p.startingRole === "Minion" ||
         p.startingRole === "Mason").length;
 
@@ -119,6 +127,12 @@ function showRoleActions() {
         socket.emit("saw-wait-message");
     }
 
+    // show night actions (buttons, cards selections, etc.)
+
+    if (player.startingRole === "Sentinel") {
+        makeCardsClickable("players");
+    }
+
     if (player.startingRole === "Werewolf") {
         wakeUpMultiple("Werewolf");
     }
@@ -138,6 +152,11 @@ function showRoleActions() {
         makeCardsClickable("center");
     }
     if (player.startingRole === "Insomniac") {
+        if (player.isSentinelled) {
+            document.getElementById("night-action-text").textContent = "There is a shield token on your card. Therefore you cannot perform your night action";
+            document.getElementById("ok-button").style.display = "flex";
+            return;
+        }
         document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + player.role;
         viewCard(player);
         document.getElementById("ok-button").style.display = "flex";
@@ -145,15 +164,24 @@ function showRoleActions() {
     if (player.startingRole === "Revealer") {
         makeCardsClickable("players");
     }
-    if (player.startingRole === "Drunk" || player.startingRole === "Doppelganger") {
+
+    if (player.startingRole === "Drunk" && !player.isSentinelled || player.startingRole === "Doppelganger") {
         document.getElementById("do-nothing-button").style.display = "none";
     }
 
     function makeCardsClickable(type = "") {
         if (!player.hasClickedConfirm) {
+            if (player.isSentinelled && (player.startingRole === "Robber" || player.startingRole === "Drunk")) {
+                document.getElementById("night-action-text").textContent = "There is a shield token on your card. Therefore you cannot perform your night action";
+                document.getElementById("ok-button").style.display = "flex";
+                return;
+            }
+
             const cards = lobby.cards.filter(card => !card.isMiddleCard && type === "players" && card.id !== myId || card.isMiddleCard && type === "center");
             for (const card of cards) {
-                getCardElement(card.id).style.cursor = "pointer";
+                if (!card.isSentinelled) {
+                    getCardElement(card.id).style.cursor = "pointer";
+                }
             }
             if (document.getElementById("cards").querySelectorAll(".selected-card").length === 0) {
                 document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
@@ -180,6 +208,12 @@ function confirmButtonAction() {
             team: card.team
         }
     }));
+
+    if (player.startingRole === "Sentinel") {
+        socket.emit("set-is-sentinelled", selectedCards.at(-1).name);
+        document.getElementById("night-action-text").textContent = "You placed a shield token on " + selectedCards.at(-1).name + "'s card";
+        document.getElementById("ok-button").style.display = "flex";
+    }
 
     if (player.startingRole === "Doppelganger" || player.startingRole === "Werewolf" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer") {
         viewCard(selectedCards[0], selectedCards[0].viewableStartingRole);
