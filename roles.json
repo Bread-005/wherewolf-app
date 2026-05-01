@@ -114,5 +114,13 @@
     "description": "The Sentinel may place a Shield Token on any other player's card. A card with a Shield Token cannot be moved or viewed by any player.",
     "nightAction": "You place a shield token on any player's card except your own.",
     "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you place a shield token onto your selected card."
+  },
+  {
+    "name": "Copycat",
+    "team": "Villager",
+    "nightOrder": -8,
+    "description": "The Copycat looks at one of the center cards. They take on all the properties of that role, including waking up when that card would've woken up, and doing their night action.",
+    "nightAction": "Look at one of the center cards. You are now a copy of that role. If that role is called, wake up and do that night action.",
+    "nightActionDetailed": "If you click a center card, you select it. If you click 'confirm', you view that card and copy it. If your viewed card has a night action, you do it when that role would do it."
   }
 ]

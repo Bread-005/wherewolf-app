@@ -111,8 +111,9 @@ function clickSelectCard(lobby) {
     selectRolesScreen.style.display = "grid";
 
     const roles = [
+        {id: 20, name: "Copycat", text: "View a center card. Copy that role"},
         {id: 19, name: "Sentinel", text: "May place a shield token"},
-        {id: 16, name: "Doppelganger", text: "Look at another player's card. Copy their role"},
+        {id: 16, name: "Doppelganger", text: "View another player's card. Copy their role"},
         {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 15, name: "Minion", text: "Sees other werewolves, but they not him"},
@@ -370,7 +371,7 @@ function setCardClickEvent(id) {
             }
             const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
 
-            if (player.startingRole === "Sentinel" || player.startingRole === "Doppelganger" ||
+            if (player.startingRole === "Copycat" || player.startingRole === "Sentinel" || player.startingRole === "Doppelganger" ||
                 player.startingRole === "Werewolf" && players.filter(p => p.startingRole === "Werewolf").length === 1 ||
                 player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Apprentice Seer" || player.startingRole === "Robber" ||
                 player.startingRole === "Drunk" || player.startingRole === "Revealer") {
