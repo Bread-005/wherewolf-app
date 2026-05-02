@@ -64,6 +64,7 @@ function showRoleActions() {
     lobby.cards.forEach(card => getCardElement(card.id).style.cursor = "default");
     if (lobby.state !== "night") return;
     const players = lobby.cards.filter(card => !card.isMiddleCard);
+    const centerCards = lobby.cards.filter(card => card.isMiddleCard);
     const player = players.find(player => player.id === myId);
     if (!player) return;
     if (player.hasDoneNightAction) {
@@ -84,14 +85,19 @@ function showRoleActions() {
     }
     if (document.getElementById("confirm-waiting-button").style.display === "flex") return;
 
-    if (players.find(p => p.startingRole === "Copycat") && lobby.cards.find(card => card.isMiddleCard && card.startingRole === "Sentinel") && player.startingRole !== "Copycat") {
+    if (players.find(p => p.startingRole === "Copycat") && centerCards.find(card => card.startingRole === "Sentinel") && player.startingRole !== "Copycat") {
         return;
     }
-    if (players.find(p => p.startingRole === "Sentinel" && !p.hasDoneNightAction) && player.startingRole !== "Sentinel") {
+    if (players.find(p => p.startingRole === "Sentinel" && !p.hasDoneNightAction) && player.startingRole !== "Copycat" && player.startingRole !== "Sentinel") {
         return;
     }
     if (players.find(p => p.startingRole === "Doppelganger") && players.find(p => p.startingRole === "Sentinel") &&
         player.startingRole !== "Sentinel" && player.startingRole !== "Doppelganger") {
+        return;
+    }
+
+    if (player.startingRole === "Doppelganger" &&
+        (players.find(p => p.startingRole === "Copycat") || centerCards.find(card => card.startingRole === "Copycat") && lobby.nightTimer < (5 + Math.floor(Math.random() * 5)))) {
         return;
     }
 

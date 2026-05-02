@@ -17,7 +17,7 @@ import {
     loadMessages,
     sendConsoleMessage,
     showVoteResultBoard,
-    setupGeneralInfo, displaySentinelShieldToken
+    setupGeneralInfo, displaySentinelShieldToken, buildGameSummary
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 
@@ -208,6 +208,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     document.getElementById("voted-banner" + player.id).style.display = "none";
                 }
                 showVoteResultBoard(lobby, players);
+                buildGameSummary(lobby);
             }
             loadMessages(lobby);
         }
@@ -269,6 +270,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("how-to-play-icon").addEventListener("mouseout", () => {
         document.getElementById("how-to-play-text").style.display = "none";
+    });
+
+    document.getElementById("game-summary-button").addEventListener("click", () => {
+        document.getElementById("game-summary-overlay").style.display = "flex";
+    });
+
+    document.getElementById("close-summary").addEventListener("click", () => {
+        document.getElementById("game-summary-overlay").style.display = "none";
     });
 });
 

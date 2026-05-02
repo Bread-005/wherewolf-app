@@ -111,11 +111,18 @@
     <h3 id="display-text-3"></h3>
     <div id="vote-result-display">
         <div>Playername</div>
-        <div>Role History</div>
-        <div>Voters</div>
         <div>Votes</div>
+        <div>Voters</div>
     </div>
     <div id="role-show-stage">Shows Ending Roles</div>
+    <button id="game-summary-button">Game Log</button>
+    <div id="game-summary-overlay" class="overlay">
+        <div class="overlay-content">
+            <span class="close-overlay" id="close-summary">&times;</span>
+            <h2>Game Summary</h2>
+            <div id="summary-list"></div>
+        </div>
+    </div>
 </div>
 
 <div id="game-info-icon">
@@ -124,7 +131,7 @@
         <h4>General Rules</h4>
         <ul id="general-rules-list">
             <li><b>Roles:</b> Players only perform the action of the role they saw when the game begins. (Exceptions: Copycat, Doppelganger)</li>
-            <li><b>Reloading:</b> If you reload the page during the night you might not get your info or do your night action</li>
+            <li><b>Reloading:</b> If you reload the page during the night you might not get your info or do your night action.</li>
         </ul>
     </div>
 </div>

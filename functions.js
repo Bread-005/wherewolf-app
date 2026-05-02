@@ -349,6 +349,7 @@ function clearEverything() {
         document.getElementById("role-show-stage").style.display = "none";
         document.querySelectorAll(".role-token").forEach(token => token.remove());
         document.getElementById("general-rules-list").querySelectorAll(".dynamic-rule").forEach(element => element.remove());
+        document.getElementById("game-summary-button").style.display = "none";
     }
 }
 
@@ -703,17 +704,14 @@ function showVoteResultBoard(lobby, players) {
         const name = document.createElement("div");
         name.textContent = player.name;
         name.className = "dynamic-result";
-        const role = document.createElement("div");
-        role.textContent = player.roleChain.join(" -> ");
-        role.className = "dynamic-result";
-        const voters = document.createElement("div");
-        voters.textContent = players.filter(p => p.vote === player.name).map(p => p.name).join(", ");
-        voters.className = "dynamic-result";
         const numberOfVotes = document.createElement("div");
         numberOfVotes.textContent = players.filter(p => p.vote === player.name).length;
         numberOfVotes.className = "dynamic-result";
+        const voters = document.createElement("div");
+        voters.textContent = players.filter(p => p.vote === player.name).map(p => p.name).join(", ");
+        voters.className = "dynamic-result";
 
-        document.getElementById("vote-result-display").append(name, role, voters, numberOfVotes);
+        document.getElementById("vote-result-display").append(name, numberOfVotes, voters);
     }
 
     document.getElementById("display-text").textContent = lobby.voteResultText;
@@ -833,7 +831,191 @@ function displaySentinelShieldToken(player) {
     getCardElement(player.id).append(shieldToken);
 }
 
+function buildGameSummary(lobby) {
+    document.getElementById("game-summary-button").style.display = "flex";
+
+    const summaryList = document.getElementById("summary-list");
+    summaryList.innerHTML = "";
+
+    const tempRoles = [];
+    const roles = lobby.selectedRoles.map(role => ({
+        name: role.name,
+        nightOrder: allRoles.find(r => r.name === role.name)?.nightOrder || 200
+    })).sort((a, b) => a.nightOrder - b.nightOrder)
+        .filter(role => {
+            if (tempRoles.includes(role.name)) return false;
+            tempRoles.push(role.name);
+            return true;
+        });
+
+    const createSummaryCard = (name, roleName, isViewed = true, isMiddleCard = false) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "summary-card";
+
+        if (isViewed) {
+            const img = document.createElement("img");
+            const fileName = roleName.toLowerCase().replace(/ /g, "_");
+            img.src = `./images/${fileName}.png`;
+            img.className = "summary-card-img";
+            cardDiv.append(img);
+        }
+        if (!isMiddleCard) {
+            const nameLabel = document.createElement("span");
+            nameLabel.className = "summary-card-name";
+            nameLabel.textContent = name;
+            cardDiv.append(nameLabel);
+        }
+        return cardDiv;
+    };
+
+    for (const role of roles) {
+        const player = lobby.cards.find(card => !card.isMiddleCard && (card.roleChain[0] === role.name || card.selectedCards[0]?.role === role.name && card.roleChain[0] === "Copycat"));
+
+        if (player && role.nightOrder < 100) {
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "summary-item";
+
+            const playerCard = createSummaryCard(player.name, player.roleChain[0]);
+
+            const actionText = document.createElement("span");
+            actionText.className = "summary-action-text";
+            actionText.textContent = getText(role.name);
+            if (player.selectedCards.length === 0) {
+                actionText.textContent = "did nothing";
+            }
+
+            itemDiv.append(playerCard);
+            if (player.roleChain[0] === "Copycat" && role.name !== "Copycat") {
+                const playerCard2 = createSummaryCard("", player.selectedCards[0].role);
+                itemDiv.append(playerCard2);
+            }
+            itemDiv.append(actionText);
+
+            const targetsContainer = document.createElement("div");
+            targetsContainer.className = "summary-targets";
+
+            if (player.selectedCards.length > 0) {
+                const selectedCards = [...player.selectedCards];
+
+                if (player.roleChain[0] === "Copycat") {
+                    if (role.name === player.roleChain[0]) {
+                        selectedCards.length = 1;
+                    } else {
+                        selectedCards.shift();
+                    }
+                }
+
+                if ((player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0].role === "Doppelganger") && role.name === "Doppelganger") {
+                    targetsContainer.append(createSummaryCard(selectedCards[0].name, selectedCards[0].role));
+                    if (selectedCards.length > 1) {
+                        const andText = document.createElement("span");
+                        andText.className = "summary-and-text";
+                        andText.textContent = "and then selected";
+                        targetsContainer.append(andText);
+                    }
+                    selectedCards.shift();
+                }
+
+                const hasMiddleCard = selectedCards.find(card => card.name === "middle-card1" || card.name === "middle-card2" || card.name === "middle-card3");
+
+                if (hasMiddleCard) {
+                    const allMiddleCards = lobby.cards.filter(c => c.isMiddleCard);
+                    allMiddleCards.forEach(mCard => {
+                        const viewed = selectedCards.find(selected => selected.name === mCard.name);
+                        if (viewed) {
+                            targetsContainer.append(createSummaryCard(mCard.name, viewed.role, true, true));
+                        } else {
+                            targetsContainer.append(createSummaryCard(mCard.name, "", false, true));
+                        }
+                    });
+                } else {
+                    selectedCards.forEach((selected, index) => {
+                        targetsContainer.append(createSummaryCard(selected.name, selected.role));
+
+                        if (index < selectedCards.length - 1 && selectedCards.length > 1) {
+                            const andText = document.createElement("span");
+                            andText.className = "summary-and-text";
+                            andText.textContent = "and";
+                            targetsContainer.append(andText);
+                        }
+                    });
+                }
+            }
+
+            itemDiv.append(targetsContainer);
+
+            if (role.name === "Mason" || role.name === "Werewolf") {
+                const others = lobby.cards.filter(card => !card.isMiddleCard && card.startingRole === role.name && card.name !== player.name);
+                if (others.length === 0) {
+                    actionText.textContent = "woke alone and did nothing";
+                    if (role.name === "Werewolf" && player.selectedCards.length > 0) {
+                        actionText.textContent = "woke alone and viewed";
+                    }
+                }
+                if (others.length > 0) {
+                    actionText.textContent = "woke together";
+
+                    others.forEach((other, index) => {
+                        targetsContainer.append(createSummaryCard(other.name, role.name));
+
+                        if (index < others.length - 1) {
+                            const andText = document.createElement("span");
+                            andText.className = "summary-and-text";
+                            andText.textContent = "and";
+                            targetsContainer.append(andText);
+                        }
+                    });
+                    itemDiv.append(actionText);
+                }
+            }
+
+            if (role.name === "Minion") {
+                const werewolves = lobby.cards.filter(card => !card.isMiddleCard && card.startingRole === "Werewolf");
+                actionText.textContent = "saw";
+                if (werewolves.length === 0) {
+                    actionText.textContent += " no werewolves";
+                }
+
+                werewolves.forEach((werewolf, index) => {
+                    targetsContainer.append(createSummaryCard(werewolf.name, "Werewolf"));
+
+                    if (index < werewolves.length - 1) {
+                        const andText = document.createElement("span");
+                        andText.className = "summary-and-text";
+                        andText.textContent = "and";
+                        targetsContainer.append(andText);
+                    }
+                });
+            }
+
+            if (role.name === "Insomniac") {
+                actionText.textContent = "woke up as";
+                targetsContainer.append(createSummaryCard("", player.role));
+            }
+            summaryList.append(itemDiv);
+        }
+    }
+
+    function getText(roleName) {
+        if (roleName === "Copycat" || roleName === "Doppelganger") {
+            return "copied";
+        }
+        if (roleName === "Sentinel") {
+            return "placed a shield token onto";
+        }
+        if (roleName === "Seer" || roleName === "Apprentice Seer" || roleName === "Revealer") {
+            return "looked at";
+        }
+        if (roleName === "Robber" || roleName === "Drunk") {
+            return "swapped with";
+        }
+        if (roleName === "Troublemaker") {
+            return "swapped";
+        }
+    }
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
-    showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken};
+    showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, buildGameSummary};
