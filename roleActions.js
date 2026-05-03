@@ -239,8 +239,8 @@ function confirmButtonAction() {
     }));
 
     if (player.startingRole === "Sentinel") {
-        socket.emit("set-is-sentinelled", selectedCards.at(-1).name);
-        document.getElementById("night-action-text").textContent = "You placed a shield token on " + selectedCards.at(-1).name + "'s card";
+        socket.emit("set-is-sentinelled", selectedCards[0].name);
+        document.getElementById("night-action-text").textContent = "You placed a shield token on " + selectedCards[0].name + "'s card";
         document.getElementById("ok-button").style.display = "flex";
     }
 
@@ -257,10 +257,10 @@ function confirmButtonAction() {
     }
     const isInstantSwap = player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger" || player.startingRole === "Alpha Wolf";
 
-    if (player.startingRole === "Alpha Wolf" && !selectedCards.at(-1).isMiddleCard) {
+    if (player.startingRole === "Alpha Wolf" && !selectedCards[0].isMiddleCard) {
         const wolfCard = lobby.cards.find(card => card.name === "middle-card4");
         socket.emit("perform-swap", {priority: 2.1, swap: [{name: wolfCard.name, role: wolfCard.role, team: wolfCard.team}, selectedCards[0]]});
-        animateCardSwap(wolfCard, selectedCards[0], "You swapped the center werewolf card with " + selectedCards.at(-1).name);
+        animateCardSwap(wolfCard, selectedCards[0], "You swapped the center werewolf card with " + selectedCards[0].name);
     }
 
     if (player.startingRole === "Robber") {
@@ -276,10 +276,10 @@ function confirmButtonAction() {
         animateCardSwap(player, selectedCards[0], "You swapped your card with " + selectedCards[0].name);
     }
     if (player.startingRole === "Revealer") {
-        viewCard(selectedCards.at(-1));
+        viewCard(selectedCards[0]);
         document.getElementById("ok-button").style.display = "flex";
-        if (selectedCards.at(-1).team === "Villager") {
-            socket.emit("turn-over-card", selectedCards.at(-1).name);
+        if (selectedCards[0].team === "Villager") {
+            socket.emit("turn-over-card", selectedCards[0].name);
         }
     }
 

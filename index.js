@@ -17,9 +17,10 @@ import {
     loadMessages,
     sendConsoleMessage,
     showVoteResultBoard,
-    setupGeneralInfo, displaySentinelShieldToken, buildGameSummary
+    setupGeneralInfo, displaySentinelShieldToken
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
+import {buildGameSummary} from "./gameSummary.js";
 
 let lobbies = [];
 let myId = "";
