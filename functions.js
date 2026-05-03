@@ -1,4 +1,5 @@
 import {allRoles, lobbies, myId, socket} from "./index.js";
+import {wakeUpMultiple} from "./roleActions.js";
 
 let hasShownTokenHint = false;
 
@@ -99,6 +100,16 @@ function displayCards(lobby) {
         cardsContainer.append(centerCard);
     }
 
+    if (lobby.selectedRoles.find(r => r.name === "Alpha Wolf")) {
+        const centerCard4 = document.createElement("div");
+        centerCard4.className = "center-card";
+        centerCard4.id = "card" + lobby.cards.find(card => card.name === "middle-card" + 4).id;
+        centerCard4.style.top = "42.5%";
+        centerCard4.style.left = "50%";
+        centerCard4.style.transform = "translate(-50%, -50%) rotate(-90deg)";
+        cardsContainer.append(centerCard4);
+    }
+
     // set night action events
     for (const card of lobby.cards) {
         setCardClickEvent(card.id);
@@ -116,6 +127,7 @@ function clickSelectCard(lobby) {
         {id: 16, name: "Doppelganger", text: "View another player's card. Copy their role"},
         {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
+        {id: 21, name: "Alpha Wolf", text: "Swap center wolf card with other player"},
         {id: 15, name: "Minion", text: "Sees other werewolves, but they not him"},
         {id: 11, name: "Mason", text: "See the other Mason"},
         {id: 12, name: "Mason", text: "See the other Mason"},
@@ -133,7 +145,7 @@ function clickSelectCard(lobby) {
         {id: 14, name: "Tanner", text: "Wins if dies"}
     ];
 
-    if (lobby.cards[3].id === myId) {
+    if (isHost()) {
         const closeButton = document.createElement("button");
         closeButton.textContent = "Close";
         closeButton.className = "close-button";
@@ -169,7 +181,7 @@ function clickSelectCard(lobby) {
     div2.append(discussTimeInput, discussTimeButton);
 
     div.append(timerDisplay);
-    if (lobby.cards[3].id === myId) {
+    if (isHost()) {
         div.append(div2);
     }
 
@@ -195,21 +207,21 @@ function clickSelectCard(lobby) {
 
         selectRolesScreen.append(container);
 
-        if (lobby.cards[3].id === myId) {
+        if (isHost()) {
             container.addEventListener("click", () => {
                 socket.emit("request-update-selected-roles", {lobbyId: lobby.id, role: role});
             }, {once: true});
         }
     }
 
-    if (lobby.selectedRoles.length === lobby.cards.length) {
+    if (lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length) {
         createStartButton(lobby);
     }
     validateRoleSelection(lobby);
 }
 
 function createStartButton(lobby) {
-    if (lobby.cards[3].id === myId) {
+    if (isHost()) {
         const startButton = document.createElement("button");
         startButton.textContent = "Start Game";
         startButton.className = "start-game-button";
@@ -309,11 +321,13 @@ function createLobbyDisplay() {
                 showErrorPopup("Name may not be longer than 15 letters");
                 return;
             }
-            for (const card of lobby.cards) {
-                if (card.name === nameInput.trim()) {
-                    showErrorPopup("Name already exists in that Lobby");
-                    return;
-                }
+            if (lobby.cards.find(card => card.name === nameInput.trim())) {
+                showErrorPopup("Name already exists in that Lobby");
+                return;
+            }
+            if (nameInput.trim().includes("middle-card")) {
+                showErrorPopup("Your name may not contain 'middle-card'");
+                return;
             }
             socket.emit("join-game", { name: nameInput.trim(), lobbyId: lobby.id });
         });
@@ -326,8 +340,8 @@ function clearEverything() {
     if (lobby) {
         document.getElementById("cards").querySelectorAll("img").forEach(img => img.remove());
         document.getElementById("game").style.background = "lightblue";
-        if (lobby.cards[3].id === myId && lobby.cards.length >= 6) {
-            document.getElementById("select-roles").style.display = "flex";
+        if (isHost() && lobby.cards.length >= 6) {
+            document.getElementById("select-roles-button").style.display = "flex";
             document.getElementById("select-roles-button").style.display = "flex";
         }
         document.getElementById("display-text").textContent = "";
@@ -350,6 +364,7 @@ function clearEverything() {
         document.querySelectorAll(".role-token").forEach(token => token.remove());
         document.getElementById("general-rules-list").querySelectorAll(".dynamic-rule").forEach(element => element.remove());
         document.getElementById("game-summary-button").style.display = "none";
+        document.getElementById("game-summary-overlay").style.display = "none";
     }
 }
 
@@ -360,49 +375,50 @@ function setCardClickEvent(id) {
         if (!card) return;
         if (lobby.state !== "night") return;
         if (document.getElementById("game").style.background !== "royalblue") return;
+        if (getCardElement(card.id).style.cursor !== "pointer") return;
 
         const players = lobby.cards.filter(c => !c.isMiddleCard);
         const player = players.find(p => p.id === myId);
-        if (getCardElement(card.id).style.cursor === "pointer") {
-            document.getElementById("confirm-button").style.display = "none";
-            if (getCardElement(card.id).classList.contains("selected-card")) {
-                getCardElement(card.id).classList.remove("selected-card");
-            } else {
-                getCardElement(card.id).classList.add("selected-card");
-            }
-            const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
 
-            if (player.startingRole === "Copycat" || player.startingRole === "Sentinel" || player.startingRole === "Doppelganger" ||
-                player.startingRole === "Werewolf" && players.filter(p => p.startingRole === "Werewolf").length === 1 ||
-                player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Apprentice Seer" || player.startingRole === "Robber" ||
-                player.startingRole === "Drunk" || player.startingRole === "Revealer") {
-                lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
-                document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
+        document.getElementById("confirm-button").style.display = "none";
+        if (getCardElement(card.id).classList.contains("selected-card")) {
+            getCardElement(card.id).classList.remove("selected-card");
+        } else {
+            getCardElement(card.id).classList.add("selected-card");
+        }
+        const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
+
+        if (player.startingRole === "Copycat" || player.startingRole === "Sentinel" || player.startingRole === "Doppelganger" ||
+            player.startingRole.toLowerCase().includes("wolf") && players.filter(p => p.startingRole.toLowerCase().includes("wolf")).length === 1 && !player.hasMetWerewolves ||
+            player.startingRole === "Alpha Wolf" && !player.alphaWolfHasSwapped && (player.hasMetWerewolves || player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger") ||
+            player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Apprentice Seer" || player.startingRole === "Robber" ||
+            player.startingRole === "Drunk" || player.startingRole === "Revealer") {
+            lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
+            document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
+            document.getElementById("confirm-button").style.display = "flex";
+        }
+        if (player.startingRole === "Seer" && card.isMiddleCard) {
+            lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
+            if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more center card";
+            if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select less center cards";
+            if (selectedCards.length === 2) {
+                document.getElementById("night-action-text").textContent = "Would you like to view " + selectedCards[0].name + " and " + selectedCards[1].name + "?";
                 document.getElementById("confirm-button").style.display = "flex";
             }
-            if (player.startingRole === "Seer" && card.isMiddleCard) {
-                lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
-                if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more center card";
-                if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select one less center card";
-                if (selectedCards.length === 2) {
-                    document.getElementById("night-action-text").textContent = "Would you like to view " + selectedCards[0].name + " and " + selectedCards[1].name + "?";
-                    document.getElementById("confirm-button").style.display = "flex";
-                }
+        }
+        if (player.startingRole === "Troublemaker") {
+            if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more player's card";
+            if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select less player's cards";
+            if (selectedCards.length === 2) {
+                document.getElementById("night-action-text").textContent = "Would you like to swap " + selectedCards[0].name + " and " + selectedCards[1].name + "?";
+                document.getElementById("confirm-button").style.display = "flex";
             }
-            if (player.startingRole === "Troublemaker") {
-                if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more player's card";
-                if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select one less player's card";
-                if (selectedCards.length === 2) {
-                    document.getElementById("night-action-text").textContent = "Would you like to swap " + selectedCards[0].name + " and " + selectedCards[1].name + "?";
-                    document.getElementById("confirm-button").style.display = "flex";
-                }
-            }
-            if (selectedCards.length === 0) {
-                document.getElementById("confirm-button").style.display = "none";
-                document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
-                if (player.startingRole === "Werewolf") {
-                    document.getElementById("night-action-text").textContent = "You are the only werewolf, therefore you may click one center card to view it.";
-                }
+        }
+        if (selectedCards.length === 0) {
+            document.getElementById("confirm-button").style.display = "none";
+            document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
+            if (player.startingRole === "Werewolf") {
+                document.getElementById("night-action-text").textContent = "You are the only werewolf, therefore you may click one center card to view it.";
             }
         }
     });
@@ -477,7 +493,13 @@ function animateCardSwap(card1, card2, text = "", duration = 2000) {
             card1Element.style.transition = "";
             card2Element.style.transition = "";
             card1Element.style.transform = "";
+            if (card1.name === "middle-card4") {
+                card1Element.style.transform = "translate(-50%, -50%) rotate(-90deg)";
+            }
             card2Element.style.transform = "";
+            if (card2.name === "middle-card4") {
+                card2Element.style.transform = "translate(-50%, -50%) rotate(-90deg)";
+            }
             card1Element.classList.remove("selected-card");
             card2Element.classList.remove("selected-card");
 
@@ -488,6 +510,9 @@ function animateCardSwap(card1, card2, text = "", duration = 2000) {
                 viewCard(you, card2.role);
                 document.getElementById("night-action-text").textContent = "You swapped your card with " + card2.name + "\n" +
                     "Now you are " + card2.role;
+            }
+            if (you.startingRole === "Alpha Wolf" && (you.roleChain[0] === "Doppelganger" || you.roleChain[0] === "Copycat" && you.selectedCards[0]?.role === "Doppelganger")) {
+                wakeUpMultiple("Werewolf");
             }
 
             resolve();
@@ -540,7 +565,7 @@ function openRolesDisplay(lobby) {
         roles.push({
             name: role.name,
             text: role.text,
-            nightOrder: allRoles.find(role1 => role1.name === role.name)?.nightOrder || 100
+            nightOrder: allRoles.find(role1 => role1.name === role.name)?.nightOrder
         });
     }
 
@@ -581,12 +606,18 @@ function setupTokens(lobby) {
     for (const role of lobby.selectedRoles) {
         roles.push({
             name: role.name,
-            text: role.text,
-            nightOrder: allRoles.find(role1 => role1.name === role.name)?.nightOrder || 150
+            nightOrder: allRoles.find(role1 => role1.name === role.name)?.nightOrder
         });
     }
 
     roles.sort((a, b) => a.nightOrder - b.nightOrder);
+
+    if (lobby.selectedRoles.find(role => role.name === "Alpha Wolf")) {
+        roles.push({
+            name: "Werewolf",
+            nightOrder: 2
+        });
+    }
 
     roles.forEach((role, index) => {
         const token = document.createElement("div");
@@ -773,7 +804,7 @@ function validateRoleSelection(lobby) {
     const counts = {};
     lobby.selectedRoles.forEach(r => counts[r.name] = (counts[r.name] || 0) + 1);
 
-    if (!counts["Werewolf"] && !counts["Minion"]) {
+    if (!counts["Werewolf"] && !counts["Alpha Wolf"] && !counts["Minion"]) {
         errors.push("• No evil roles selected!");
     }
 
@@ -782,7 +813,7 @@ function validateRoleSelection(lobby) {
     }
 
     if (counts["Insomniac"]) {
-        if (!counts["Robber"] && !counts["Troublemaker"]) {
+        if (!counts["Alpha Wolf"] && !counts["Robber"] && !counts["Troublemaker"]) {
             errors.push("• Insomniac is useless. There are no roles that swap players' cards.");
         }
     }
@@ -838,10 +869,16 @@ function buildGameSummary(lobby) {
     summaryList.innerHTML = "";
 
     const tempRoles = [];
-    const roles = lobby.selectedRoles.map(role => ({
-        name: role.name,
-        nightOrder: allRoles.find(r => r.name === role.name)?.nightOrder || 200
-    })).sort((a, b) => a.nightOrder - b.nightOrder)
+    const roles = [{name: "Werewolf", nightOrder: 2}];
+
+    for (const role of lobby.selectedRoles) {
+        roles.push({
+            name: role.name,
+            nightOrder: allRoles.find(r => r.name === role.name)?.nightOrder
+        });
+    }
+
+    roles.sort((a, b) => a.nightOrder - b.nightOrder)
         .filter(role => {
             if (tempRoles.includes(role.name)) return false;
             tempRoles.push(role.name);
@@ -869,7 +906,8 @@ function buildGameSummary(lobby) {
     };
 
     for (const role of roles) {
-        const player = lobby.cards.find(card => !card.isMiddleCard && (card.roleChain[0] === role.name || card.selectedCards[0]?.role === role.name && card.roleChain[0] === "Copycat"));
+        const player = lobby.cards.find(card => !card.isMiddleCard && (card.roleChain[0] === role.name || card.selectedCards[0]?.role === role.name && card.roleChain[0] === "Copycat" ||
+            role.name === "Werewolf" && card.roleChain[0].toLowerCase().includes("wolf")));
 
         if (player && role.nightOrder < 100) {
             const itemDiv = document.createElement("div");
@@ -916,39 +954,45 @@ function buildGameSummary(lobby) {
                     selectedCards.shift();
                 }
 
-                const hasMiddleCard = selectedCards.find(card => card.name === "middle-card1" || card.name === "middle-card2" || card.name === "middle-card3");
+                if (role.name === "Alpha Wolf" && player.startingRole === "Alpha Wolf") {
+                    if (selectedCards[0].name.includes("middle-card")) {
+                        selectedCards.shift();
+                    }
+                    buildCenterCards(selectedCards, targetsContainer, true);
+                    const withText = document.createElement("span");
+                    withText.className = "summary-and-text";
+                    withText.textContent = "with";
+                    targetsContainer.append(withText);
+                }
+
+                const hasMiddleCard = selectedCards.find(card => card.name.includes("middle-card"));
 
                 if (hasMiddleCard) {
-                    const allMiddleCards = lobby.cards.filter(c => c.isMiddleCard);
-                    allMiddleCards.forEach(mCard => {
-                        const viewed = selectedCards.find(selected => selected.name === mCard.name);
-                        if (viewed) {
-                            targetsContainer.append(createSummaryCard(mCard.name, viewed.role, true, true));
-                        } else {
-                            targetsContainer.append(createSummaryCard(mCard.name, "", false, true));
-                        }
-                    });
+                    buildCenterCards(selectedCards, targetsContainer);
                 } else {
-                    selectedCards.forEach((selected, index) => {
-                        targetsContainer.append(createSummaryCard(selected.name, selected.role));
+                    if (role.name !== "Werewolf") {
+                        selectedCards.forEach((selected, index) => {
+                            targetsContainer.append(createSummaryCard(selected.name, selected.role));
 
-                        if (index < selectedCards.length - 1 && selectedCards.length > 1) {
-                            const andText = document.createElement("span");
-                            andText.className = "summary-and-text";
-                            andText.textContent = "and";
-                            targetsContainer.append(andText);
-                        }
-                    });
+                            if (index < selectedCards.length - 1 && selectedCards.length > 1) {
+                                const andText = document.createElement("span");
+                                andText.className = "summary-and-text";
+                                andText.textContent = "and";
+                                targetsContainer.append(andText);
+                            }
+                        });
+                    }
                 }
             }
 
             itemDiv.append(targetsContainer);
 
             if (role.name === "Mason" || role.name === "Werewolf") {
-                const others = lobby.cards.filter(card => !card.isMiddleCard && card.startingRole === role.name && card.name !== player.name);
+                const others = lobby.cards.filter(card => !card.isMiddleCard &&
+                    (card.startingRole === role.name || role.name === "Werewolf" && card.startingRole.toLowerCase().includes("wolf")) && card.name !== player.name);
                 if (others.length === 0) {
                     actionText.textContent = "woke alone and did nothing";
-                    if (role.name === "Werewolf" && player.selectedCards.length > 0) {
+                    if (role.name === "Werewolf" && player.selectedCards[0]?.name.includes("middle-card")) {
                         actionText.textContent = "woke alone and viewed";
                     }
                 }
@@ -956,7 +1000,7 @@ function buildGameSummary(lobby) {
                     actionText.textContent = "woke together";
 
                     others.forEach((other, index) => {
-                        targetsContainer.append(createSummaryCard(other.name, role.name));
+                        targetsContainer.append(createSummaryCard(other.name, other.roleChain[0]));
 
                         if (index < others.length - 1) {
                             const andText = document.createElement("span");
@@ -970,14 +1014,14 @@ function buildGameSummary(lobby) {
             }
 
             if (role.name === "Minion") {
-                const werewolves = lobby.cards.filter(card => !card.isMiddleCard && card.startingRole === "Werewolf");
+                const werewolves = lobby.cards.filter(card => !card.isMiddleCard && card.startingRole.toLowerCase().includes("wolf"));
                 actionText.textContent = "saw";
                 if (werewolves.length === 0) {
                     actionText.textContent += " no werewolves";
                 }
 
                 werewolves.forEach((werewolf, index) => {
-                    targetsContainer.append(createSummaryCard(werewolf.name, "Werewolf"));
+                    targetsContainer.append(createSummaryCard(werewolf.name, werewolf.roleChain[0]));
 
                     if (index < werewolves.length - 1) {
                         const andText = document.createElement("span");
@@ -1009,10 +1053,48 @@ function buildGameSummary(lobby) {
         if (roleName === "Robber" || roleName === "Drunk") {
             return "swapped with";
         }
-        if (roleName === "Troublemaker") {
+        if (roleName === "Alpha Wolf" || roleName === "Troublemaker") {
             return "swapped";
         }
     }
+
+    function buildCenterCards(selectedCards, targetsContainer, isAlphaWolf = false) {
+        const allMiddleCards = lobby.cards.filter(c => c.isMiddleCard);
+        const middleLogWrapper = document.createElement("div");
+        middleLogWrapper.className = "summary-middle-wrapper";
+
+        const centerCard4 = allMiddleCards.find(c => c.name === "middle-card4");
+        if (centerCard4) {
+            const alphaRow = document.createElement("div");
+            alphaRow.className = "summary-alpha-row";
+
+            const viewed = selectedCards.find(selected => selected.name === centerCard4.name);
+            let cardElement = createSummaryCard(centerCard4.name, viewed ? viewed.role : "", !!viewed, true);
+            if (isAlphaWolf) {
+                cardElement = createSummaryCard(centerCard4.name, centerCard4.startingRole, true, true);
+            }
+            cardElement.className = "summary-alpha-card-rotated";
+
+            alphaRow.append(cardElement);
+            middleLogWrapper.append(alphaRow);
+        }
+
+        const standardRow = document.createElement("div");
+        standardRow.className = "summary-standard-row";
+
+        allMiddleCards.filter(c => c.name !== "middle-card4").forEach(mCard => {
+            const viewed = selectedCards.find(selected => selected.name === mCard.name);
+            standardRow.append(createSummaryCard(mCard.name, viewed ? viewed.role : "", !!viewed, true));
+        });
+
+        middleLogWrapper.append(standardRow);
+        targetsContainer.append(middleLogWrapper);
+    }
+}
+
+function isHost() {
+    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    return !!(lobby && lobby.cards.filter(card => !card.isMiddleCard)[0].id === myId);
 }
 
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,

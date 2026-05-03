@@ -8,7 +8,7 @@ function wakeUpMultiple(roleName) {
 
     const samePlayers = [];
     players.forEach(p => {
-        if (p.startingRole === roleName) {
+        if (p.startingRole === roleName || roleName === "Werewolf" && p.startingRole.toLowerCase().includes("wolf")) {
             samePlayers.push(p.name);
             if (getCardElement(p.id).querySelectorAll("img").length === 0 && p.id !== myId) {
                 viewCard(p, roleName);
@@ -46,7 +46,7 @@ function minionSeeWerewolves() {
     const werewolfPlayers = [];
 
     for (const p of players) {
-        if (p.startingRole === "Werewolf") {
+        if (p.startingRole.toLowerCase().includes("wolf")) {
             werewolfPlayers.push(p.name);
             viewCard(p, "Werewolf");
         }
@@ -113,13 +113,17 @@ function showRoleActions() {
     }
 
     function isUnusedSwapper(p) {
-        return !p.hasDoneNightAction && (p.startingRole === "Robber" || p.startingRole === "Troublemaker" || p.startingRole === "Drunk");
+        return !p.hasDoneNightAction && (p.startingRole === "Alpha Wolf" || p.startingRole === "Robber" || p.startingRole === "Troublemaker" ||
+            p.startingRole === "Drunk");
     }
 
-    if (players.find(p => p.startingRole === "Copycat" || p.roleChain[0] === "Copycat" && p.selectedCards[0].role === "Doppelganger" && isUnusedSwapper(p)) ||
-        players.find(p => p.startingRole === "Doppelganger") || players.find(p => p.roleChain[0] === "Doppelganger" && isUnusedSwapper(p)) ||
-        lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger") && length < players.length - 1) {
-        if (player.startingRole === "Werewolf" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" ||
+    if (players.find(p => p.startingRole === "Copycat" && centerCards.find(card => card.startingRole === "Sentinel" || card.startingRole === "Doppelganger" || card.startingRole === "Alpha Wolf") ||
+            p.roleChain[0] === "Copycat" && p.selectedCards[0]?.role === "Doppelganger" && isUnusedSwapper(p) ||
+            p.startingRole === "Doppelganger" || p.roleChain[0] === "Doppelganger" && isUnusedSwapper(p) && player.roleChain[0] !== "Doppelganger" ||
+            p.startingRole === "Alpha Wolf" && !p.hasDoneNightAction && !player.startingRole.toLowerCase().includes("wolf")) ||
+        lobby.cards.find(card => card.isMiddleCard && (card.roleChain[0] === "Doppelganger" || card.startingRole === "Alpha Wolf" && !player.startingRole.toLowerCase().includes("wolf"))) &&
+        (length < players.length - 1 || lobby.nightTimer < (7 + Math.floor(Math.random() * 5)))) {
+        if (player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" ||
             player.roleChain[0] === "Robber" ||
             player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role !== "Doppelganger" && player.startingRole === "Robber") {
             if (!player.sawWaitMessage) {
@@ -148,9 +152,17 @@ function showRoleActions() {
         makeCardsClickable("players");
     }
 
-    if (player.startingRole === "Werewolf") {
-        wakeUpMultiple("Werewolf");
+    if ((player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger") && player.startingRole === "Alpha Wolf" && !player.hasDoneAlphaSwap) {
+        makeCardsClickable("players");
+        document.getElementById("do-nothing-button").style.display = "none";
+        return;
     }
+
+    if (player.startingRole.toLowerCase().includes("wolf") && !player.hasMetWerewolves) {
+        wakeUpMultiple("Werewolf");
+        return;
+    }
+
     if (player.startingRole === "Minion") {
         minionSeeWerewolves();
     }
@@ -158,7 +170,7 @@ function showRoleActions() {
         wakeUpMultiple("Mason");
     }
 
-    if (player.startingRole === "Doppelganger" || player.startingRole === "Seer" || player.startingRole === "Robber" ||
+    if (player.startingRole === "Doppelganger" || player.startingRole === "Alpha Wolf" && !player.hasDoneAlphaSwap || player.startingRole === "Seer" || player.startingRole === "Robber" ||
         player.startingRole === "Troublemaker") {
         makeCardsClickable("players");
     }
@@ -181,7 +193,8 @@ function showRoleActions() {
         makeCardsClickable("players");
     }
 
-    if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole === "Drunk" && !player.isSentinelled) {
+    if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole === "Alpha Wolf" && player.hasMetWerewolves ||
+        player.startingRole === "Drunk" && !player.isSentinelled) {
         document.getElementById("do-nothing-button").style.display = "none";
     }
 
@@ -231,7 +244,7 @@ function confirmButtonAction() {
         document.getElementById("ok-button").style.display = "flex";
     }
 
-    if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole === "Werewolf" ||
+    if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole.toLowerCase().includes("wolf") && selectedCards[0].isMiddleCard ||
         player.startingRole === "Seer" || player.startingRole === "Apprentice Seer") {
         viewCard(selectedCards[0], selectedCards[0].viewableStartingRole);
         if (selectedCards.length > 1) {
@@ -242,7 +255,13 @@ function confirmButtonAction() {
             document.getElementById("night-action-text").textContent = "You look at " + selectedCards[0].name + "'s card and see " + selectedCards[0].role;
         }
     }
-    const isInstantSwap = player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger";
+    const isInstantSwap = player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger" || player.startingRole === "Alpha Wolf";
+
+    if (player.startingRole === "Alpha Wolf" && !selectedCards.at(-1).isMiddleCard) {
+        const wolfCard = lobby.cards.find(card => card.name === "middle-card4");
+        socket.emit("perform-swap", {priority: 2.1, swap: [{name: wolfCard.name, role: wolfCard.role, team: wolfCard.team}, selectedCards[0]]});
+        animateCardSwap(wolfCard, selectedCards[0], "You swapped the center werewolf card with " + selectedCards.at(-1).name);
+    }
 
     if (player.startingRole === "Robber") {
         socket.emit(isInstantSwap ? "perform-swap" : "add-swap", {priority: 6, swap: [player, selectedCards[0]]});

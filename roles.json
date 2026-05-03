@@ -122,5 +122,13 @@
     "description": "The Copycat looks at one of the center cards. They take on all the properties of that role, including waking up when that card would've woken up, and doing their night action.",
     "nightAction": "Look at one of the center cards. You are now a copy of that role. If that role is called, wake up and do that night action.",
     "nightActionDetailed": "If you click a center card, you select it. If you click 'confirm', you view that card and copy it. If your viewed card has a night action, you do it when that role would do it."
+  },
+  {
+    "name": "Alpha Wolf",
+    "team": "Werewolf",
+    "nightOrder": 2.1,
+    "description": "The Alpha Wolf learns who the other werewolves are. If there is only one werewolf player, they may look at one of the centre cards. At the start of the game, one additional Werewolf is added to the end of the centre cards, which the Alpha Wolf must swap with any other player's card.",
+    "nightAction": "You must exchange the center werewolf card with any other player's card.",
+    "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you swap the center werewolf card with your selected card."
   }
 ]

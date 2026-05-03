@@ -125,6 +125,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (document.getElementById("general-rules-list").querySelectorAll(".dynamic-rule").length === 0 && you.role) {
                 setupGeneralInfo(you, lobby.selectedRoles);
             }
+            document.getElementById("select-roles-button").style.top = "45%";
+            document.getElementById("night-action-text").style.top = "30%";
+            document.getElementById("game-buttons").style.top = "37.5%";
+            if (lobby.selectedRoles.find(role => role.name === "Alpha Wolf")) {
+                document.getElementById("select-roles-button").style.top = "27.5%";
+                document.getElementById("night-action-text").style.top = "17.5%";
+                document.getElementById("game-buttons").style.top = "25%";
+            }
+
             if (lobby.state === "waiting") {
                 displayCards(lobby);
                 clearEverything();
