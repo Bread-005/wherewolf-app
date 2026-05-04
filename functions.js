@@ -134,6 +134,7 @@ function clickSelectCard(lobby) {
         {id: 6, name: "Seer", text: "May either view 1 player´s card or 2 center cards"},
         {id: 17, name: "Apprentice Seer", text: "May view 1 center card"},
         {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
+        {id: 22, name: "Witch", text: "May view 1 center card and swap with any player"},
         {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
         {id: 9, name: "Drunk", text: "Swap your card with center"},
         {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
@@ -390,9 +391,9 @@ function setCardClickEvent(id) {
 
         if (player.startingRole === "Copycat" || player.startingRole === "Sentinel" || player.startingRole === "Doppelganger" ||
             player.startingRole.toLowerCase().includes("wolf") && players.filter(p => p.startingRole.toLowerCase().includes("wolf")).length === 1 && !player.hasMetWerewolves ||
-            player.startingRole === "Alpha Wolf" && !player.alphaWolfHasSwapped && (player.hasMetWerewolves || player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger") ||
-            player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Apprentice Seer" || player.startingRole === "Robber" ||
-            player.startingRole === "Drunk" || player.startingRole === "Revealer") {
+            player.startingRole === "Alpha Wolf" || player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Apprentice Seer" ||
+            player.startingRole === "Robber" || player.startingRole === "Witch" || player.startingRole === "Drunk" ||
+            player.startingRole === "Revealer") {
             lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
             document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
             document.getElementById("confirm-button").style.display = "flex";

@@ -130,5 +130,13 @@
     "description": "The Alpha Wolf learns who the other werewolves are. If there is only one werewolf player, they may look at one of the centre cards. At the start of the game, one additional Werewolf is added to the end of the centre cards, which the Alpha Wolf must swap with any other player's card.",
     "nightAction": "You must exchange the center werewolf card with any other player's card.",
     "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you swap the center werewolf card with your selected card."
+  },
+  {
+    "name": "Witch",
+    "team": "Villager",
+    "nightOrder": 6.1,
+    "description": "The Witch may look at one of the centre cards. If they do, they must swap that card with any player's card.",
+    "nightAction": "You may look one of the center cards. If you do you must exchange that card with any player's card.",
+    "nightActionDetailed": "If you click a center card, you select it. If you click 'confirm', you see your selected center card. If you viewed a center card and you click a player's card you select it. If you click 'confirm' you swap your selected center card with your selected player's card."
   }
 ]
