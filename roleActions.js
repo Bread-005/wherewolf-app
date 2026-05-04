@@ -103,8 +103,7 @@ function showRoleActions() {
 
     const length = players.filter(p => p.hasClickedConfirm || p.sawWaitMessage || p.startingRole === "Minion" || p.startingRole === "Mason").length;
 
-    if (players.find(p => p.startingRole === "Copycat") || players.find(p => p.startingRole === "Doppelganger") ||
-        players.find(p => p.roleChain[0] === "Copycat" && p.selectedCards[0].role === "Doppelganger" && !p.hasCopiedRole) ||
+    if (players.find(p => p.startingRole === "Copycat" || p.roleChain[0] === "Copycat" && p.selectedCards[0].role === "Doppelganger" && !p.hasCopiedRole || p.startingRole === "Doppelganger") ||
         (lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Copycat") || lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger")) &&
         (length < players.length - 1 || lobby.nightTimer < (5 + Math.floor(Math.random() * 10)))) {
         if (player.roleChain[0] === "Minion" || player.roleChain[0] === "Mason") {
@@ -117,15 +116,19 @@ function showRoleActions() {
             p.startingRole === "Troublemaker" || p.startingRole === "Drunk");
     }
 
+    function mustWait(p, role) {
+        return p.roleChain[0] === role || p.roleChain[0] === "Copycat" && p.selectedCards[0]?.role !== "Doppelganger" && p.startingRole === role;
+    }
+
     if (players.find(p => p.startingRole === "Copycat" && centerCards.find(card => card.startingRole === "Sentinel" || card.startingRole === "Doppelganger" || card.startingRole === "Alpha Wolf") ||
             p.roleChain[0] === "Copycat" && p.selectedCards[0]?.role === "Doppelganger" && isUnusedSwapper(p) ||
             p.startingRole === "Doppelganger" || p.roleChain[0] === "Doppelganger" && isUnusedSwapper(p) && player.roleChain[0] !== "Doppelganger" ||
-            p.startingRole === "Alpha Wolf" && !p.hasDoneNightAction && !player.startingRole.toLowerCase().includes("wolf")) ||
-        lobby.cards.find(card => card.isMiddleCard && (card.roleChain[0] === "Doppelganger" || card.startingRole === "Alpha Wolf" && !player.startingRole.toLowerCase().includes("wolf"))) &&
+            p.startingRole === "Alpha Wolf" && !p.hasDoneNightAction && (!player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Mystic Wolf")) ||
+        lobby.cards.find(card => card.isMiddleCard && (card.roleChain[0] === "Doppelganger" ||
+            card.startingRole === "Alpha Wolf" && (!player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Mystic Wolf"))) &&
         (length < players.length - 1 || lobby.nightTimer < (7 + Math.floor(Math.random() * 5)))) {
-        if (player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" ||
-            player.roleChain[0] === "Robber" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role !== "Doppelganger" && player.startingRole === "Robber" ||
-            player.roleChain[0] === "Witch" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role !== "Doppelganger" && player.startingRole === "Witch") {
+        if (player.startingRole.toLowerCase().includes("wolf") || mustWait(player, "Mystic Wolf") || mustWait(player, "Seer") ||
+            mustWait(player, "Apprentice Seer") || mustWait(player, "Robber") || mustWait(player, "Witch")) {
             if (!player.sawWaitMessage) {
                 document.getElementById("confirm-waiting-button").style.display = "flex";
             }
@@ -152,9 +155,12 @@ function showRoleActions() {
         makeCardsClickable("players");
     }
 
-    if ((player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger") && player.startingRole === "Alpha Wolf" && !player.hasDoneAlphaSwap) {
+    if ((player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger") &&
+        (player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf") && !player.hasDoneExtraWolfAction) {
         makeCardsClickable("players");
-        document.getElementById("do-nothing-button").style.display = "none";
+        if (player.startingRole === "Alpha Wolf") {
+            document.getElementById("do-nothing-button").style.display = "none";
+        }
         return;
     }
 
@@ -170,13 +176,14 @@ function showRoleActions() {
         wakeUpMultiple("Mason");
     }
 
-    if (player.startingRole === "Doppelganger" || player.startingRole === "Alpha Wolf" && !player.hasDoneAlphaSwap || player.startingRole === "Seer" || player.startingRole === "Robber" ||
-        player.startingRole === "Witch" && player.didFirstPart || player.startingRole === "Troublemaker") {
+    if (player.startingRole === "Doppelganger" || player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf" ||
+        player.startingRole === "Seer" || player.startingRole === "Robber" || player.startingRole === "Witch" && player.didFirstPart ||
+        player.startingRole === "Troublemaker") {
         makeCardsClickable("players");
     }
 
-    if (player.startingRole === "Copycat" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" || player.startingRole === "Witch" && !player.didFirstPart ||
-        player.startingRole === "Drunk") {
+    if (player.startingRole === "Copycat" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" ||
+        player.startingRole === "Witch" && !player.didFirstPart || player.startingRole === "Drunk") {
         makeCardsClickable("center");
     }
     if (player.startingRole === "Insomniac") {
@@ -243,7 +250,8 @@ function confirmButtonAction() {
     }
 
     if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole.toLowerCase().includes("wolf") && selectedCards[0].isMiddleCard ||
-        player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" || player.startingRole === "Witch" && !player.didFirstPart) {
+        player.startingRole === "Mystic Wolf" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" ||
+        player.startingRole === "Witch" && !player.didFirstPart) {
         viewCard(selectedCards[0], selectedCards[0].viewableStartingRole);
         if (selectedCards.length > 1) {
             viewCard(selectedCards[1], selectedCards[1].viewableStartingRole);

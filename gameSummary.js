@@ -49,8 +49,8 @@ function buildGameSummary(lobby) {
     });
 
     for (const role of roles) {
-        const player = cards.find(card => !card.name.includes("middle-card") && card.beginningRole === role.name ||
-            role.name === "Werewolf" && lobby.cards.find(card1 => card1.name === card.name && card1.startingRole.toLowerCase().includes("wolf")));
+        const player = cards.find(card => !card.name.includes("middle-card") && (card.beginningRole === role.name ||
+            role.name === "Werewolf" && lobby.cards.find(card1 => card1.name === card.name && card1.startingRole.toLowerCase().includes("wolf"))));
         if (!player) continue;
         if (role.nightOrder > 100) continue;
 
@@ -67,7 +67,8 @@ function buildGameSummary(lobby) {
         if (player.beginningRole === "Sentinel") {
             actionText.textContent = "placed a shield token onto";
         }
-        if (player.beginningRole === "Seer" || player.beginningRole === "Apprentice Seer" || player.beginningRole === "Revealer") {
+        if (player.beginningRole === "Mystic Wolf" || player.beginningRole === "Seer" || player.beginningRole === "Apprentice Seer" ||
+            player.beginningRole === "Revealer") {
             actionText.textContent = "looked at";
         }
         if (player.beginningRole === "Robber" || player.beginningRole === "Drunk") {
@@ -106,10 +107,7 @@ function buildGameSummary(lobby) {
         }
 
         // Alpha Wolf exception
-        if (role.name === "Alpha Wolf" && player.beginningRole === "Alpha Wolf") {
-            if (player.selectedCards[0].name.includes("middle-card")) {
-                player.selectedCards.shift();
-            }
+        if (role.name === "Alpha Wolf") {
             buildCenterCards(player.selectedCards, targetsContainer, true);
             const withText = document.createElement("span");
             withText.className = "summary-and-text";
@@ -165,7 +163,8 @@ function buildGameSummary(lobby) {
 
         if (player.selectedCards.length > 0) {
             if (role.name !== "Copycat") {
-                if (role.name === "Seer" && player.selectedCards.at(-1).name.includes("middle-card") && player.selectedCards.at(-2).name.includes("middle-card")) {
+                if ((role.name === "Seer" || role.name === "Doppelganger" && player.doppelgangerCopy === "Seer") &&
+                    player.selectedCards.at(-1).name.includes("middle-card") && player.selectedCards.at(-2).name.includes("middle-card")) {
                     buildCenterCards([player.selectedCards.at(-2), player.selectedCards.at(-1)], targetsContainer);
                 } else {
                     player.selectedCards.forEach((selected, index) => {
@@ -195,17 +194,25 @@ function buildGameSummary(lobby) {
                     player.doppelgangerCopy = player.selectedCards[0].role;
                 }
             }
-            if (role.name === "Alpha Wolf" || player.doppelgangerCopy === "Alpha Wolf") {
+            if (role.name === "Werewolf") {
+                const werewolves = lobby.cards.filter(card => !card.isMiddleCard && card.startingRole.toLowerCase().includes("wolf"));
+                if (werewolves.length === 1) {
+                    player.selectedCards.shift();
+                }
+            }
+            if (role.name === "Alpha Wolf" || role.name === "Doppelganger" && player.doppelgangerCopy === "Alpha Wolf") {
                 const centerCard4Role = cards.find(card => card.name === "middle-card4").role;
                 cards.find(card => card.name === "middle-card4").role = cards.find(card => card.name === player.selectedCards.at(-1).name).role;
                 cards.find(card => card.name === player.selectedCards.at(-1).name).role = centerCard4Role;
             }
-            if (role.name === "Robber" || player.doppelgangerCopy === "Robber" || role.name === "Drunk" || player.doppelgangerCopy === "Drunk") {
+            if (role.name === "Robber" || role.name === "Doppelganger" && player.doppelgangerCopy === "Robber" ||
+                role.name === "Drunk" || role.name === "Doppelganger" && player.doppelgangerCopy === "Drunk") {
                 const youRole = player.role;
                 player.role = cards.find(card => card.name === player.selectedCards.at(-1).name).role;
                 cards.find(card => card.name === player.selectedCards.at(-1).name).role = youRole;
             }
-            if (role.name === "Witch" || player.doppelgangerCopy === "Witch" || role.name === "Troublemaker" || player.doppelgangerCopy === "Troublemaker") {
+            if (role.name === "Witch" || role.name === "Doppelganger" && player.doppelgangerCopy === "Witch" ||
+                role.name === "Troublemaker" || role.name === "Doppelganger" && player.doppelgangerCopy === "Troublemaker") {
                 const player1Role = cards.find(card => card.name === player.selectedCards.at(-1).name).role;
                 cards.find(card => card.name === player.selectedCards.at(-1).name).role = cards.find(card => card.name === player.selectedCards.at(-2).name).role;
                 cards.find(card => card.name === player.selectedCards.at(-2).name).role = player1Role;

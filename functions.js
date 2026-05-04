@@ -1,5 +1,6 @@
 import {allRoles, lobbies, myId, socket} from "./index.js";
 import {wakeUpMultiple} from "./roleActions.js";
+import {setCardClickEvent} from "./CardClickEvent.js";
 
 let hasShownTokenHint = false;
 
@@ -128,7 +129,8 @@ function clickSelectCard(lobby) {
         {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 21, name: "Alpha Wolf", text: "Swap center wolf card with other player"},
-        {id: 15, name: "Minion", text: "Sees other werewolves, but they not him"},
+        {id: 23, name: "Mystic Wolf", text: "View a player's card"},
+        {id: 15, name: "Minion", text: "See werewolves, but they not him"},
         {id: 11, name: "Mason", text: "See the other Mason"},
         {id: 12, name: "Mason", text: "See the other Mason"},
         {id: 6, name: "Seer", text: "May either view 1 player´s card or 2 center cards"},
@@ -143,7 +145,7 @@ function clickSelectCard(lobby) {
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"},
         {id: 13, name: "Hunter", text: "If killed, player they voted for dies, too"},
-        {id: 14, name: "Tanner", text: "Wins if dies"}
+        {id: 14, name: "Tanner", text: "Wins if killed"}
     ];
 
     if (isHost()) {
@@ -367,62 +369,6 @@ function clearEverything() {
         document.getElementById("game-summary-button").style.display = "none";
         document.getElementById("game-summary-overlay").style.display = "none";
     }
-}
-
-function setCardClickEvent(id) {
-    getCardElement(id).addEventListener("click", (event) => {
-        const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
-        const card = lobby.cards.find(card => card.id === event.target.id.replace("card", ""));
-        if (!card) return;
-        if (lobby.state !== "night") return;
-        if (document.getElementById("game").style.background !== "royalblue") return;
-        if (getCardElement(card.id).style.cursor !== "pointer") return;
-
-        const players = lobby.cards.filter(c => !c.isMiddleCard);
-        const player = players.find(p => p.id === myId);
-
-        document.getElementById("confirm-button").style.display = "none";
-        if (getCardElement(card.id).classList.contains("selected-card")) {
-            getCardElement(card.id).classList.remove("selected-card");
-        } else {
-            getCardElement(card.id).classList.add("selected-card");
-        }
-        const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
-
-        if (player.startingRole === "Copycat" || player.startingRole === "Sentinel" || player.startingRole === "Doppelganger" ||
-            player.startingRole.toLowerCase().includes("wolf") && players.filter(p => p.startingRole.toLowerCase().includes("wolf")).length === 1 && !player.hasMetWerewolves ||
-            player.startingRole === "Alpha Wolf" || player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Apprentice Seer" ||
-            player.startingRole === "Robber" || player.startingRole === "Witch" || player.startingRole === "Drunk" ||
-            player.startingRole === "Revealer") {
-            lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
-            document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
-            document.getElementById("confirm-button").style.display = "flex";
-        }
-        if (player.startingRole === "Seer" && card.isMiddleCard) {
-            lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
-            if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more center card";
-            if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select less center cards";
-            if (selectedCards.length === 2) {
-                document.getElementById("night-action-text").textContent = "Would you like to view " + selectedCards[0].name + " and " + selectedCards[1].name + "?";
-                document.getElementById("confirm-button").style.display = "flex";
-            }
-        }
-        if (player.startingRole === "Troublemaker") {
-            if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more player's card";
-            if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select less player's cards";
-            if (selectedCards.length === 2) {
-                document.getElementById("night-action-text").textContent = "Would you like to swap " + selectedCards[0].name + " and " + selectedCards[1].name + "?";
-                document.getElementById("confirm-button").style.display = "flex";
-            }
-        }
-        if (selectedCards.length === 0) {
-            document.getElementById("confirm-button").style.display = "none";
-            document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
-            if (player.startingRole === "Werewolf") {
-                document.getElementById("night-action-text").textContent = "You are the only werewolf, therefore you may click one center card to view it.";
-            }
-        }
-    });
 }
 
 function showVoteResults() {
@@ -805,7 +751,7 @@ function validateRoleSelection(lobby) {
     const counts = {};
     lobby.selectedRoles.forEach(r => counts[r.name] = (counts[r.name] || 0) + 1);
 
-    if (!counts["Werewolf"] && !counts["Alpha Wolf"] && !counts["Minion"]) {
+    if (!counts["Werewolf"] && !counts["Alpha Wolf"] && !counts["Mystic Wolf"] && !counts["Minion"]) {
         errors.push("• No evil roles selected!");
     }
 
@@ -814,7 +760,7 @@ function validateRoleSelection(lobby) {
     }
 
     if (counts["Insomniac"]) {
-        if (!counts["Alpha Wolf"] && !counts["Robber"] && !counts["Troublemaker"]) {
+        if (!counts["Alpha Wolf"] && !counts["Robber"] && !counts["Witch"] && !counts["Troublemaker"]) {
             errors.push("• Insomniac is useless. There are no roles that swap players' cards.");
         }
     }

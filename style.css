@@ -966,7 +966,7 @@ body {
                                     align-items: center;
 
                                     .summary-alpha-card-rotated {
-                                        transform: rotate(-90deg) scale(0.35) !important;
+                                        transform: rotate(-90deg) scale(0.3) !important;
                                         transform-origin: center center;
                                         margin: -100px 0;
                                     }

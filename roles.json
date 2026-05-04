@@ -135,8 +135,16 @@
     "name": "Witch",
     "team": "Villager",
     "nightOrder": 6.1,
-    "description": "The Witch may look at one of the centre cards. If they do, they must swap that card with any player's card.",
-    "nightAction": "You may look one of the center cards. If you do you must exchange that card with any player's card.",
+    "description": "The Witch may look at one of the center cards. If they do, they must swap that card with any player's card.",
+    "nightAction": "You may look at one of the center cards. If you do you must exchange that card with any player's card.",
     "nightActionDetailed": "If you click a center card, you select it. If you click 'confirm', you see your selected center card. If you viewed a center card and you click a player's card you select it. If you click 'confirm' you swap your selected center card with your selected player's card."
+  },
+  {
+    "name": "Mystic Wolf",
+    "team": "Werewolf",
+    "nightOrder": 2.2,
+    "description": "The Mystic Wolf learns who the other werewolves are. If there is only one werewolf player, they may look at one of the centre cards. The Mystic Wolf may additionally view any other player's card.",
+    "nightAction": "You may at another player's card.",
+    "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you view your selected card."
   }
 ]
