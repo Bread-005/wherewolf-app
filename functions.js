@@ -128,6 +128,7 @@ function clickSelectCard(lobby) {
         {id: 16, name: "Doppelganger", text: "View another player's card. Copy their role"},
         {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
+        {id: 24, name: "Cow", text: "Werewolves know him. Knows if he has werewolf neighbor"},
         {id: 21, name: "Alpha Wolf", text: "Swap center wolf card with other player"},
         {id: 23, name: "Mystic Wolf", text: "View a player's card"},
         {id: 15, name: "Minion", text: "See werewolves, but they not him"},

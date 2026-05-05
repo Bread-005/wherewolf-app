@@ -53,6 +53,7 @@ function buildGameSummary(lobby) {
             role.name === "Werewolf" && lobby.cards.find(card1 => card1.name === card.name && card1.startingRole.toLowerCase().includes("wolf"))));
         if (!player) continue;
         if (role.nightOrder > 100) continue;
+        if (role.name === "Cow") continue;
 
         const itemDiv = document.createElement("div");
         itemDiv.className = "summary-item";
@@ -211,11 +212,13 @@ function buildGameSummary(lobby) {
                 player.role = cards.find(card => card.name === player.selectedCards.at(-1).name).role;
                 cards.find(card => card.name === player.selectedCards.at(-1).name).role = youRole;
             }
-            if (role.name === "Witch" || role.name === "Doppelganger" && player.doppelgangerCopy === "Witch" ||
-                role.name === "Troublemaker" || role.name === "Doppelganger" && player.doppelgangerCopy === "Troublemaker") {
-                const player1Role = cards.find(card => card.name === player.selectedCards.at(-1).name).role;
-                cards.find(card => card.name === player.selectedCards.at(-1).name).role = cards.find(card => card.name === player.selectedCards.at(-2).name).role;
-                cards.find(card => card.name === player.selectedCards.at(-2).name).role = player1Role;
+            if (player.selectedCards.length > 1) {
+                if (role.name === "Witch" || role.name === "Doppelganger" && player.doppelgangerCopy === "Witch" ||
+                    role.name === "Troublemaker" || role.name === "Doppelganger" && player.doppelgangerCopy === "Troublemaker") {
+                    const player1Role = cards.find(card => card.name === player.selectedCards.at(-1).name).role;
+                    cards.find(card => card.name === player.selectedCards.at(-1).name).role = cards.find(card => card.name === player.selectedCards.at(-2).name).role;
+                    cards.find(card => card.name === player.selectedCards.at(-2).name).role = player1Role;
+                }
             }
         }
         if (actionText.textContent === "woke together") {

@@ -31,6 +31,22 @@ function wakeUpMultiple(roleName) {
         if (samePlayers.length > 1) {
             document.getElementById("ok-button").style.display = "flex";
         }
+        if (lobby.selectedRoles.find(role => role.name === "Cow") && !hasSelectedCard) {
+            document.getElementById("night-action-text").style.top = "25%";
+            if (lobby.selectedRoles.find(role => role.name === "Alpha Wolf")) {
+                document.getElementById("night-action-text").style.top = "15%";
+            }
+            if (players.find(p => p.startingRole === "Cow")) {
+                for (const player of players) {
+                    if (player.startingRole === "Cow") {
+                        viewCard(player, "Cow");
+                        document.getElementById("night-action-text").textContent += "\n" + player.name + " is a Cow";
+                    }
+                }
+            } else {
+                document.getElementById("night-action-text").textContent += "\nThere is no Cow";
+            }
+        }
     }
     if (roleName === "Mason") {
         document.getElementById("night-action-text").textContent = "These players are Masons: " + samePlayers.join(", ");
@@ -71,6 +87,7 @@ function showRoleActions() {
         document.getElementById("ok-button").style.display = "none";
         document.getElementById("do-nothing-button").style.display = "none";
         document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
+        lobby.cards.forEach(card => getCardElement(card.id).querySelectorAll("img").forEach(img => img.remove()));
         return;
     }
     if (allRoles.find(role => role.name === player.startingRole).nightOrder > 100 && !document.getElementById("night-action-text").textContent.startsWith("You look at")) {
@@ -101,12 +118,12 @@ function showRoleActions() {
         return;
     }
 
-    const length = players.filter(p => p.hasClickedConfirm || p.sawWaitMessage || p.startingRole === "Minion" || p.startingRole === "Mason").length;
+    const length = players.filter(p => p.hasClickedConfirm || p.sawWaitMessage || p.startingRole === "Cow" || p.startingRole === "Minion" || p.startingRole === "Mason").length;
 
     if (players.find(p => p.startingRole === "Copycat" || p.roleChain[0] === "Copycat" && p.selectedCards[0].role === "Doppelganger" && !p.hasCopiedRole || p.startingRole === "Doppelganger") ||
         (lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Copycat") || lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger")) &&
         (length < players.length - 1 || lobby.nightTimer < (5 + Math.floor(Math.random() * 10)))) {
-        if (player.roleChain[0] === "Minion" || player.roleChain[0] === "Mason") {
+        if (player.startingRole === "Cow" || player.startingRole === "Minion" || player.startingRole === "Mason") {
             return;
         }
     }
@@ -167,6 +184,25 @@ function showRoleActions() {
     if (player.startingRole.toLowerCase().includes("wolf") && !player.hasMetWerewolves) {
         wakeUpMultiple("Werewolf");
         return;
+    }
+
+    if (player.startingRole === "Cow") {
+        const tempPlayers = [].concat(players);
+        document.getElementById("night-action-text").textContent = "You were not tapped! Both your neighbors are not Werewolves";
+        if (tempPlayers[0].name === player.name) {
+            tempPlayers.unshift(tempPlayers.at(-1));
+        }
+        if (tempPlayers.at(-1).name === player.name) {
+            tempPlayers.push(tempPlayers[0]);
+        }
+        tempPlayers.forEach((p, index) => {
+            if (p.startingRole === "Cow") {
+                if (tempPlayers[index - 1].startingRole.toLowerCase().includes("wolf") || tempPlayers[index + 1].startingRole.toLowerCase().includes("wolf")) {
+                    document.getElementById("night-action-text").textContent = "You were tapped! At least one of your neighbors is a Werewolf";
+                }
+            }
+        });
+        document.getElementById("ok-button").style.display = "flex";
     }
 
     if (player.startingRole === "Minion") {

@@ -146,5 +146,13 @@
     "description": "The Mystic Wolf learns who the other werewolves are. If there is only one werewolf player, they may look at one of the centre cards. The Mystic Wolf may additionally view any other player's card.",
     "nightAction": "You may at another player's card.",
     "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you view your selected card."
+  },
+  {
+    "name": "Cow",
+    "team": "Villager",
+    "nightOrder": 2.05,
+    "description": "All Werewolves learn who the Cow is. The Cow learns if at least one of their neighbors is a werewolf.",
+    "nightAction": "",
+    "nightActionDetailed": ""
   }
 ]
