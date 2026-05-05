@@ -484,7 +484,9 @@ body {
             padding: 20px;
             box-sizing: border-box;
             justify-content: center;
-            align-content: start;
+            align-items: center;
+            overflow-y: auto;
+            overflow-x: hidden;
 
             @media (max-width: 1040px) {
                 grid-template-columns: repeat(7, 1fr);
@@ -508,14 +510,6 @@ body {
                         }
                     }
                 }
-            }
-
-            .close-button {
-                position: absolute;
-                top: 6%;
-                right: -5%;
-                padding: 5px;
-                margin: 2px;
             }
 
             .card {
@@ -549,9 +543,20 @@ body {
                     text-align: center;
                 }
             }
+        }
+
+        #select-roles-other-components {
+            display: none;
+
+            #close-button {
+                position: absolute;
+                top: 6%;
+                right: -5%;
+                padding: 5px;
+                margin: 2px;
+            }
 
             .discuss-time {
-                display: flex;
                 flex-direction: column;
                 align-items: center;
                 position: absolute;
@@ -574,7 +579,7 @@ body {
                 }
             }
 
-            .start-game-button {
+            #start-game-button {
                 position: absolute;
                 bottom: -10%;
                 left: 50%;
@@ -619,7 +624,7 @@ body {
             align-items: center;
             gap: 10px;
 
-            #continue-button, #ok-button, #do-nothing-button, #confirm-button, #confirm-waiting-button {
+            #continue-button, #ok-button, #do-nothing-button, #confirm-button, #confirm-waiting-button, #confirm-seen-button {
                 display: none;
                 padding: 12px 40px;
                 font-size: 1.5rem;

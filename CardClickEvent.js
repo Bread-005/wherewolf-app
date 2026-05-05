@@ -1,5 +1,5 @@
 import {allRoles, lobbies, myId} from "./index.js";
-import {getCardElement} from "./functions.js";
+import {getCardElement, isDoppelganger} from "./functions.js";
 
 function setCardClickEvent(id) {
     getCardElement(id).addEventListener("click", (event) => {
@@ -25,7 +25,8 @@ function setCardClickEvent(id) {
             player.startingRole.toLowerCase().includes("wolf") && players.filter(p => p.startingRole.toLowerCase().includes("wolf")).length === 1 && !player.hasMetWerewolves ||
             player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf" || player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Apprentice Seer" ||
             player.startingRole === "Robber" || player.startingRole === "Witch" || player.startingRole === "Drunk" ||
-            player.startingRole === "Revealer") {
+            player.startingRole === "Revealer" || player.startingRole === "Mortician" && !isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Mortician")?.action.includes("one") ||
+            player.startingRole === "Mortician" && isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Doppelganger-Mortician")?.action.includes("one")) {
             lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
             document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
             document.getElementById("confirm-button").style.display = "flex";

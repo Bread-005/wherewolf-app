@@ -114,6 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("game").style.background = "lightblue";
             document.getElementById("chat-container").style.display = "flex";
             document.getElementById("roles-warning-container").style.display = "none";
+            document.getElementById("select-roles-other-components").style.display = "none";
             for (const player of players) {
                 if (!document.getElementById("card" + player.id)) {
                     displayCards(lobby);
@@ -165,7 +166,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lobby.state === "night") {
                 document.getElementById("game").style.background = "royalblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
-                showRoleActions();
+                if (lobby.nightTimer > 2) {
+                    showRoleActions();
+                }
                 document.getElementById("chat-container").style.display = "none";
             }
             if (lobby.state === "day") {
@@ -288,6 +291,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("close-summary").addEventListener("click", () => {
         document.getElementById("game-summary-overlay").style.display = "none";
+    });
+
+    document.getElementById("start-game-button").addEventListener("click", () => {
+        sendConsoleMessage("");
+        sendConsoleMessage("New Round has started");
+        sendConsoleMessage("");
+        socket.emit("start-game");
     });
 });
 

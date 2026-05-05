@@ -142,6 +142,7 @@ function clickSelectCard(lobby) {
         {id: 9, name: "Drunk", text: "Swap your card with center"},
         {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
         {id: 18, name: "Revealer", text: "Turn over 1 other player's card if village"},
+        {id: 25, name: "Mortician", text: "Views random card. Wins if neighbor dies"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"},
@@ -150,46 +151,21 @@ function clickSelectCard(lobby) {
     ];
 
     if (isHost()) {
-        const closeButton = document.createElement("button");
-        closeButton.textContent = "Close";
-        closeButton.className = "close-button";
-        closeButton.addEventListener("click", () => {
+        document.getElementById("select-roles-other-components").style.display = "flex";
+        document.getElementById("close-button").addEventListener("click", () => {
             socket.emit("update-state", ({id: lobby.id, state: "waiting"}));
         });
-        selectRolesScreen.append(closeButton);
+
+        // discuss time
+        document.getElementById("discuss-time-label").textContent = "Discussion Time: " + (lobby.discussTime || 300) + " secs";
+        document.getElementById("discuss-time-input").value = lobby.discussTime || 300;
+
+        document.getElementById("discuss-time-save-button").addEventListener("click", () => {
+            let discussTime = Number(document.getElementById("discuss-time-input").value) || 0;
+            if (discussTime > 900) discussTime = 300;
+            socket.emit("change-discuss-time", discussTime);
+        });
     }
-
-    // discuss time
-    const div = document.createElement("div");
-    div.className = "discuss-time";
-
-    const timerDisplay = document.createElement("label");
-    timerDisplay.textContent = "Discussion Time: " + (lobby.discussTime || (lobby.cards.length - 3) * 60) + " secs";
-    timerDisplay.htmlFor = "discuss-time-input";
-
-    const discussTimeInput = document.createElement("input");
-    discussTimeInput.id = "discuss-time-input";
-    discussTimeInput.value = lobby.discussTime || (lobby.cards.length - 3) * 60;
-    discussTimeInput.type = "number";
-
-    const discussTimeButton = document.createElement("button");
-    discussTimeButton.textContent = "Save";
-
-    discussTimeButton.addEventListener("click", () => {
-        let discussTime = Number(discussTimeInput.value) || 0;
-        if (discussTime > 900) discussTime = 300;
-        socket.emit("change-discuss-time", discussTime);
-    });
-
-    const div2 = document.createElement("div");
-    div2.append(discussTimeInput, discussTimeButton);
-
-    div.append(timerDisplay);
-    if (isHost()) {
-        div.append(div2);
-    }
-
-    selectRolesScreen.append(div);
 
     for (const role of roles) {
         const container = document.createElement("div");
@@ -218,26 +194,11 @@ function clickSelectCard(lobby) {
         }
     }
 
+    document.getElementById("start-game-button").style.display = "none";
     if (lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length) {
-        createStartButton(lobby);
+        document.getElementById("start-game-button").style.display = "flex";
     }
     validateRoleSelection(lobby);
-}
-
-function createStartButton(lobby) {
-    if (isHost()) {
-        const startButton = document.createElement("button");
-        startButton.textContent = "Start Game";
-        startButton.className = "start-game-button";
-        document.getElementById("select-roles-screen").append(startButton);
-
-        startButton.addEventListener("click", () => {
-            sendConsoleMessage("");
-            sendConsoleMessage("New Round has started");
-            sendConsoleMessage("");
-            socket.emit("set-roles-for-all-cards", lobby.id);
-        });
-    }
 }
 
 function viewCard(card, as = card.role) {
@@ -271,6 +232,10 @@ function setupButtonEvents() {
         socket.emit("has-done-night-action");
         resetNightActionTexts();
     });
+    document.getElementById("confirm-seen-button").addEventListener("click", () => {
+        document.getElementById("confirm-seen-button").style.display = "none";
+        socket.emit("confirm-seen-random-action");
+    });
 }
 
 function resetNightActionTexts() {
@@ -279,6 +244,7 @@ function resetNightActionTexts() {
     document.getElementById("ok-button").style.display = "none";
     document.getElementById("do-nothing-button").style.display = "none";
     document.getElementById("confirm-waiting-button").style.display = "none";
+    document.getElementById("confirm-seen-button").style.display = "none";
     document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
 
     for (const card of lobby.cards) {
@@ -358,6 +324,7 @@ function clearEverything() {
         document.getElementById("confirm-button").style.display = "none";
         document.getElementById("ok-button").style.display = "none";
         document.getElementById("confirm-waiting-button").style.display = "none";
+        document.getElementById("confirm-seen-button").style.display = "none";
         const players = lobby.cards.filter(card => !card.isMiddleCard);
         for (const player of players) {
             getCardElement(player.id).style.background = "#f0f0f0";
@@ -459,7 +426,7 @@ function animateCardSwap(card1, card2, text = "", duration = 2000) {
                 document.getElementById("night-action-text").textContent = "You swapped your card with " + card2.name + "\n" +
                     "Now you are " + card2.role;
             }
-            if (you.startingRole === "Alpha Wolf" && (you.roleChain[0] === "Doppelganger" || you.roleChain[0] === "Copycat" && you.selectedCards[0]?.role === "Doppelganger")) {
+            if (you.startingRole === "Alpha Wolf" && isDoppelganger(you)) {
                 wakeUpMultiple("Werewolf");
             }
 
@@ -815,7 +782,11 @@ function isHost() {
     return !!(lobby && lobby.cards.filter(card => !card.isMiddleCard)[0].id === myId);
 }
 
+function isDoppelganger(player) {
+    return player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger";
+}
+
 export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
-    resetNightActionTexts, createLobbyDisplay, createStartButton, showVoteResults, clearEverything, animateCardSwap,
+    resetNightActionTexts, createLobbyDisplay, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
-    showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken};
+    showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger};

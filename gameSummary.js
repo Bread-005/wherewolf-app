@@ -1,4 +1,4 @@
-import {allRoles} from "./index.js";
+import {allRoles, myId} from "./index.js";
 
 function buildGameSummary(lobby) {
     document.getElementById("game-summary-button").style.display = "flex";
@@ -83,6 +83,9 @@ function buildGameSummary(lobby) {
         }
         if (player.beginningRole === "Insomniac") {
             actionText.textContent = "woke up as";
+        }
+        if (player.beginningRole === "Mortician") {
+            actionText.textContent = "looked at";
         }
 
         itemDiv.append(createSummaryCard(player.name, player.startRole));
@@ -226,6 +229,27 @@ function buildGameSummary(lobby) {
         }
         if (role.name === "Insomniac") {
             targetsContainer.append(createSummaryCard(player.name, player.role));
+        }
+        if (role.name === "Mortician") {
+            const randomAction = lobby.randomActions.find(action => action.role === "Mortician").action;
+            if (randomAction.includes("left") || randomAction.includes("right")) {
+                const players = lobby.cards.filter(card => !card.isMiddleCard);
+                const myIndex = players.findIndex(p => p.id === myId);
+
+                if (randomAction.includes("left")) {
+                    const leftNeighbor = players[(myIndex + 1) % players.length];
+                    targetsContainer.append(createSummaryCard(leftNeighbor.name, cards.find(card => card.name === leftNeighbor.name).role));
+                }
+                if (randomAction.includes("right")) {
+                    const leftNeighbor = players[(myIndex - 1 + players.length) % players.length];
+                    targetsContainer.append(createSummaryCard(leftNeighbor.name, cards.find(card => card.name === leftNeighbor.name).role));
+                }
+            }
+            if (randomAction.includes("yourself")) {
+                actionText.textContent = "looked at themself";
+                targetsContainer.append(createSummaryCard(player.name, player.role));
+
+            }
         }
         itemDiv.append(targetsContainer);
         summaryList.append(itemDiv);
