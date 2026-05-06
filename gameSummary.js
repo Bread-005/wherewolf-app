@@ -1,4 +1,4 @@
-import {allRoles, myId} from "./index.js";
+import {allRoles} from "./index.js";
 
 function buildGameSummary(lobby) {
     document.getElementById("game-summary-button").style.display = "flex";
@@ -71,7 +71,7 @@ function buildGameSummary(lobby) {
             actionText.textContent = "placed a shield token onto";
         }
         if (player.beginningRole === "Mystic Wolf" || player.beginningRole === "Seer" || player.beginningRole === "Apprentice Seer" ||
-            player.beginningRole === "Revealer") {
+            player.beginningRole === "Revealer" || player.beginningRole === "Exposer") {
             actionText.textContent = "looked at";
         }
         if (player.beginningRole === "Robber" || player.beginningRole === "Drunk") {

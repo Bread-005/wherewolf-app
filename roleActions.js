@@ -182,7 +182,8 @@ function showRoleActions() {
         }
     }
 
-    if (player.startingRole === "Insomniac" || player.startingRole === "Revealer" || player.startingRole === "Mortician") {
+    if (player.startingRole === "Insomniac" || player.startingRole === "Revealer" || player.startingRole === "Exposer" ||
+        player.startingRole === "Mortician") {
         if (length < players.length - 1 || !player.mayDoLateAction || lobby.nightTimer < (13 + Math.floor(Math.random() * 7))) {
             if (!player.sawWaitMessage) {
                 document.getElementById("confirm-waiting-button").style.display = "flex";
@@ -233,12 +234,12 @@ function showRoleActions() {
 
     if (player.startingRole === "Doppelganger" || (player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf") && !player.hasDoneExtraWolfAction ||
         player.startingRole === "Seer" || player.startingRole === "Robber" || player.startingRole === "Witch" && player.didFirstPart ||
-        player.startingRole === "Troublemaker" || player.startingRole === "Mortician" && yourRandomAction?.action.includes("one")) {
+        player.startingRole === "Troublemaker" || player.startingRole === "Revealer" || player.startingRole === "Mortician" && yourRandomAction?.action.includes("one")) {
         makeCardsClickable("players");
     }
 
     if (player.startingRole === "Copycat" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" ||
-        player.startingRole === "Witch" && !player.didFirstPart || player.startingRole === "Drunk") {
+        player.startingRole === "Witch" && !player.didFirstPart || player.startingRole === "Drunk" || player.startingRole === "Exposer") {
         makeCardsClickable("center");
     }
     if (player.startingRole === "Insomniac") {
@@ -250,9 +251,6 @@ function showRoleActions() {
         document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + player.role;
         viewCard(player);
         document.getElementById("ok-button").style.display = "flex";
-    }
-    if (player.startingRole === "Revealer") {
-        makeCardsClickable("players");
     }
     if (player.startingRole === "Mortician" && !yourRandomAction?.action.includes("one")) {
         if (yourRandomAction.action.includes("yourself")) {
@@ -315,6 +313,10 @@ function showRoleActions() {
                 }
                 if (player.startingRole === "Mortician") {
                     document.getElementById("night-action-text").textContent = lobby.randomActions.find(action => action.role === "Mortician").action;
+
+                    if (isDoppelganger(player)) {
+                        document.getElementById("night-action-text").textContent = lobby.randomActions.find(action => action.role === "Doppelganger-Mortician").action;
+                    }
                 }
                 document.getElementById("do-nothing-button").style.display = "flex";
             }
@@ -381,6 +383,11 @@ function confirmButtonAction() {
         if (selectedCards[0].team === "Villager") {
             socket.emit("turn-over-card", selectedCards[0].name);
         }
+    }
+    if (player.startingRole === "Exposer") {
+        viewCard(selectedCards[0]);
+        document.getElementById("ok-button").style.display = "flex";
+        socket.emit("turn-over-card", selectedCards[0].name);
     }
 
     socket.emit("add-selected-cards", selectedCards.map(card => {

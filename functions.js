@@ -737,7 +737,8 @@ function setupRoleSelection() {
         {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
         {id: 9, name: "Drunk", text: "Swap your card with center"},
         {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
-        {id: 18, name: "Revealer", text: "Turn over 1 other player's card if village"},
+        {id: 18, name: "Revealer", text: "May turn over 1 other player's card if village"},
+        {id: 30, name: "Exposer", text: "May turn over 1 center card"},
         {id: 25, name: "Mortician", text: "Views random card. Wins if any neighbor dies"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
@@ -766,9 +767,6 @@ function setupRoleSelection() {
         container.style.border = "5px solid brown";
         container.id = role.id + "-" +role.name + "-select-role";
 
-        const name = document.createElement("div");
-        name.textContent = role.name;
-
         const img = document.createElement("img");
         img.src = "./images/" + role.name.toLowerCase().replace(" ", "_") + ".png";
         img.alt = role.name;
@@ -777,7 +775,7 @@ function setupRoleSelection() {
         ability.className = "card-ability";
         ability.textContent = role.text;
 
-        container.append(name, img, ability);
+        container.append(img, ability);
 
         selectRolesScreen.append(container);
 
