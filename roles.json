@@ -161,7 +161,7 @@
     "team": "Mortician",
     "nightOrder": 13.1,
     "description": "The Mortician looks at a card randomly, either of themselves or of either of their neighbors.",
-    "nightAction": "You may look at a card from ... (random action of: yourself, either neighbor, left neighbor, right neighbor, both neighbors",
+    "nightAction": "You may look at a card from ... (random action of: yourself, either neighbor, left neighbor, right neighbor, both neighbors.",
     "nightActionDetailed": "If you can decide between one of your neighbors and you click a card, you select it. If you click 'confirm', you view your selected card. If you do not have a choice which card to view, the Website automatically displays the correct card(s)."
   },
   {
@@ -187,5 +187,13 @@
     "team": "Werewolf",
     "nightOrder": 107,
     "description": "The Dream Wolf doesn't wake up during the night. They don't know who the werewolves are, but the other werewolves know who the Dream Wolf is."
+  },
+  {
+    "name": "Exposer",
+    "team": "Villager",
+    "nightOrder": 10.1,
+    "description": "The Exposer may turn over one of the center cards.",
+    "nightAction": "You may turn over 1 center card face up.",
+    "nightActionDetailed": "If you click a center card, you select it. If you click 'confirm', you turn over your selected card face up."
   }
 ]
