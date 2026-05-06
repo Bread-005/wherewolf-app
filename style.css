@@ -1140,6 +1140,10 @@ body {
                 line-height: 1.6;
                 color: #ecf0f1;
             }
+
+            #wiki-role-special-interactions {
+                margin-top: 10px;
+            }
         }
 
         a {

@@ -65,13 +65,13 @@
     "name": "Hunter",
     "team": "Villager",
     "nightOrder": 102,
-    "description": "During voting when the Hunter dies, the player the Hunter voted for dies as well."
+    "description": "The Hunter doesn't wake up during the night. If they are killed, the player they voted dies as well."
   },
   {
     "name": "Tanner",
     "team": "Tanner",
     "nightOrder": 103,
-    "description": "During voting when the Tanner dies, the Tanner wins.",
+    "description": "The Tanner doesn't wake up during the night. If the Tanner dies, the Tanner wins.",
     "specialRules": "If the Tanner dies, the Werewolf Team loses. If the Tanner dies and a werewolf dies, the Tanner and Villager Team wins."
   },
   {
@@ -89,7 +89,8 @@
     "nightOrder": 1,
     "description": "The Doppelganger must look at another player's card, which causes them to take on the properties of the card they looked at. If they viewed a card that has a night action, they immediately do that action (with some exceptions).",
     "nightAction": "Look at another player's card. You are now a copy of that role. If your new role has a night action, do it now.",
-    "nightActionDetailed": "If you click another player's card you select. If you click 'confirm' you view that card and copy it. If your viewed card has a night action, you immediately do it (with some exceptions)."
+    "nightActionDetailed": "If you click another player's card you select. If you click 'confirm' you view that card and copy it. If your viewed card has a night action, you immediately do it (with some exceptions).",
+    "specialInteractions": "If the Doppelganger looks at the Copycat, the Doppelganger immediately looks at a center card and copies that role. If that new role has a night action, the Doppelganger immediately does it (with some exceptions)."
   },
   {
     "name": "Apprentice Seer",
@@ -162,5 +163,17 @@
     "description": "The Mortician looks at a card randomly, either of themselves or of either of their neighbors.",
     "nightAction": "You may look at a card from ... (random action of: yourself, either neighbor, left neighbor, right neighbor, both neighbors",
     "nightActionDetailed": "If you can decide between one of your neighbors and you click a card, you select it. If you click 'confirm', you view your selected card. If you do not have a choice which card to view, the Website automatically displays the correct card(s)."
+  },
+  {
+    "name": "Prince",
+    "team": "Villager",
+    "nightOrder": 104,
+    "description": "The Prince doesn't wake up during the night. Any votes the Prince received do not count. If they have the highest amount of votes, the player with the second highest amount of votes is killed instead."
+  },
+  {
+    "name": "Bodyguard",
+    "team": "Villager",
+    "nightOrder": 105,
+    "description": "The Bodyguard doesn't wake up during the night. The player they vote cannot die and any votes that player received do not count. If that player has the highest amount of votes, the player with the second highest amount of votes is killed instead."
   }
 ]

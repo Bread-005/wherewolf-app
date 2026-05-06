@@ -147,7 +147,9 @@ function clickSelectCard(lobby) {
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"},
         {id: 13, name: "Hunter", text: "If killed, player they voted for dies, too"},
-        {id: 14, name: "Tanner", text: "Wins if killed"}
+        {id: 14, name: "Tanner", text: "Wins if killed"},
+        {id: 26, name: "Prince", text: "Votes for him do not count"},
+        {id: 27, name: "Bodyguard", text: "Player they voted for cannot die"}
     ];
 
     if (isHost()) {
@@ -731,6 +733,10 @@ function validateRoleSelection(lobby) {
         if (!counts["Alpha Wolf"] && !counts["Robber"] && !counts["Witch"] && !counts["Troublemaker"]) {
             errors.push("• Insomniac is useless. There are no roles that swap players' cards.");
         }
+    }
+
+    if (counts["Bodyguard"] && lobby.cards.filter(card => !card.isMiddleCard).length < 5) {
+        errors.push("• It is not advised to have a Bodyguard with less than 5 players.");
     }
 
     if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.length) {

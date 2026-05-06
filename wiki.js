@@ -22,13 +22,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("wiki-role-container").style.background = "purple";
             document.getElementById("wiki-role-container").style.borderTop = "8px solid #c0392b";
         } else if (role.team === "Tanner") {
-            document.getElementById("wiki-role-container").style.background = "orange";
-            document.getElementById("wiki-role-container").style.borderTop = "8px solid yellow";
+            document.getElementById("wiki-role-container").style.background = "#383f31";
+            document.getElementById("wiki-role-container").style.borderTop = "8px solid gray";
+        } else if (role.team === "Mortician") {
+            document.getElementById("wiki-role-container").style.background = "#24150a";
+            document.getElementById("wiki-role-container").style.borderTop = "8px solid #24150a";
         }
         document.getElementById("wiki-role-name").textContent = "Name: " + role.name;
         document.getElementById("wiki-role-team").textContent = "Team: " + role.team;
         document.getElementById("wiki-role-description").textContent = "Description: " + role.description;
         document.getElementById("wiki-role-night-action").textContent = "Night Action: " + (role.nightAction ? role.nightAction : "none");
         document.getElementById("wiki-role-night-action-detailed").textContent = role.nightActionDetailed ? "Detailed: " + role.nightActionDetailed : "";
+        document.getElementById("wiki-role-special-interactions").textContent = role.specialInteractions ? "Special Interactions: " + role.specialInteractions : "";
     }
 });

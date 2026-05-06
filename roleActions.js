@@ -227,7 +227,7 @@ function showRoleActions() {
         wakeUpMultiple("Mason");
     }
 
-    if (player.startingRole === "Doppelganger" || player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf" ||
+    if (player.startingRole === "Doppelganger" || (player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf") && !player.hasDoneExtraWolfAction ||
         player.startingRole === "Seer" || player.startingRole === "Robber" || player.startingRole === "Witch" && player.didFirstPart ||
         player.startingRole === "Troublemaker" || player.startingRole === "Mortician" && yourRandomAction?.action.includes("one")) {
         makeCardsClickable("players");
