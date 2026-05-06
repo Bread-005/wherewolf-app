@@ -160,6 +160,17 @@ function buildGameSummary(lobby) {
                             targetsContainer.append(andText);
                         }
                     });
+
+                    if (others.length === 0) {
+                        const actionText2 = document.createElement("span");
+                        actionText2.className = "summary-action-text";
+                        if (player.selectedCards[0]?.name.includes("middle-card")) {
+                            actionText2.textContent = "and viewed";
+                        } else {
+                            actionText2.textContent = "and did nothing";
+                        }
+                        targetsContainer.append(actionText2);
+                    }
                 }
             }
         }
@@ -252,15 +263,15 @@ function buildGameSummary(lobby) {
             const randomAction = lobby.randomActions.find(action => action.role === "Mortician").action;
             if (randomAction.includes("left") || randomAction.includes("right")) {
                 const players = lobby.cards.filter(card => !card.isMiddleCard);
-                const myIndex = players.findIndex(p => p.id === myId);
+                const morticianIndex = players.findIndex(p => p.name === player.name);
 
                 if (randomAction.includes("left")) {
-                    const leftNeighbor = players[(myIndex + 1) % players.length];
+                    const leftNeighbor = players[(morticianIndex + 1) % players.length];
                     targetsContainer.append(createSummaryCard(leftNeighbor.name, cards.find(card => card.name === leftNeighbor.name).role));
                 }
                 if (randomAction.includes("right")) {
-                    const leftNeighbor = players[(myIndex - 1 + players.length) % players.length];
-                    targetsContainer.append(createSummaryCard(leftNeighbor.name, cards.find(card => card.name === leftNeighbor.name).role));
+                    const rightNeighbor = players[(morticianIndex - 1 + players.length) % players.length];
+                    targetsContainer.append(createSummaryCard(rightNeighbor.name, cards.find(card => card.name === rightNeighbor.name).role));
                 }
             }
             if (randomAction.includes("yourself")) {

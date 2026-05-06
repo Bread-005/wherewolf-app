@@ -117,94 +117,6 @@ function displayCards(lobby) {
     }
 }
 
-function clickSelectCard(lobby) {
-    const selectRolesScreen = document.getElementById("select-roles-screen");
-    selectRolesScreen.innerHTML = "";
-    selectRolesScreen.style.display = "grid";
-
-    const roles = [
-        {id: 20, name: "Copycat", text: "View a center card. Copy that role"},
-        {id: 19, name: "Sentinel", text: "May place a shield token"},
-        {id: 16, name: "Doppelganger", text: "View another player's card. Copy their role"},
-        {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
-        {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
-        {id: 24, name: "Cow", text: "Werewolves know him. Knows if he has werewolf neighbor"},
-        {id: 21, name: "Alpha Wolf", text: "Swap center wolf card with other player"},
-        {id: 23, name: "Mystic Wolf", text: "View a player's card"},
-        {id: 15, name: "Minion", text: "See werewolves, but they not him"},
-        {id: 11, name: "Mason", text: "See the other Mason"},
-        {id: 12, name: "Mason", text: "See the other Mason"},
-        {id: 6, name: "Seer", text: "May either view 1 player´s card or 2 center cards"},
-        {id: 17, name: "Apprentice Seer", text: "May view 1 center card"},
-        {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
-        {id: 22, name: "Witch", text: "May view 1 center card and swap with any player"},
-        {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
-        {id: 9, name: "Drunk", text: "Swap your card with center"},
-        {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
-        {id: 18, name: "Revealer", text: "Turn over 1 other player's card if village"},
-        {id: 25, name: "Mortician", text: "Views random card. Wins if any neighbor dies"},
-        {id: 1, name: "Villager", text: "No special ability"},
-        {id: 2, name: "Villager", text: "No special ability"},
-        {id: 3, name: "Villager", text: "No special ability"},
-        {id: 13, name: "Hunter", text: "If killed, player they voted for dies, too"},
-        {id: 14, name: "Tanner", text: "Wins if killed"},
-        {id: 26, name: "Prince", text: "Votes for him do not count"},
-        {id: 27, name: "Bodyguard", text: "Player they voted for cannot die"},
-        {id: 28, name: "Cursed", text: "Becomes a werewolf, if voted for by one"},
-        {id: 29, name: "Dream Wolf", text: "Does not wake up. Known by other wolves"}
-    ];
-
-    if (isHost()) {
-        document.getElementById("select-roles-other-components").style.display = "flex";
-        document.getElementById("close-button").addEventListener("click", () => {
-            socket.emit("update-state", ({id: lobby.id, state: "waiting"}));
-        });
-
-        // discuss time
-        document.getElementById("discuss-time-label").textContent = "Discussion Time: " + (lobby.discussTime || 300) + " secs";
-        document.getElementById("discuss-time-input").value = lobby.discussTime || 300;
-
-        document.getElementById("discuss-time-save-button").addEventListener("click", () => {
-            let discussTime = Number(document.getElementById("discuss-time-input").value) || 0;
-            if (discussTime > 900) discussTime = 300;
-            socket.emit("change-discuss-time", discussTime);
-        });
-    }
-
-    for (const role of roles) {
-        const container = document.createElement("div");
-        container.className = "card";
-        container.style.border = "5px solid " + (lobby.selectedRoles.map(r => r.id).includes(role.id) ? "lightblue" : "brown");
-
-        const name = document.createElement("div");
-        name.textContent = role.name;
-
-        const img = document.createElement("img");
-        img.src = "./images/" + role.name.toLowerCase().replace(" ", "_") + ".png";
-        img.alt = role.name;
-
-        const ability = document.createElement("div");
-        ability.className = "card-ability";
-        ability.textContent = role.text;
-
-        container.append(name, img, ability);
-
-        selectRolesScreen.append(container);
-
-        if (isHost()) {
-            container.addEventListener("click", () => {
-                socket.emit("request-update-selected-roles", {lobbyId: lobby.id, role: role});
-            }, {once: true});
-        }
-    }
-
-    document.getElementById("start-game-button").style.display = "none";
-    if (lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length) {
-        document.getElementById("start-game-button").style.display = "flex";
-    }
-    validateRoleSelection(lobby);
-}
-
 function viewCard(card, as = card.role) {
     const img = document.createElement("img");
     img.src = "./images/" + as.toLowerCase().replace(" ", "_") + ".png";
@@ -212,9 +124,11 @@ function viewCard(card, as = card.role) {
     img.style.height = "100%";
     img.style.position = "relative";
 
-    getCardElement(card.id).querySelectorAll("img").forEach(img => img.remove());
-    getCardElement(card.id).append(img);
-    getCardElement(card.id).style.cursor = "default";
+    if (getCardElement(card.id).querySelectorAll("img")[0]?.src !== img.src) {
+        getCardElement(card.id).querySelectorAll("img").forEach(img => img.remove());
+        getCardElement(card.id).append(img);
+        getCardElement(card.id).style.cursor = "default";
+    }
 }
 
 function setupButtonEvents() {
@@ -312,10 +226,10 @@ function createLobbyDisplay() {
 function clearEverything() {
     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
     if (lobby) {
+        const players = lobby.cards.filter(card => !card.isMiddleCard);
         document.getElementById("cards").querySelectorAll("img").forEach(img => img.remove());
         document.getElementById("game").style.background = "lightblue";
-        if (isHost() && lobby.cards.length >= 6) {
-            document.getElementById("select-roles-button").style.display = "flex";
+        if (isHost() && players.length >= 3) {
             document.getElementById("select-roles-button").style.display = "flex";
         }
         document.getElementById("display-text").textContent = "";
@@ -329,7 +243,6 @@ function clearEverything() {
         document.getElementById("ok-button").style.display = "none";
         document.getElementById("confirm-waiting-button").style.display = "none";
         document.getElementById("confirm-seen-button").style.display = "none";
-        const players = lobby.cards.filter(card => !card.isMiddleCard);
         for (const player of players) {
             getCardElement(player.id).style.background = "#f0f0f0";
             document.getElementById("voted-banner" + player.id).style.display = "none";
@@ -550,6 +463,9 @@ function setupTokens(lobby) {
         }
         if (role1.team === "Tanner") {
             token.style.border = "2px solid #f1c40f";
+        }
+        if (role1.team === "Mortician") {
+            token.style.border = "2px solid #24150a";
         }
 
         // start positions
@@ -773,6 +689,9 @@ function setupGeneralInfo(you, selectedRoles) {
     if (you.team === "Tanner") {
         text.textContent += "During voting, if you die, you win.";
     }
+    if (you.team === "Mortician") {
+        text.textContent += "During voting, if any of your neighbor dies, you win.";
+    }
 
     list.append(yourRoleDescription, text);
 }
@@ -786,15 +705,92 @@ function displaySentinelShieldToken(player) {
 }
 
 function isHost() {
-    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
-    return !!(lobby && lobby.cards.filter(card => !card.isMiddleCard)[0].id === myId);
+    const lobby1 = lobbies.find(lobby1 => lobby1.cards.find(player => player.id === myId));
+    return !!(lobby1 && lobby1.cards.filter(card => !card.isMiddleCard)[0].id === myId);
 }
 
 function isDoppelganger(player) {
     return player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger";
 }
 
-export {showErrorPopup, displayCards, clickSelectCard, viewCard, setupButtonEvents, getCardElement,
+function setupRoleSelection() {
+    const selectRolesScreen = document.getElementById("select-roles-screen");
+    selectRolesScreen.innerHTML = "";
+    selectRolesScreen.style.display = "grid";
+
+    const roles = [
+        {id: 20, name: "Copycat", text: "View a center card. Copy that role"},
+        {id: 19, name: "Sentinel", text: "May place a shield token"},
+        {id: 16, name: "Doppelganger", text: "View another player's card. Copy their role"},
+        {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
+        {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
+        {id: 24, name: "Cow", text: "Werewolves know him. Knows if he has werewolf neighbor"},
+        {id: 21, name: "Alpha Wolf", text: "Swap center wolf card with other player"},
+        {id: 23, name: "Mystic Wolf", text: "View a player's card"},
+        {id: 15, name: "Minion", text: "See werewolves, but they not him"},
+        {id: 11, name: "Mason", text: "See the other Mason"},
+        {id: 12, name: "Mason", text: "See the other Mason"},
+        {id: 6, name: "Seer", text: "May either view 1 player´s card or 2 center cards"},
+        {id: 17, name: "Apprentice Seer", text: "May view 1 center card"},
+        {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
+        {id: 22, name: "Witch", text: "May view 1 center card and swap with any player"},
+        {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
+        {id: 9, name: "Drunk", text: "Swap your card with center"},
+        {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
+        {id: 18, name: "Revealer", text: "Turn over 1 other player's card if village"},
+        {id: 25, name: "Mortician", text: "Views random card. Wins if any neighbor dies"},
+        {id: 1, name: "Villager", text: "No special ability"},
+        {id: 2, name: "Villager", text: "No special ability"},
+        {id: 3, name: "Villager", text: "No special ability"},
+        {id: 13, name: "Hunter", text: "If killed, player they voted for dies, too"},
+        {id: 14, name: "Tanner", text: "Wins if killed"},
+        {id: 26, name: "Prince", text: "Votes for him do not count"},
+        {id: 27, name: "Bodyguard", text: "Player they voted for cannot die"},
+        {id: 28, name: "Cursed", text: "Becomes a werewolf, if voted for by one"},
+        {id: 29, name: "Dream Wolf", text: "Does not wake up. Known by other wolves"}
+    ];
+
+    document.getElementById("close-button").addEventListener("click", () => {
+        socket.emit("update-state", "waiting");
+    });
+
+    document.getElementById("discuss-time-save-button").addEventListener("click", () => {
+        let discussTime = Number(document.getElementById("discuss-time-input").value) || 0;
+        if (discussTime > 900) discussTime = 300;
+        socket.emit("change-discuss-time", discussTime);
+    });
+
+    for (const role of roles) {
+        const container = document.createElement("div");
+        container.className = "card";
+        container.style.border = "5px solid brown";
+        container.id = role.id + "-" +role.name + "-select-role";
+
+        const name = document.createElement("div");
+        name.textContent = role.name;
+
+        const img = document.createElement("img");
+        img.src = "./images/" + role.name.toLowerCase().replace(" ", "_") + ".png";
+        img.alt = role.name;
+
+        const ability = document.createElement("div");
+        ability.className = "card-ability";
+        ability.textContent = role.text;
+
+        container.append(name, img, ability);
+
+        selectRolesScreen.append(container);
+
+        container.addEventListener("click", () => {
+            if (isHost()) {
+                socket.emit("request-update-selected-roles", role);
+            }
+        });
+    }
+}
+
+export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
-    showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger};
+    showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, setupRoleSelection, isHost,
+    validateRoleSelection};

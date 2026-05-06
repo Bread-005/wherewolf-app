@@ -521,7 +521,6 @@ body {
                 text-align: center;
                 overflow: hidden;
                 color: white;
-                cursor: pointer;
                 box-sizing: border-box;
                 height: 20vh;
 
@@ -580,6 +579,7 @@ body {
             }
 
             #start-game-button {
+                display: none;
                 position: absolute;
                 bottom: -10%;
                 left: 50%;
