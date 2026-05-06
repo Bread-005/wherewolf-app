@@ -142,14 +142,16 @@ function clickSelectCard(lobby) {
         {id: 9, name: "Drunk", text: "Swap your card with center"},
         {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
         {id: 18, name: "Revealer", text: "Turn over 1 other player's card if village"},
-        {id: 25, name: "Mortician", text: "Views random card. Wins if neighbor dies"},
+        {id: 25, name: "Mortician", text: "Views random card. Wins if any neighbor dies"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"},
         {id: 13, name: "Hunter", text: "If killed, player they voted for dies, too"},
         {id: 14, name: "Tanner", text: "Wins if killed"},
         {id: 26, name: "Prince", text: "Votes for him do not count"},
-        {id: 27, name: "Bodyguard", text: "Player they voted for cannot die"}
+        {id: 27, name: "Bodyguard", text: "Player they voted for cannot die"},
+        {id: 28, name: "Cursed", text: "Becomes a werewolf, if voted for by one"},
+        {id: 29, name: "Dream Wolf", text: "Does not wake up. Known by other wolves"}
     ];
 
     if (isHost()) {
@@ -721,7 +723,7 @@ function validateRoleSelection(lobby) {
     const counts = {};
     lobby.selectedRoles.forEach(r => counts[r.name] = (counts[r.name] || 0) + 1);
 
-    if (!counts["Werewolf"] && !counts["Alpha Wolf"] && !counts["Mystic Wolf"] && !counts["Minion"]) {
+    if (!counts["Werewolf"] && !counts["Alpha Wolf"] && !counts["Mystic Wolf"] && !counts["Dream Wolf"] && !counts["Minion"]) {
         errors.push("• No evil roles selected!");
     }
 

@@ -37,6 +37,8 @@ function buildGameSummary(lobby) {
     }
     roles.sort((a, b) => a.nightOrder - b.nightOrder);
 
+    const players = lobby.cards.filter(card => !card.isMiddleCard);
+
     const cards = lobby.cards.map(card => {
         return {
             name: card.name,
@@ -50,7 +52,7 @@ function buildGameSummary(lobby) {
 
     for (const role of roles) {
         const player = cards.find(card => !card.name.includes("middle-card") && (card.beginningRole === role.name ||
-            role.name === "Werewolf" && lobby.cards.find(card1 => card1.name === card.name && card1.startingRole.toLowerCase().includes("wolf"))));
+            role.name === "Werewolf" && lobby.cards.find(card1 => card1.name === card.name && card1.startingRole.toLowerCase().includes("wolf") && card1.startingRole !== "Dream Wolf")));
         if (!player) continue;
         if (role.nightOrder > 100) continue;
         if (role.name === "Cow") continue;
@@ -120,8 +122,7 @@ function buildGameSummary(lobby) {
         }
 
         if (role.name === "Werewolf" || role.name === "Mason") {
-            const others = lobby.cards.filter(card => !card.isMiddleCard &&
-                (card.startingRole === role.name || role.name === "Werewolf" && card.startingRole.toLowerCase().includes("wolf")) && card.name !== player.name);
+            const others = players.filter(p => (p.startingRole === role.name || role.name === "Werewolf" && p.startingRole.toLowerCase().includes("wolf") && p.startingRole !== "Dream Wolf") && p.name !== player.name);
             if (others.length === 0) {
                 actionText.textContent = "woke alone";
                 if (role.name === "Werewolf") {
@@ -143,6 +144,23 @@ function buildGameSummary(lobby) {
                     targetsContainer.append(createSummaryCard(other.name, other.roleChain[0]));
                 });
                 itemDiv.append(actionText);
+            }
+            if (role.name === "Werewolf") {
+                const targetPlayers = cards.filter(p => p.beginningRole === "Dream Wolf" || p.beginningRole === "Cow");
+                if (targetPlayers.length > 0) {
+                    actionText.textContent = "woke and saw";
+
+                    targetPlayers.forEach((target, index) => {
+                        targetsContainer.append(createSummaryCard(target.name, target.beginningRole));
+
+                        if (index < targetPlayers.length - 1) {
+                            const andText = document.createElement("span");
+                            andText.className = "summary-and-text";
+                            andText.textContent = "and";
+                            targetsContainer.append(andText);
+                        }
+                    });
+                }
             }
         }
 

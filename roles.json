@@ -175,5 +175,17 @@
     "team": "Villager",
     "nightOrder": 105,
     "description": "The Bodyguard doesn't wake up during the night. The player they vote cannot die and any votes that player received do not count. If that player has the highest amount of votes, the player with the second highest amount of votes is killed instead."
+  },
+  {
+    "name": "Cursed",
+    "team": "Villager",
+    "nightOrder": 106,
+    "description": "The Cursed doesn't wake up during the night. If they are voted for by a werewolf, they transform into a werewolf and join Team Werewolf."
+  },
+  {
+    "name": "Dream Wolf",
+    "team": "Werewolf",
+    "nightOrder": 107,
+    "description": "The Dream Wolf doesn't wake up during the night. They don't know who the werewolves are, but the other werewolves know who the Dream Wolf is."
   }
 ]

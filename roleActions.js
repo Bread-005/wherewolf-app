@@ -31,21 +31,25 @@ function wakeUpMultiple(roleName) {
         if (samePlayers.length > 1) {
             document.getElementById("ok-button").style.display = "flex";
         }
-        if (lobby.selectedRoles.find(role => role.name === "Cow") && !hasSelectedCard) {
+        if (lobby.selectedRoles.find(role => role.name === "Cow" || role.name === "Dream Wolf") && !hasSelectedCard) {
             document.getElementById("night-action-text").style.top = "25%";
             if (lobby.selectedRoles.find(role => role.name === "Alpha Wolf")) {
                 document.getElementById("night-action-text").style.top = "15%";
             }
             document.getElementById("night-action-text").textContent += "\n";
-            if (players.find(p => p.startingRole === "Cow")) {
-                for (const player of players) {
-                    if (player.startingRole === "Cow") {
-                        viewCard(player, "Cow");
-                        document.getElementById("night-action-text").textContent += player.name + " is a Cow. ";
+            for (const role of ["Cow", "Dream Wolf"]) {
+                if (players.find(p => p.startingRole === role)) {
+                    for (const player of players) {
+                        if (player.startingRole === role) {
+                            viewCard(player, role);
+                            document.getElementById("night-action-text").textContent += player.name + " is a " + role + ". ";
+                        }
+                    }
+                } else {
+                    if (lobby.selectedRoles.find(r => r.name === role.name)) {
+                        document.getElementById("night-action-text").textContent += "There is no " + role + ". ";
                     }
                 }
-            } else {
-                document.getElementById("night-action-text").textContent += "There is no Cow";
             }
         }
     }
