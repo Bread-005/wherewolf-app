@@ -88,7 +88,9 @@ function showRoleActions() {
     const centerCards = lobby.cards.filter(card => card.isMiddleCard);
     const player = players.find(player => player.id === myId);
     if (!player) return;
-    document.getElementById("confirm-waiting-button").style.display = "none";
+    if (player.sawWaitMessage) {
+        document.getElementById("confirm-waiting-button").style.display = "none";
+    }
     document.getElementById("confirm-seen-button").style.display = "none";
     const myIndex = players.findIndex(p => p.id === myId);
     let yourRandomAction = lobby.randomActions.find(randomAction => randomAction.role === player.startingRole);
@@ -174,7 +176,8 @@ function showRoleActions() {
             card.startingRole === "Alpha Wolf" && (!player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Mystic Wolf"))) &&
         (length < players.length - 1 || lobby.nightTimer < (10 + Math.floor(Math.random() * 5)))) {
         if (player.startingRole.toLowerCase().includes("wolf") || mustWait(player, "Mystic Wolf") || mustWait(player, "Seer") ||
-            mustWait(player, "Apprentice Seer") || mustWait(player, "Robber") || mustWait(player, "Witch")) {
+            mustWait(player, "Apprentice Seer") || mustWait(player, "Paranormal Investigator") || mustWait(player, "Robber") ||
+            mustWait(player, "Witch")) {
             if (!player.sawWaitMessage) {
                 document.getElementById("confirm-waiting-button").style.display = "flex";
             }
@@ -233,8 +236,9 @@ function showRoleActions() {
     }
 
     if (player.startingRole === "Doppelganger" || (player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf") && !player.hasDoneExtraWolfAction ||
-        player.startingRole === "Seer" || player.startingRole === "Robber" || player.startingRole === "Witch" && player.didFirstPart ||
-        player.startingRole === "Troublemaker" || player.startingRole === "Revealer" || player.startingRole === "Mortician" && yourRandomAction?.action.includes("one")) {
+        player.startingRole === "Seer" || player.startingRole === "Paranormal Investigator" || player.startingRole === "Robber" ||
+        player.startingRole === "Witch" && player.didFirstPart || player.startingRole === "Troublemaker" || player.startingRole === "Revealer" ||
+        player.startingRole === "Mortician" && yourRandomAction?.action.includes("one")) {
         makeCardsClickable("players");
     }
 
@@ -308,6 +312,9 @@ function showRoleActions() {
             }
             if (document.getElementById("cards").querySelectorAll(".selected-card").length === 0) {
                 document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
+                if (player.startingRole === "Paranormal Investigator" && player.didFirstPart) {
+                    document.getElementById("night-action-text").textContent = "Now you may view 1 more player's card.";
+                }
                 if (player.startingRole === "Witch" && player.didFirstPart) {
                     document.getElementById("night-action-text").textContent = "You now must swap " + player.selectedCards.at(-1).name + " with any player.";
                 }
@@ -342,13 +349,13 @@ function confirmButtonAction() {
 
     if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole.toLowerCase().includes("wolf") && selectedCards[0].isMiddleCard ||
         player.startingRole === "Mystic Wolf" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" ||
-        player.startingRole === "Witch" && !player.didFirstPart || player.startingRole === "Mortician") {
+        player.startingRole === "Paranormal Investigator" || player.startingRole === "Witch" && !player.didFirstPart || player.startingRole === "Mortician") {
         viewCard(selectedCards[0], selectedCards[0].viewableStartingRole);
         if (selectedCards.length > 1) {
             viewCard(selectedCards[1], selectedCards[1].viewableStartingRole);
         }
         document.getElementById("ok-button").style.display = "flex";
-        if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger") {
+        if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole === "Paranormal Investigator") {
             document.getElementById("night-action-text").textContent = "You look at " + selectedCards[0].name + "'s card and see " + selectedCards[0].role;
         }
     }

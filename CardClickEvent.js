@@ -23,9 +23,10 @@ function setCardClickEvent(id) {
 
         if (player.startingRole === "Copycat" || player.startingRole === "Sentinel" || player.startingRole === "Doppelganger" ||
             player.startingRole.toLowerCase().includes("wolf") && players.filter(p => p.startingRole.toLowerCase().includes("wolf")).length === 1 && !player.hasMetWerewolves ||
-            player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf" || player.startingRole === "Seer" && !card.isMiddleCard || player.startingRole === "Apprentice Seer" ||
-            player.startingRole === "Robber" || player.startingRole === "Witch" || player.startingRole === "Drunk" ||
-            player.startingRole === "Revealer" || player.startingRole === "Exposer" ||
+            player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf" || player.startingRole === "Seer" && !card.isMiddleCard ||
+            player.startingRole === "Apprentice Seer" || player.startingRole === "Paranormal Investigator" || player.startingRole === "Robber" ||
+            player.startingRole === "Witch" || player.startingRole === "Drunk" || player.startingRole === "Revealer" ||
+            player.startingRole === "Exposer" ||
             player.startingRole === "Mortician" && !isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Mortician")?.action.includes("one") ||
             player.startingRole === "Mortician" && isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Doppelganger-Mortician")?.action.includes("one")) {
             lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));

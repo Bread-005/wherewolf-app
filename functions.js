@@ -143,11 +143,11 @@ function setupButtonEvents() {
         socket.emit("saw-wait-message");
     })
     document.getElementById("do-nothing-button").addEventListener("click", () => {
-        socket.emit("has-done-night-action");
+        socket.emit("has-clicked-ok-or-do-nothing");
         resetNightActionTexts();
     });
     document.getElementById("ok-button").addEventListener("click", () => {
-        socket.emit("has-done-night-action");
+        socket.emit("has-clicked-ok-or-do-nothing");
         resetNightActionTexts();
     });
     document.getElementById("confirm-seen-button").addEventListener("click", () => {
@@ -726,12 +726,13 @@ function setupRoleSelection() {
         {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
         {id: 24, name: "Cow", text: "Werewolves know him. Knows if he has werewolf neighbor"},
         {id: 21, name: "Alpha Wolf", text: "Swap center wolf card with other player"},
-        {id: 23, name: "Mystic Wolf", text: "View a player's card"},
+        {id: 23, name: "Mystic Wolf", text: "May view a player's card"},
         {id: 15, name: "Minion", text: "See werewolves, but they not him"},
         {id: 11, name: "Mason", text: "See the other Mason"},
         {id: 12, name: "Mason", text: "See the other Mason"},
         {id: 6, name: "Seer", text: "May either view 1 player´s card or 2 center cards"},
         {id: 17, name: "Apprentice Seer", text: "May view 1 center card"},
+        {id: 31, name: "Paranormal Investigator", text: "May view up to 2 player's cards. Becomes bad if sees bad"},
         {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
         {id: 22, name: "Witch", text: "May view 1 center card and swap with any player"},
         {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},

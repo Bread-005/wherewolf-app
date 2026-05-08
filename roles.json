@@ -195,5 +195,13 @@
     "description": "The Exposer may turn over one of the center cards.",
     "nightAction": "You may turn over 1 center card face up.",
     "nightActionDetailed": "If you click a center card, you select it. If you click 'confirm', you turn over your selected card face up."
+  },
+  {
+    "name": "Paranormal Investigator",
+    "team": "Villager",
+    "nightOrder": 5.2,
+    "description": "The Paranormal Investigator may investigate up to two other players' cards. If they view the card that is not a Villager role, they become that role and gain its win condition.",
+    "nightAction": "You may look at up to 2 cards of other players. If you see a role that is not on the Villager team, you are now the role you viewed.",
+    "nightActionDetailed": "If you click a player's card, you select it. If you click 'confirm', you view that card. If it is not a Villager role, you are now that role. Otherwise if you select another card and click 'confirm', you view it and again if you see a role that is not on the Villager team, you are that role."
   }
 ]
