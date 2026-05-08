@@ -739,16 +739,16 @@ function setupRoleSelection() {
         {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
         {id: 18, name: "Revealer", text: "May turn over 1 other player's card if village"},
         {id: 30, name: "Exposer", text: "May turn over 1 center card"},
-        {id: 25, name: "Mortician", text: "Views random card. Wins if any neighbor dies"},
+        {id: 25, name: "Mortician", text: "May view random card. Wins if any neighbor dies"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
         {id: 3, name: "Villager", text: "No special ability"},
         {id: 13, name: "Hunter", text: "If killed, player they voted for dies, too"},
         {id: 14, name: "Tanner", text: "Wins if killed"},
-        {id: 26, name: "Prince", text: "Votes for him do not count"},
+        {id: 29, name: "Dream Wolf", text: "Does not wake up. Known by other wolves"},
         {id: 27, name: "Bodyguard", text: "Player they voted for cannot die"},
-        {id: 28, name: "Cursed", text: "Becomes a werewolf, if voted for by one"},
-        {id: 29, name: "Dream Wolf", text: "Does not wake up. Known by other wolves"}
+        {id: 26, name: "Prince", text: "Votes for him do not count"},
+        {id: 28, name: "Cursed", text: "Becomes a werewolf, if voted for by one"}
     ];
 
     document.getElementById("close-button").addEventListener("click", () => {

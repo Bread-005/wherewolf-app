@@ -708,6 +708,10 @@ body {
         #chat-container {
             width: 300px;
             height: 200px;
+            min-width: 200px;
+            min-height: 150px;
+            max-width: 85vw;
+            max-height: 95vh;
             background: rgba(0, 0, 0, 0.6);
             border: 2px solid #34495e;
             border-radius: 10px;
@@ -717,7 +721,8 @@ body {
             overflow: hidden;
             position: absolute;
             bottom: -22.5%;
-            left: 62.5%;
+            right: 10%;
+            z-index: 1000;
 
             @media (max-width: 500px) {
                 bottom: -22.5%;
@@ -725,6 +730,17 @@ body {
                 transform: translateX(-50%);
                 width: 200px;
                 height: 100px;
+            }
+
+            #resize-handle {
+                width: 15px;
+                height: 15px;
+                background: #f1c40f;
+                position: absolute;
+                top: 0;
+                left: 0;
+                cursor: nwse-resize;
+                z-index: 10;
             }
 
             #chat-messages {
