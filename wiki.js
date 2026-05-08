@@ -27,7 +27,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else if (role.team === "Mortician") {
             document.getElementById("wiki-role-container").style.background = "#24150a";
             document.getElementById("wiki-role-container").style.borderTop = "8px solid #24150a";
+        } else if (role.team === "Blob") {
+            document.getElementById("wiki-role-container").style.background = "#54533a";
+            document.getElementById("wiki-role-container").style.borderTop = "8px solid #54533a";
         }
+
         document.getElementById("wiki-role-name").textContent = "Name: " + role.name;
         document.getElementById("wiki-role-team").textContent = "Team: " + role.team;
         document.getElementById("wiki-role-description").textContent = "Description: " + role.description;

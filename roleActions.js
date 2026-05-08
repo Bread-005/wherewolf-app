@@ -401,7 +401,9 @@ function confirmButtonAction() {
         return {
             name: card.name,
             role: card.role,
-            team: card.team
+            team: card.team,
+            viewableStartingRole: card.viewableStartingRole,
+            viewableStartingTeam: card.viewableStartingTeam
         }
     }));
     socket.emit("has-clicked-confirm");

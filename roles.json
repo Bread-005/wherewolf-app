@@ -203,5 +203,13 @@
     "description": "The Paranormal Investigator may investigate up to two other players' cards. If they view the card that is not a Villager role, they become that role and gain its win condition.",
     "nightAction": "You may look at up to 2 cards of other players. If you see a role that is not on the Villager team, you are now the role you viewed.",
     "nightActionDetailed": "If you click a player's card, you select it. If you click 'confirm', you view that card. If it is not a Villager role, you are now that role. Otherwise if you select another card and click 'confirm', you view it and again if you see a role that is not on the Villager team, you are that role."
+  },
+  {
+    "name": "Blob",
+    "team": "Blob",
+    "nightOrder": 108,
+    "description": "During the night, the Blob will discover who is part of the Blob. They win if they manage to keep all members of the Blob alive.",
+    "nightAction": "",
+    "nightActionDetailed": ""
   }
 ]

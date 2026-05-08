@@ -467,6 +467,9 @@ function setupTokens(lobby) {
         if (role1.team === "Mortician") {
             token.style.border = "2px solid #24150a";
         }
+        if (role1.team === "Blob") {
+            token.style.border = "2px solid #54533a";
+        }
 
         // start positions
         token.style.left = `${startX + (index * 50)}px`;
@@ -740,6 +743,7 @@ function setupRoleSelection() {
         {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
         {id: 18, name: "Revealer", text: "May turn over 1 other player's card if village"},
         {id: 30, name: "Exposer", text: "May turn over 1 center card"},
+        {id: 32, name: "Blob", text: "If players near you survive, you win."},
         {id: 25, name: "Mortician", text: "May view random card. Wins if any neighbor dies"},
         {id: 1, name: "Villager", text: "No special ability"},
         {id: 2, name: "Villager", text: "No special ability"},
