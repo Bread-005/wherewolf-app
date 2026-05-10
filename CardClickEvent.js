@@ -7,7 +7,6 @@ function setCardClickEvent(id) {
         const card = lobby.cards.find(card => card.id === event.target.id.replace("card", ""));
         if (!card) return;
         if (lobby.state !== "night") return;
-        if (document.getElementById("game").style.background !== "royalblue") return;
         if (getCardElement(card.id).style.cursor !== "pointer") return;
 
         const players = lobby.cards.filter(c => !c.isMiddleCard);

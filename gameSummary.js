@@ -45,7 +45,7 @@ function buildGameSummary(lobby) {
             role: card.roleChain[0],
             selectedCards: card.selectedCards,
             beginningRole: card.roleChain[0],
-            doppelgangerCopy: card.roleChain[0] === "Doppelganger" ? card.selectedCards[0]?.role : "",
+            doppelgangerCopy: "",
             startRole: card.roleChain[0]
         }
     });
@@ -56,6 +56,10 @@ function buildGameSummary(lobby) {
         if (!player) continue;
         if (role.nightOrder > 100) continue;
         if (role.name === "Cow") continue;
+
+        if (role.name === "Doppelganger" && player.startRole !== "Copycat") {
+            player.doppelgangerCopy = cards.find(card => card.name === player.selectedCards[0].name).startRole;
+        }
 
         const itemDiv = document.createElement("div");
         itemDiv.className = "summary-item";
@@ -229,7 +233,7 @@ function buildGameSummary(lobby) {
             }
             if (role.name === "Werewolf") {
                 const werewolves = lobby.cards.filter(card => !card.isMiddleCard && card.startingRole.toLowerCase().includes("wolf"));
-                if (werewolves.length === 1) {
+                if (werewolves.length === 1 && player.selectedCards[0]?.name.includes("middle-card")) {
                     player.selectedCards.shift();
                 }
             }
@@ -295,7 +299,7 @@ function buildGameSummary(lobby) {
             alphaRow.className = "summary-alpha-row";
 
             const viewed = selectedCards.find(selected => selected.name === centerCard4.name);
-            let cardElement = createSummaryCard(centerCard4.name, viewed ? viewed.role : "", !!viewed, true);
+            let cardElement = createSummaryCard(centerCard4.name, viewed ? centerCard4.role : "", !!viewed, true);
             if (isAlphaWolf) {
                 cardElement = createSummaryCard(centerCard4.name, centerCard4.role, true, true);
             }
@@ -310,7 +314,7 @@ function buildGameSummary(lobby) {
 
         allMiddleCards.filter(c => c.name !== "middle-card4").forEach(mCard => {
             const viewed = selectedCards.find(selected => selected.name === mCard.name);
-            standardRow.append(createSummaryCard(mCard.name, viewed ? viewed.role : "", !!viewed, true));
+            standardRow.append(createSummaryCard(mCard.name, viewed ? cards.find(card => card.name === viewed.name).role : "", !!viewed, true));
         });
 
         middleLogWrapper.append(standardRow);

@@ -37,6 +37,11 @@ function displayCards(lobby) {
             card.classList.add("you-card");
         }
 
+        const readyBanner = document.createElement("div");
+        readyBanner.id = "ready-banner" + player.id;
+        readyBanner.className = "ready-banner";
+        readyBanner.textContent = "Is Ready";
+
         const votedBanner = document.createElement("div");
         votedBanner.id = "voted-banner" + player.id;
         votedBanner.className = "voted-banner";
@@ -46,11 +51,13 @@ function displayCards(lobby) {
         deathOverlay.id = "death-overlay" + player.id;
         deathOverlay.className = "death-overlay";
 
-        card.append(votedBanner, deathOverlay);
+        card.append(votedBanner, deathOverlay, readyBanner);
         cardsContainer.append(card);
 
         setupVotingClickEvent(card);
     }
+    setupLookAtRole();
+
     const youIndex = players.findIndex(player => player.id === myId);
     const laterOthers = [];
     const others = [];
@@ -143,11 +150,11 @@ function setupButtonEvents() {
         socket.emit("saw-wait-message");
     })
     document.getElementById("do-nothing-button").addEventListener("click", () => {
-        socket.emit("has-clicked-ok-or-do-nothing");
+        socket.emit("has-clicked-ok-or-do-nothing", false);
         resetNightActionTexts();
     });
     document.getElementById("ok-button").addEventListener("click", () => {
-        socket.emit("has-clicked-ok-or-do-nothing");
+        socket.emit("has-clicked-ok-or-do-nothing", true);
         resetNightActionTexts();
     });
     document.getElementById("confirm-seen-button").addEventListener("click", () => {
@@ -228,7 +235,6 @@ function clearEverything() {
     if (lobby) {
         const players = lobby.cards.filter(card => !card.isMiddleCard);
         document.getElementById("cards").querySelectorAll("img").forEach(img => img.remove());
-        document.getElementById("game").style.background = "lightblue";
         if (isHost() && players.length >= 3) {
             document.getElementById("select-roles-button").style.display = "flex";
         }
@@ -244,7 +250,6 @@ function clearEverything() {
         document.getElementById("confirm-waiting-button").style.display = "none";
         document.getElementById("confirm-seen-button").style.display = "none";
         for (const player of players) {
-            getCardElement(player.id).style.background = "#f0f0f0";
             document.getElementById("voted-banner" + player.id).style.display = "none";
             document.getElementById("death-overlay" + player.id).style.display = "none";
         }
@@ -265,9 +270,7 @@ function showVoteResults() {
     showVoteResultBoard(lobby, players);
 
     for (const player of players) {
-        if (player.id !== myId) {
-            getCardElement(player.id).style.background = "#f0f0f0";
-        }
+        getCardElement(player.id).style.background = "#f0f0f0";
     }
 }
 
@@ -287,7 +290,8 @@ function setupVotingClickEvent(card) {
                 getCardElement(card1.id).style.cursor = "default";
                 getCardElement(card1.id).style.background = "gray";
             }
-            socket.emit("set-has-voted", card.textContent.replace("Voted", ""));
+            const votedPlayer = lobby.cards.find(p => p.id === card.id.replace("card", ""));
+            socket.emit("set-has-voted", votedPlayer.name);
         });
     }
 }
@@ -790,6 +794,16 @@ function setupRoleSelection() {
             }
         });
     }
+}
+
+function setupLookAtRole() {
+    getCardElement(myId).addEventListener("click", () => {
+        const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+        if (lobby && lobby.state === "look-at-role" && getCardElement(myId).style.cursor === "pointer") {
+            viewCard(lobby.cards.find(player => player.id === myId));
+            document.getElementById("continue-button").style.display = "flex";
+        }
+    });
 }
 
 export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,

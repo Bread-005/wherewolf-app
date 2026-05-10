@@ -152,7 +152,7 @@
     "name": "Cow",
     "team": "Villager",
     "nightOrder": 2.05,
-    "description": "All Werewolves learn who the Cow is. The Cow learns if at least one of their neighbors is a werewolf.",
+    "description": "All Werewolves (not the Dream Wolf) learn who the Cow is. The Cow learns if at least one of their neighbors is a werewolf.",
     "nightAction": "",
     "nightActionDetailed": ""
   },

@@ -11,7 +11,9 @@ import {buildGameSummary} from "./gameSummary.js";
 let lobbies = [];
 let myId = "";
 let allRoles = [];
-const socket = io("https://wherewolf-server-bhut.onrender.com");
+const socket = io("https://wherewolf-server-bhut.onrender.com", {
+    transports: ["websocket"]
+});
 
 document.addEventListener("DOMContentLoaded", async () => {
     let lobby = {};
@@ -90,6 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("lobby-page").style.display = "none";
             const players = lobby.cards.filter(card => !card.isMiddleCard);
             const you = players.find(p => p.id === myId);
+            document.body.style.backgroundImage = `url("./assets/wherewolf_background_day.png")`;
             document.getElementById("cards").style.display = "flex";
             document.getElementById("select-roles-button").style.display = "none";
             document.getElementById("select-roles-screen").style.display = "none";
@@ -97,10 +100,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("skip-to-vote-button").style.display = "none";
             document.getElementById("vote-result-display").style.display = "none";
             document.getElementById("role-show-stage").style.display = "none";
-            document.getElementById("game").style.background = "lightblue";
             document.getElementById("chat-container").style.display = "flex";
             document.getElementById("roles-warning-container").style.display = "none";
             document.getElementById("select-roles-other-components").style.display = "none";
+            document.getElementById("display-text").style.color = "black";
+            document.getElementById("night-action-text").style.color = "black";
             for (const player of players) {
                 if (!document.getElementById("card" + player.id)) {
                     displayCards(lobby);
@@ -140,25 +144,27 @@ document.addEventListener("DOMContentLoaded", async () => {
                     document.getElementById("display-text").textContent = "Wait for the other players to look at their cards";
                 }
                 getCardElement(myId).style.cursor = you.hasSeenRole ? "default" : "pointer";
-                getCardElement(myId).addEventListener("click", () => {
-                    const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
-                    if (lobby && lobby.state === "look-at-role" && getCardElement(myId).style.cursor === "pointer") {
-                        viewCard(lobby.cards.find(player => player.id === myId));
-                        document.getElementById("continue-button").style.display = "flex";
-                    }
-                }, {once: true});
                 document.getElementById("chat-container").style.display = "none";
+                for (const player of players) {
+                    if (player.hasSeenRole) {
+                        document.getElementById("ready-banner" + player.id).style.display = "flex";
+                    }
+                }
             }
             if (lobby.state === "night") {
-                document.getElementById("game").style.background = "royalblue";
+                for (const player of players) {
+                    document.getElementById("ready-banner" + player.id).style.display = "none";
+                }
+                document.body.style.backgroundImage = `url("./assets/wherewolf_background_night.png")`;
                 document.getElementById("display-text").textContent = lobby.displayText;
                 if (lobby.nightTimer > 2) {
                     showRoleActions();
                 }
                 document.getElementById("chat-container").style.display = "none";
+                document.getElementById("display-text").style.color = "white";
+                document.getElementById("night-action-text").style.color = "white";
             }
             if (lobby.state === "day") {
-                document.getElementById("game").style.background = "lightblue";
                 document.getElementById("display-text").textContent = lobby.displayText;
                 document.getElementById("night-action-text").textContent = "";
                 if (document.getElementById("tokens-container").children.length === 0) {
@@ -174,8 +180,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             }
             if (lobby.state === "voting") {
+                document.body.style.backgroundImage = `url("./assets/wherewolf_background_voting.png")`;
                 document.querySelectorAll(".role-token").forEach(token => token.remove());
-                document.getElementById("game").style.background = "orange";
                 if (!you.vote) {
                     document.getElementById("display-text").textContent = "Click on another player to vote for them.";
                 } else {
