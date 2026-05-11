@@ -75,7 +75,8 @@ function buildGameSummary(lobby) {
             actionText.textContent = "placed a shield token onto";
         }
         if (player.beginningRole === "Mystic Wolf" || player.beginningRole === "Seer" || player.beginningRole === "Apprentice Seer" ||
-            player.beginningRole === "Paranormal Investigator" || player.beginningRole === "Revealer" || player.beginningRole === "Exposer") {
+            player.beginningRole === "Paranormal Investigator" || player.beginningRole === "Revealer" || player.beginningRole === "Exposer" ||
+            player.beginningRole === "Mortician") {
             actionText.textContent = "looked at";
         }
         if (player.beginningRole === "Robber" || player.beginningRole === "Drunk") {
@@ -89,9 +90,6 @@ function buildGameSummary(lobby) {
         }
         if (player.beginningRole === "Insomniac") {
             actionText.textContent = "woke up as";
-        }
-        if (player.beginningRole === "Mortician") {
-            actionText.textContent = "looked at";
         }
 
         itemDiv.append(createSummaryCard(player.name, player.startRole));
@@ -265,19 +263,6 @@ function buildGameSummary(lobby) {
         }
         if (role.name === "Mortician") {
             const randomAction = lobby.randomActions.find(action => action.role === "Mortician").action;
-            if (randomAction.includes("left") || randomAction.includes("right")) {
-                const players = lobby.cards.filter(card => !card.isMiddleCard);
-                const morticianIndex = players.findIndex(p => p.name === player.name);
-
-                if (randomAction.includes("left")) {
-                    const leftNeighbor = players[(morticianIndex + 1) % players.length];
-                    targetsContainer.append(createSummaryCard(leftNeighbor.name, cards.find(card => card.name === leftNeighbor.name).role));
-                }
-                if (randomAction.includes("right")) {
-                    const rightNeighbor = players[(morticianIndex - 1 + players.length) % players.length];
-                    targetsContainer.append(createSummaryCard(rightNeighbor.name, cards.find(card => card.name === rightNeighbor.name).role));
-                }
-            }
             if (randomAction.includes("yourself")) {
                 actionText.textContent = "looked at themself";
                 targetsContainer.append(createSummaryCard(player.name, player.role));

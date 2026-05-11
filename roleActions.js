@@ -238,7 +238,7 @@ function showRoleActions() {
     if (player.startingRole === "Doppelganger" || (player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf") && !player.hasDoneExtraWolfAction ||
         player.startingRole === "Seer" || player.startingRole === "Paranormal Investigator" || player.startingRole === "Robber" ||
         player.startingRole === "Witch" && player.didFirstPart || player.startingRole === "Troublemaker" || player.startingRole === "Revealer" ||
-        player.startingRole === "Mortician" && yourRandomAction?.action.includes("one")) {
+        player.startingRole === "Mortician" && !yourRandomAction?.action.includes("yourself")) {
         makeCardsClickable("players");
     }
 
@@ -256,27 +256,16 @@ function showRoleActions() {
         viewCard(player);
         document.getElementById("ok-button").style.display = "flex";
     }
-    if (player.startingRole === "Mortician" && !yourRandomAction?.action.includes("one")) {
-        if (yourRandomAction.action.includes("yourself")) {
-            if (player.isSentinelled) {
-                document.getElementById("night-action-text").textContent = "There is a shield token on your card. Therefore you cannot view your own card.";
-                document.getElementById("ok-button").style.display = "flex";
-                return;
-            }
-            viewCard(player);
-            document.getElementById("night-action-text").textContent = "You looked at your card an see " + player.role;
+    if (player.startingRole === "Mortician" && yourRandomAction?.action.includes("yourself")) {
+        if (player.isSentinelled) {
+            document.getElementById("night-action-text").textContent = "There is a shield token on your card. Therefore you cannot view your own card.";
+            document.getElementById("ok-button").style.display = "flex";
+            return;
         }
-        if (yourRandomAction.action.includes("left")) {
-            const leftNeighbor = players[(myIndex + 1) % players.length];
-            viewCard(leftNeighbor);
-            document.getElementById("night-action-text").textContent = `You looked at your left neighbor: ${leftNeighbor.name}`;
-        }
-        if (yourRandomAction.action.includes("right")) {
-            const rightNeighbor = players[(myIndex - 1 + players.length) % players.length];
-            viewCard(rightNeighbor);
-            document.getElementById("night-action-text").textContent = `You looked at your right neighbor: ${rightNeighbor.name}`;
-        }
+        viewCard(player);
+        document.getElementById("night-action-text").textContent = "You look at your card an see " + player.role;
         document.getElementById("ok-button").style.display = "flex";
+        return;
     }
 
     if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole === "Alpha Wolf" && player.hasMetWerewolves ||
@@ -305,7 +294,9 @@ function showRoleActions() {
                 const leftNeighbor = players[(myIndex + 1) % players.length];
                 const rightNeighbor = players[(myIndex - 1 + players.length) % players.length];
                 for (const card of cards) {
-                    if (card.id !== leftNeighbor.id && card.id !== rightNeighbor.id) {
+                    if (yourRandomAction?.action.includes("left") && card.id !== leftNeighbor.id ||
+                        yourRandomAction?.action.includes("right") && card.id !== rightNeighbor.id ||
+                        (yourRandomAction?.action.includes("one") || yourRandomAction?.action.includes("both")) && card.id !== leftNeighbor.id && card.id !== rightNeighbor.id) {
                         getCardElement(card.id).style.cursor = "default";
                     }
                 }
@@ -349,7 +340,7 @@ function confirmButtonAction() {
 
     if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole.toLowerCase().includes("wolf") && selectedCards[0].isMiddleCard ||
         player.startingRole === "Mystic Wolf" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" ||
-        player.startingRole === "Paranormal Investigator" || player.startingRole === "Witch" && !player.didFirstPart || player.startingRole === "Mortician") {
+        player.startingRole === "Paranormal Investigator" || player.startingRole === "Witch" && !player.didFirstPart) {
         viewCard(selectedCards[0], selectedCards[0].viewableStartingRole);
         if (selectedCards.length > 1) {
             viewCard(selectedCards[1], selectedCards[1].viewableStartingRole);
@@ -395,6 +386,13 @@ function confirmButtonAction() {
         viewCard(selectedCards[0]);
         document.getElementById("ok-button").style.display = "flex";
         socket.emit("turn-over-card", selectedCards[0].name);
+    }
+    if (player.startingRole === "Mortician") {
+        viewCard(selectedCards[0]);
+        if (selectedCards.length > 1) {
+            viewCard(selectedCards[1]);
+        }
+        document.getElementById("ok-button").style.display = "flex";
     }
 
     socket.emit("add-selected-cards", selectedCards.map(card => {

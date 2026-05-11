@@ -26,13 +26,15 @@ function setCardClickEvent(id) {
             player.startingRole === "Apprentice Seer" || player.startingRole === "Paranormal Investigator" || player.startingRole === "Robber" ||
             player.startingRole === "Witch" || player.startingRole === "Drunk" || player.startingRole === "Revealer" ||
             player.startingRole === "Exposer" ||
-            player.startingRole === "Mortician" && !isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Mortician")?.action.includes("one") ||
-            player.startingRole === "Mortician" && isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Doppelganger-Mortician")?.action.includes("one")) {
+            player.startingRole === "Mortician" && !isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Mortician")?.action.includes("on") ||
+            player.startingRole === "Mortician" && isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Doppelganger-Mortician")?.action.includes("on")) {
             lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
             document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
             document.getElementById("confirm-button").style.display = "flex";
         }
-        if (player.startingRole === "Seer" && card.isMiddleCard) {
+        if (player.startingRole === "Seer" && card.isMiddleCard ||
+            player.startingRole === "Mortician" && !isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Mortician")?.action.includes("both") ||
+            player.startingRole === "Mortician" && isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Doppelganger-Mortician")?.action.includes("both")) {
             lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
             if (selectedCards.length < 2) document.getElementById("night-action-text").textContent = "You have to select one more center card";
             if (selectedCards.length > 2) document.getElementById("night-action-text").textContent = "You have to select less center cards";
@@ -52,6 +54,12 @@ function setCardClickEvent(id) {
         if (selectedCards.length === 0) {
             document.getElementById("confirm-button").style.display = "none";
             document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
+            if (lobby.randomActions.find(action => action.role === player.startingRole)) {
+                document.getElementById("night-action-text").textContent = lobby.randomActions.find(action => action.role === player.startingRole).action;
+            }
+            if (lobby.randomActions.find(action => action.role === player.startingRole) && isDoppelganger(player)) {
+                document.getElementById("night-action-text").textContent = lobby.randomActions.find(action => action.role === "Doppelganger-" + player.startingRole).action;
+            }
             if (player.startingRole === "Werewolf") {
                 document.getElementById("night-action-text").textContent = "You are the only werewolf, therefore you may click one center card to view it.";
             }

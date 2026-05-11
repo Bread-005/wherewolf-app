@@ -28,15 +28,32 @@ function displayCards(lobby) {
     const cardsContainer = document.getElementById("cards");
     cardsContainer.innerHTML = "";
 
-    for (const player of players) {
+    lobby.cards.forEach((card1, index) => {
         const card = document.createElement("div");
-        card.id = "card" + player.id;
-        card.textContent = player.name;
-        card.className = "player-card";
-        if (player.id === myId) {
-            card.classList.add("you-card");
+        card.id = "card" + card1.id;
+        if (!card1.isMiddleCard) {
+            card.textContent = card1.name;
+            card.className = "player-card";
+            if (card1.id === myId) {
+                card.classList.add("you-card");
+            }
         }
 
+        if (card1.isMiddleCard) {
+            card.className = "center-card";
+            card.style.left = (34 + (index * 12)) + "%";
+
+            if (card1.name === "middle-card4") {
+                card.style.top = "47.5%";
+                card.style.left = "50%";
+                card.style.transform = "translate(-50%, -50%) rotate(-90deg)";
+            }
+        }
+
+        cardsContainer.append(card);
+    });
+
+    for (const player of players) {
         const readyBanner = document.createElement("div");
         readyBanner.id = "ready-banner" + player.id;
         readyBanner.className = "ready-banner";
@@ -51,10 +68,8 @@ function displayCards(lobby) {
         deathOverlay.id = "death-overlay" + player.id;
         deathOverlay.className = "death-overlay";
 
-        card.append(votedBanner, deathOverlay, readyBanner);
-        cardsContainer.append(card);
-
-        setupVotingClickEvent(card);
+        document.getElementById("card" + player.id).append(votedBanner, deathOverlay, readyBanner);
+        setupVotingClickEvent(document.getElementById("card" + player.id));
     }
     setupLookAtRole();
 
@@ -83,7 +98,7 @@ function displayCards(lobby) {
     }
 
     const centerY = 40;
-    const verticalGap = 20;
+    const verticalGap = 25;
 
     leftPlayers.reverse().forEach((player, index) => {
         const groupHeight = (leftPlayers.length - 1) * verticalGap;
@@ -98,25 +113,6 @@ function displayCards(lobby) {
         document.getElementById("card" + player.id).style.right = "5%";
         document.getElementById("card" + player.id).style.top = (startTop + (index * verticalGap)) + "%";
     });
-
-    // center cards
-    for (let i = 0; i < 3; i++) {
-        const centerCard = document.createElement("div");
-        centerCard.className = "center-card";
-        centerCard.id = "card" + lobby.cards.find(card => card.name === "middle-card" + (i + 1)).id;
-        centerCard.style.left = (35 + (i * 12)) + "%";
-        cardsContainer.append(centerCard);
-    }
-
-    if (lobby.selectedRoles.find(r => r.name === "Alpha Wolf")) {
-        const centerCard4 = document.createElement("div");
-        centerCard4.className = "center-card";
-        centerCard4.id = "card" + lobby.cards.find(card => card.name === "middle-card" + 4).id;
-        centerCard4.style.top = "42.5%";
-        centerCard4.style.left = "50%";
-        centerCard4.style.transform = "translate(-50%, -50%) rotate(-90deg)";
-        cardsContainer.append(centerCard4);
-    }
 
     // set night action events
     for (const card of lobby.cards) {
@@ -278,9 +274,8 @@ function setupVotingClickEvent(card) {
     if (card.id !== "card" + myId) {
         card.addEventListener("click", () => {
             const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
-            if (card.style.cursor !== "pointer") return;
             if (lobby.state !== "voting") return;
-            if (card.style.background === "gray") {
+            if (card.style.cursor !== "pointer") {
                 showErrorPopup("You have already voted!");
                 return;
             }
@@ -288,7 +283,6 @@ function setupVotingClickEvent(card) {
                 if (card1.isMiddleCard) continue;
 
                 getCardElement(card1.id).style.cursor = "default";
-                getCardElement(card1.id).style.background = "gray";
             }
             const votedPlayer = lobby.cards.find(p => p.id === card.id.replace("card", ""));
             socket.emit("set-has-voted", votedPlayer.name);
@@ -676,28 +670,32 @@ function setupGeneralInfo(you, selectedRoles) {
     const list = document.getElementById("general-rules-list");
 
     const yourRoleDescription = document.createElement("li");
-    yourRoleDescription.innerHTML = `<b>Your Role: </b>` + allRoles.find(role => role.name === you.role).description;
+    const yourRole = allRoles.find(role => role.name === you.roleChain[0]);
+    yourRoleDescription.innerHTML = `<b>Your Role: </b>` + yourRole.description;
     yourRoleDescription.className = "dynamic-rule";
 
     const text = document.createElement("li");
     text.innerHTML = `<b>How you win: </b>`;
     text.className = "dynamic-rule";
 
-    if (you.team === "Villager") {
+    if (yourRole.team === "Villager") {
         text.textContent += "During voting, if a werewolf dies, your team wins.";
     }
-    if (you.team === "Werewolf") {
+    if (yourRole.team === "Werewolf") {
         text.textContent += "During voting, if all werewolves survive";
         if (selectedRoles.find(role => role.name === "Tanner")) {
             text.textContent += " and the Tanner survives";
         }
         text.textContent += ", your team wins.";
     }
-    if (you.team === "Tanner") {
+    if (yourRole.team === "Tanner") {
         text.textContent += "During voting, if you die, you win.";
     }
-    if (you.team === "Mortician") {
+    if (yourRole.team === "Mortician") {
         text.textContent += "During voting, if any of your neighbor dies, you win.";
+    }
+    if (yourRole.team === "Blob") {
+        text.textContent += "During voting, if all specific players (announced by the website) survive, you win.";
     }
 
     list.append(yourRoleDescription, text);
