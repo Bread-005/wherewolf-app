@@ -135,11 +135,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             if (lobby.state === "select-roles") {
                 displayCards(lobby);
+                getCardElement(myId).style.opacity = "0%";
                 document.getElementById("select-roles-screen").style.display = "grid";
                 document.getElementById("show-roles-button").style.display = "none";
                 updateSelectRolesScreen(lobby);
             }
             if (lobby.state === "look-at-role") {
+                getCardElement(myId).style.opacity = "100%";
                 document.getElementById("show-roles-button").style.display = "flex";
                 if (!you.hasSeenRole) {
                     document.getElementById("display-text").textContent = "Look at your role, by clicking your card";
@@ -307,6 +309,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("discuss-time-label").textContent = "Discussion Time: " + (lobby.discussTime || 300) + " secs";
         document.getElementById("discuss-time-input").value = lobby.discussTime || 300;
 
+        const players = lobby.cards.filter(card => !card.isMiddleCard);
+
         for (const roleCard of document.getElementById("select-roles-screen").children) {
             if (lobby.selectedRoles.find(role => role.id.toString() === roleCard.id.split("-")[0])) {
                 roleCard.style.border = "5px solid lightblue";
@@ -323,7 +327,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         document.getElementById("start-game-button").style.display = "none";
-        if (lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length) {
+        if (lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length && players.length >= 3) {
             document.getElementById("start-game-button").style.display = "flex";
         }
         validateRoleSelection(lobby);

@@ -660,7 +660,7 @@ function validateRoleSelection(lobby) {
         errors.push("• It is not advised to have a Bodyguard with less than 5 players.");
     }
 
-    if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.length) {
+    if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length) {
         warningContainer.style.display = "flex";
         tooltip.innerHTML = errors.join("<br>");
     } else {
