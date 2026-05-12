@@ -44,7 +44,7 @@ function displayCards(lobby) {
             card.style.left = (34 + (index * 12)) + "%";
 
             if (card1.name === "middle-card4") {
-                card.style.top = "47.5%";
+                card.style.top = "45%";
                 card.style.left = "50%";
                 card.style.transform = "translate(-50%, -50%) rotate(-90deg)";
             }
@@ -197,6 +197,7 @@ function createLobbyDisplay() {
 
         const joinButton = document.createElement("button");
         joinButton.textContent = lobby.state === "waiting" || lobby.state === "select-roles" ? "Join" : "Spectate";
+        joinButton.className = "join-lobby-button";
 
         joinButton.addEventListener("click", () => {
             if (joinButton.textContent === "Spectate") {
@@ -208,16 +209,16 @@ function createLobbyDisplay() {
                 showErrorPopup("You have to enter a name");
                 return;
             }
-            if (nameInput.length > 15) {
-                showErrorPopup("Name may not be longer than 15 letters");
-                return;
-            }
             if (lobby.cards.find(card => card.name === nameInput.trim())) {
                 showErrorPopup("Name already exists in that Lobby");
                 return;
             }
             if (nameInput.trim().includes("middle-card")) {
                 showErrorPopup("Your name may not contain 'middle-card'");
+                return;
+            }
+            if (lobby.cards.filter(card => !card.isMiddleCard).length >= 10) {
+                showErrorPopup("There cannot be more than 10 players in one game!");
                 return;
             }
             socket.emit("join-game", { name: nameInput.trim(), lobbyId: lobby.id });
@@ -230,8 +231,9 @@ function clearEverything() {
     const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
     if (lobby) {
         const players = lobby.cards.filter(card => !card.isMiddleCard);
+        document.body.style.backgroundImage = `url("./assets/wherewolf_background_day.png")`;
         document.getElementById("cards").querySelectorAll("img").forEach(img => img.remove());
-        if (isHost() && players.length >= 3) {
+        if (isHost()) {
             document.getElementById("select-roles-button").style.display = "flex";
         }
         document.getElementById("display-text").textContent = "";
@@ -249,7 +251,7 @@ function clearEverything() {
             document.getElementById("voted-banner" + player.id).style.display = "none";
             document.getElementById("death-overlay" + player.id).style.display = "none";
         }
-        document.getElementById("role-show-stage").style.display = "none";
+        document.getElementById("role-show-stage-container").style.display = "none";
         document.querySelectorAll(".role-token").forEach(token => token.remove());
         document.getElementById("general-rules-list").querySelectorAll(".dynamic-rule").forEach(element => element.remove());
         document.getElementById("game-summary-button").style.display = "none";
@@ -427,10 +429,6 @@ function setupTokens(lobby) {
     const container = document.getElementById("tokens-container");
     container.innerHTML = "";
 
-    const centerX = window.innerWidth / 2;
-    const totalWidth = lobby.selectedRoles.length * 65;
-    const startX = centerX - (totalWidth / 2);
-
     const roles = [];
 
     for (const role of lobby.selectedRoles) {
@@ -449,7 +447,7 @@ function setupTokens(lobby) {
         });
     }
 
-    roles.forEach((role, index) => {
+    roles.forEach((role) => {
         const token = document.createElement("div");
         token.className = "role-token";
         token.style.backgroundImage = `url('./images/${role.name.toLowerCase().replace(" ", "_")}.png')`;
@@ -469,42 +467,43 @@ function setupTokens(lobby) {
             token.style.border = "2px solid #54533a";
         }
 
-        // start positions
-        token.style.left = `${startX + (index * 50)}px`;
-        token.style.top = "20%";
-
         // Drag & Drop logic
         let isDragging = false;
         let offsetX, offsetY;
 
         token.addEventListener("mousedown", (event) => {
             isDragging = true;
-            token.style.zIndex = "1500";
-            offsetX = event.clientX - token.offsetLeft;
-            offsetY = event.clientY - token.offsetTop;
+
+            const rect = token.getBoundingClientRect();
+
+            offsetX = event.clientX - rect.left;
+            offsetY = event.clientY - rect.top;
+
+            if (!token.classList.contains("dragging")) {
+                token.style.left = rect.left + "px";
+                token.style.top = rect.top + "px";
+
+                document.body.append(token);
+                token.classList.add("dragging");
+            }
         });
 
         document.addEventListener("mousemove", (event) => {
             if (!isDragging) return;
 
-            const rect = document.getElementById("game").getBoundingClientRect();
+            let x = event.clientX - offsetX;
+            let y = event.clientY - offsetY;
 
-            const paddingX = rect.width * 0.05;
-            const paddingY = rect.height * 0.02;
+            const minX = 0;
+            const minY = 0;
+            const maxX = window.innerWidth - token.offsetWidth;
+            const maxY = window.innerHeight - token.offsetHeight;
 
-            let newX = event.clientX - offsetX;
-            let newY = event.clientY - offsetY;
+            x = Math.max(minX, Math.min(x, maxX));
+            y = Math.max(minY, Math.min(y, maxY));
 
-            const minX = rect.left - paddingX;
-            const maxX = rect.right - token.offsetWidth - paddingX;
-            const minY = rect.top - paddingY;
-            const maxY = rect.bottom - token.offsetHeight - paddingY;
-
-            newX = Math.max(minX, Math.min(newX, maxX));
-            newY = Math.max(minY, Math.min(newY, maxY));
-
-            token.style.left = `${newX}px`;
-            token.style.top = `${newY}px`;
+            token.style.left = x + "px";
+            token.style.top = y + "px";
         });
 
         document.addEventListener("mouseup", () => {
@@ -530,6 +529,14 @@ function setupTokens(lobby) {
         });
 
         container.appendChild(token);
+    });
+
+    requestAnimationFrame(() => {
+        if (container.children.length > 0) {
+            const rect = container.getBoundingClientRect();
+            container.style.width = rect.width + "px";
+            container.style.height = rect.height + "px";
+        }
     });
 }
 
@@ -565,6 +572,18 @@ function receiveMessage(data) {
 }
 
 function showVoteResultBoard(lobby, players) {
+
+    if (document.getElementById("vote-result-display").querySelectorAll(".dynamic-result").length === 0) {
+        document.getElementById("toggle-show-stage-button").addEventListener("click", () => {
+            const lobby1 = lobbies.find(l => l.cards.find(player => player.id === myId));
+            if (document.getElementById("role-show-stage").textContent === "Shows Ending Roles") {
+                showStartingRoles(lobby1);
+            } else {
+                showEndingRoles(lobby1);
+            }
+        });
+    }
+
     document.getElementById("vote-result-display").querySelectorAll(".dynamic-result").forEach(element => element.remove());
 
     for (const player of players) {
@@ -592,42 +611,25 @@ function showVoteResultBoard(lobby, players) {
 
     showEndingRoles(lobby);
 
-    setTimeout(() => {
-        let showsEndingRoles = true;
-        const toggleShowAllRoles = setInterval(() => {
-            const lobby1 = lobbies.find(l => l.id === lobby.id);
-            if (document.getElementById("role-show-stage").style.display === "none" || !lobby1) {
-                clearInterval(toggleShowAllRoles);
-                return;
+    function showEndingRoles(lobby) {
+        for (const card of lobby.cards) {
+            viewCard(card);
+            document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
+            if (card.dies) {
+                document.getElementById("death-overlay" + card.id).style.display = "flex";
+                getCardElement(card.id).style.filter = "grayscale(80%)";
             }
-            if (showsEndingRoles) {
-                showEndingRoles(lobby1);
-            } else {
-                showStartingRoles(lobby1);
-            }
-            showsEndingRoles = !showsEndingRoles;
-        }, 10000);
-    }, 10000);
-}
-
-function showEndingRoles(lobby) {
-    for (const card of lobby.cards) {
-        viewCard(card);
-        document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
-        if (card.dies) {
-            document.getElementById("death-overlay" + card.id).style.display = "flex";
-            getCardElement(card.id).style.filter = "grayscale(80%)";
         }
     }
-}
 
-function showStartingRoles(lobby) {
-    for (const card of lobby.cards) {
-        viewCard(card, card.roleChain[0]);
-        document.getElementById("role-show-stage").textContent = "Shows Starting Roles";
-        if (!card.isMiddleCard) {
-            document.getElementById("death-overlay" + card.id).style.display = "none";
-            getCardElement(card.id).style.filter = "";
+    function showStartingRoles(lobby) {
+        for (const card of lobby.cards) {
+            viewCard(card, card.roleChain[0]);
+            document.getElementById("role-show-stage").textContent = "Shows Starting Roles";
+            if (!card.isMiddleCard) {
+                document.getElementById("death-overlay" + card.id).style.display = "none";
+                getCardElement(card.id).style.filter = "";
+            }
         }
     }
 }
@@ -764,7 +766,7 @@ function setupRoleSelection() {
 
     document.getElementById("discuss-time-save-button").addEventListener("click", () => {
         let discussTime = Number(document.getElementById("discuss-time-input").value) || 0;
-        if (discussTime > 900) discussTime = 300;
+        if (discussTime > 900) discussTime = 600;
         socket.emit("change-discuss-time", discussTime);
     });
 

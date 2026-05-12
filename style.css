@@ -22,6 +22,7 @@ body {
     #lobby-page {
         display: flex;
         flex-direction: column;
+        align-items: center;
 
         #go-to-wiki-button {
             position: absolute;
@@ -35,10 +36,38 @@ body {
             padding: 5px;
         }
 
+        .join-lobby-button {
+            background: linear-gradient(145deg, #27ae60, #1e8449);
+            color: white;
+            border: 2px solid #2ecc71;
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            margin-left: 10px;
+
+            &:hover {
+                background: #2ecc71;
+                box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+                transform: scale(1.05);
+            }
+
+            &:active {
+                transform: scale(0.98);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+        }
+
         #lobby {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(4, min-content);
             gap: 10px;
+            white-space: nowrap;
+            padding: 10px;
         }
 
         #create-lobby-button {
@@ -161,8 +190,9 @@ body {
 
         #cards {
             .player-card, .center-card {
-                width: 7.5vw;
-                height: 16vh;
+                width: 100px;
+                height: 17vh;
+                max-height: 150px;
                 border-radius: 8px;
                 display: flex;
                 flex-direction: column;
@@ -173,6 +203,15 @@ body {
                 background: white;
                 position: absolute;
                 box-shadow: 0 0 5px gold;
+
+                &[style*="cursor: pointer"]:hover {
+                    scale: 1.05;
+                }
+
+                @media (max-width: 1000px) {
+                    width: 85px;
+                    height: 12vh;
+                }
 
                 @media (max-width: 800px) {
                     width: 60px;
@@ -419,7 +458,7 @@ body {
         }
 
         #skip-to-vote-button {
-            left: 47%;
+            left: 27.5%;
         }
 
         #show-roles-button {
@@ -578,11 +617,12 @@ body {
             }
 
             .discuss-time {
+                display: flex;
                 flex-direction: column;
                 align-items: center;
                 position: absolute;
                 bottom: -10%;
-                left: 27.5%;
+                left: 22.5%;
                 transform: translateX(-50%);
                 color: white;
                 gap: 5px;
@@ -598,6 +638,14 @@ body {
                     border-radius: 5px;
                     padding: 4px;
                 }
+            }
+
+            #role-count-display {
+                position: absolute;
+                bottom: -7.5%;
+                left: 36%;
+                color: white;
+                font-size: 1.25rem;
             }
 
             #start-game-button {
@@ -731,45 +779,25 @@ body {
         }
 
         #tokens-container {
+            background: rgba(106, 13, 173, 0.2);
+            border: 2px solid #9b59b6;
+            border-radius: 12px;
+            padding: 5px;
+            box-shadow: 0 0 15px rgba(155, 89, 182, 0.4);
             display: flex;
-            justify-content: center;
+            flex-wrap: wrap;
             gap: 10px;
-            margin: 20px 0;
-            min-height: 60px;
-            width: 100%;
-
-            .role-token {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                border: 2px solid white;
-                cursor: grab;
-                position: absolute;
-                z-index: 1400;
-                background-size: cover;
-                background-position: center;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-                touch-action: none;
-
-                &:active {
-                    cursor: grabbing;
-                }
-
-                .token-hint-popup {
-                    position: absolute;
-                    background: rgba(44, 62, 80, 0.95);
-                    color: white;
-                    padding: 8px 12px;
-                    border-radius: 8px;
-                    font-size: 0.85rem;
-                    z-index: 1600;
-                    border: 1px solid white;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-                    transition: opacity 0.5s ease;
-                    transform: translate(-50%, -100%);
-                    white-space: nowrap;
-                }
-            }
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            width: fit-content;
+            max-width: 90%;
+            min-width: 100px;
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.3s ease;
         }
 
         #chat-container {
@@ -862,7 +890,7 @@ body {
             z-index: 200;
             background: gray;
             padding: 10px;
-            gap: 5px;
+            gap: 5px 20px;
             align-items: center;
             border-radius: 8px;
 
@@ -871,15 +899,34 @@ body {
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
+
+            > div:nth-child(-n+3) {
+                font-weight: bold;
+                color: #f1c40f;
+                padding-bottom: 5px;
+                width: 100%;
+                text-align: center;
+            }
         }
 
-        #role-show-stage {
+        #role-show-stage-container {
             display: none;
             position: absolute;
-            top: 80%;
-            left: 50%;
+            top: 90%;
+            left: 25%;
             transform: translateX(-50%);
             color: white;
+            gap: 10px;
+            align-items: center;
+
+            p {
+                font-size: 1.2rem;
+            }
+
+            button {
+                padding: 5px;
+                font-size: 1.2rem;
+            }
         }
 
         #game-summary-button {
@@ -1034,7 +1081,7 @@ body {
         top: 20px;
         right: 20px;
         font-size: 1.5rem;
-        color: blue;
+        color: yellow;
         cursor: help;
         z-index: 1000;
 
@@ -1188,5 +1235,43 @@ body {
         a {
             color: beige;
         }
+    }
+
+    .role-token {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid white;
+        cursor: grab;
+        z-index: 1400;
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        user-select: none;
+        touch-action: none;
+
+        &:active {
+            cursor: grabbing;
+        }
+
+        .token-hint-popup {
+            position: absolute;
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            z-index: 1400;
+            border: 1px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: opacity 0.5s ease;
+            transform: translate(-50%, -100%);
+            white-space: nowrap;
+        }
+    }
+
+    .role-token.dragging {
+        position: absolute;
+        z-index: 1500;
     }
 }

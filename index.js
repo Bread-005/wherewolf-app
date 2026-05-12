@@ -99,16 +99,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("restart-game-button").style.display = "none";
             document.getElementById("skip-to-vote-button").style.display = "none";
             document.getElementById("vote-result-display").style.display = "none";
-            document.getElementById("role-show-stage").style.display = "none";
+            document.getElementById("role-show-stage-container").style.display = "none";
             document.getElementById("chat-container").style.display = "flex";
             document.getElementById("roles-warning-container").style.display = "none";
             document.getElementById("select-roles-other-components").style.display = "none";
             document.getElementById("display-text").style.color = "black";
             document.getElementById("night-action-text").style.color = "black";
-            for (const player of players) {
-                if (!document.getElementById("card" + player.id)) {
+            document.getElementById("tokens-container").style.display = "none";
+            for (const card of lobby.cards) {
+                if (!document.getElementById("card" + card.id)) {
                     displayCards(lobby);
                 }
+            }
+            for (const player of players) {
                 if (player.isSentinelled && getCardElement(player.id).querySelectorAll(".shield-token").length === 0) {
                     displaySentinelShieldToken(player);
                 }
@@ -167,7 +170,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lobby.state === "day") {
                 document.getElementById("display-text").textContent = lobby.displayText;
                 document.getElementById("night-action-text").textContent = "";
-                if (document.getElementById("tokens-container").children.length === 0) {
+                document.getElementById("tokens-container").style.display = "flex";
+                if (document.getElementById("tokens-container").children.length === 0 && document.body.querySelectorAll(".role-token").length === 0) {
                     setupTokens(lobby);
                 }
                 if (!you.hasSkippedToVote) {
@@ -205,7 +209,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lobby.state === "voting-results") {
                 displayCards(lobby);
                 document.getElementById("vote-result-display").style.display = "grid";
-                document.getElementById("role-show-stage").style.display = "flex";
+                document.getElementById("role-show-stage-container").style.display = "flex";
                 if (players.filter(p => !p.id.includes("-disconnected"))[0].id === myId) {
                     document.getElementById("restart-game-button").style.display = "flex";
                 }
@@ -323,9 +327,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("start-game-button").style.display = "flex";
         }
         validateRoleSelection(lobby);
+        document.getElementById("role-count-display").textContent = lobby.selectedRoles.length + "/" + lobby.cards.filter(card => card.name !== "middle-card4").length + " Roles";
     }
 
-    document.getElementById("resize-handle").addEventListener("mousedown", function(e) {
+    document.getElementById("resize-handle").addEventListener("mousedown", (e) => {
         e.preventDefault();
 
         const startX = e.clientX;

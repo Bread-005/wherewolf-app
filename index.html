@@ -13,7 +13,7 @@
     <h2 style="margin-bottom: 25px">Wherewolf App</h2>
 
     <label>Enter Name
-        <input id="enter-name-input">
+        <input id="enter-name-input" maxlength="15">
     </label>
 
     <div id="lobby"></div>
@@ -90,6 +90,7 @@
                 <button id="discuss-time-save-button">Save</button>
             </div>
         </div>
+        <div id="role-count-display"></div>
         <div id="roles-warning-container">
             <i id="roles-warning-icon" class="fa-solid fa-circle-exclamation"></i>
             <div id="roles-warning-tooltip"></div>
@@ -127,7 +128,10 @@
         <div>Votes</div>
         <div>Voters</div>
     </div>
-    <div id="role-show-stage">Shows Ending Roles</div>
+    <div id="role-show-stage-container">
+        <p id="role-show-stage">Shows Ending Roles</p>
+        <button id="toggle-show-stage-button">Toggle</button>
+    </div>
     <button id="game-summary-button">Game Log</button>
     <div id="game-summary-overlay" class="overlay">
         <div class="overlay-content">
