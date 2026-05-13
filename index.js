@@ -111,11 +111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     displayCards(lobby);
                 }
             }
-            for (const player of players) {
-                if (player.isSentinelled && getCardElement(player.id).querySelectorAll(".shield-token").length === 0) {
-                    displaySentinelShieldToken(player);
-                }
-            }
+            displaySentinelShieldToken(players);
             updateKickMenu(lobby);
             if (document.getElementById("general-rules-list").querySelectorAll(".dynamic-rule").length === 0 && you.role) {
                 setupGeneralInfo(you, lobby.selectedRoles);
@@ -141,6 +137,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 updateSelectRolesScreen(lobby);
             }
             if (lobby.state === "look-at-role") {
+                displayCards(lobby);
                 getCardElement(myId).style.opacity = "100%";
                 document.getElementById("show-roles-button").style.display = "flex";
                 if (!you.hasSeenRole) {

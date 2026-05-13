@@ -105,6 +105,10 @@ function buildGameSummary(lobby) {
         // Doppelganger exception
         if (role.name === "Doppelganger") {
             targetsContainer.append(createSummaryCard(player.selectedCards[0].name, player.selectedCards[0].role));
+            player.doppelgangerCopy = player.selectedCards[0].role;
+            if (player.doppelgangerCopy === "Copycat") {
+                player.doppelgangerCopy = player.selectedCards[1].role;
+            }
             if (player.selectedCards.length > 1) {
                 const andText = document.createElement("span");
                 andText.className = "summary-and-text";
@@ -275,8 +279,8 @@ function buildGameSummary(lobby) {
 
     function buildCenterCards(selectedCards, targetsContainer, isAlphaWolf = false) {
         const allMiddleCards = cards.filter(card => card.name.includes("middle-card"));
-        const middleLogWrapper = document.createElement("div");
-        middleLogWrapper.className = "summary-middle-wrapper";
+        const middleCardsWrapper = document.createElement("div");
+        middleCardsWrapper.className = "summary-middle-wrapper";
 
         const centerCard4 = allMiddleCards.find(card => card.name === "middle-card4");
         if (centerCard4) {
@@ -291,7 +295,7 @@ function buildGameSummary(lobby) {
             cardElement.className = "summary-alpha-card-rotated";
 
             alphaRow.append(cardElement);
-            middleLogWrapper.append(alphaRow);
+            middleCardsWrapper.append(alphaRow);
         }
 
         const standardRow = document.createElement("div");
@@ -302,8 +306,8 @@ function buildGameSummary(lobby) {
             standardRow.append(createSummaryCard(mCard.name, viewed ? cards.find(card => card.name === viewed.name).role : "", !!viewed, true));
         });
 
-        middleLogWrapper.append(standardRow);
-        targetsContainer.append(middleLogWrapper);
+        middleCardsWrapper.append(standardRow);
+        targetsContainer.append(middleCardsWrapper);
     }
 }
 

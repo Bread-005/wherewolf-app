@@ -128,7 +128,7 @@ function viewCard(card, as = card.role) {
     img.style.position = "relative";
 
     if (getCardElement(card.id).querySelectorAll("img")[0]?.src !== img.src) {
-        getCardElement(card.id).querySelectorAll("img").forEach(img => img.remove());
+        removeAllImg(card.id);
         getCardElement(card.id).append(img);
         getCardElement(card.id).style.cursor = "default";
     }
@@ -170,7 +170,7 @@ function resetNightActionTexts() {
 
     for (const card of lobby.cards) {
         getCardElement(card.id).classList.remove("selected-card");
-        getCardElement(card.id).querySelectorAll("img").forEach(img => img.remove());
+        removeAllImg(card.id);
         getCardElement(card.id).style.cursor = "default";
     }
 }
@@ -660,7 +660,7 @@ function validateRoleSelection(lobby) {
         errors.push("• It is not advised to have a Bodyguard with less than 5 players.");
     }
 
-    if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length) {
+    if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length && lobby.cards.filter(card => !card.isMiddleCard).length >= 3) {
         warningContainer.style.display = "flex";
         tooltip.innerHTML = errors.join("<br>");
     } else {
@@ -703,12 +703,16 @@ function setupGeneralInfo(you, selectedRoles) {
     list.append(yourRoleDescription, text);
 }
 
-function displaySentinelShieldToken(player) {
-    const shieldToken = document.createElement("img");
-    shieldToken.src = "./assets/tokens/shield.png";
-    shieldToken.className = "shield-token";
+function displaySentinelShieldToken(players) {
+    for (const player of players) {
+        if (player.isSentinelled && getCardElement(player.id).querySelectorAll(".shield-token").length === 0) {
+            const shieldToken = document.createElement("img");
+            shieldToken.src = "./assets/tokens/shield.png";
+            shieldToken.className = "shield-token";
 
-    getCardElement(player.id).append(shieldToken);
+            getCardElement(player.id).append(shieldToken);
+        }
+    }
 }
 
 function isHost() {
@@ -806,8 +810,16 @@ function setupLookAtRole() {
     });
 }
 
+function removeAllImg(id) {
+    getCardElement(id).querySelectorAll("img").forEach(img => {
+        if (img.className !== "shield-token") {
+            img.remove();
+        }
+    });
+}
+
 export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
     showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, setupRoleSelection, isHost,
-    validateRoleSelection};
+    validateRoleSelection, removeAllImg};
