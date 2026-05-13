@@ -65,7 +65,7 @@ function updateSelectedRoles(lobby) {
 
     for (const role of allRoles) {
         const roleCard = document.getElementById(role.id + "-" + role.name + "-select-role");
-        roleCard.style.display = lobby.selectedEditions.includes(role.edition) ? "flex" : "none";
+        roleCard.style.display = lobby.selectedEditions.includes(role.edition) || lobby.selectedRoles.find(role1 => role1.id === role.id && role1.randomlyAdded) ? "flex" : "none";
         if (roleCard) {
             if (lobby.selectedRoles.find(role => role.id.toString() === roleCard.id.split("-")[0])) {
                 roleCard.style.border = "5px solid lightblue";

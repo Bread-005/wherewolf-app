@@ -335,5 +335,13 @@
     "text": "Becomes a werewolf, if voted for by one",
     "description": "The Cursed doesn't wake up during the night. If they are voted for by a werewolf, they transform into a werewolf and join Team Werewolf.",
     "edition": "bonus"
+  },
+  {
+    "id": 33,
+    "name": "Any Random",
+    "team": "Any",
+    "nightOrder": 0.0,
+    "text": "Adds any random card",
+    "edition": "random"
   }
 ]

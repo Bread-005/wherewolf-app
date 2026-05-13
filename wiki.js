@@ -3,6 +3,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const roles = await fetch("./roles.json").then(res => res.json());
 
     for (const role of roles) {
+        if (role.name.toLowerCase().includes("random")) {
+            continue;
+        }
         const option = new Option(role.name, JSON.stringify(role));
         document.getElementById("wiki-role-selection").add(option);
     }
