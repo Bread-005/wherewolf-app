@@ -2,11 +2,11 @@ import {
     showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents,
     viewCard, resetNightActionTexts, showVoteResults, clearEverything, getCardElement,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, receiveMessage, loadMessages,
-    sendConsoleMessage, showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken,
-    setupRoleSelection, isHost, validateRoleSelection
+    sendConsoleMessage, showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 import {buildGameSummary} from "./gameSummary.js";
+import {setupRoleSelection, updateSelectedRoles,} from "./selectRoles.js";
 
 let lobbies = [];
 let myId = "";
@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 getCardElement(myId).style.opacity = "0%";
                 document.getElementById("select-roles-screen").style.display = "grid";
                 document.getElementById("show-roles-button").style.display = "none";
-                updateSelectRolesScreen(lobby);
+                updateSelectedRoles(lobby);
             }
             if (lobby.state === "look-at-role") {
                 displayCards(lobby);
@@ -298,39 +298,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     setupRoleSelection();
 
-    socket.on("update-select-roles-screen", (lobby) => {
-        updateSelectRolesScreen(lobby);
-    });
-
-    function updateSelectRolesScreen(lobby) {
-        document.getElementById("discuss-time-label").textContent = "Discussion Time: " + (lobby.discussTime || 300) + " secs";
-        document.getElementById("discuss-time-input").value = lobby.discussTime || 300;
-
-        const players = lobby.cards.filter(card => !card.isMiddleCard);
-
-        for (const roleCard of document.getElementById("select-roles-screen").children) {
-            if (lobby.selectedRoles.find(role => role.id.toString() === roleCard.id.split("-")[0])) {
-                roleCard.style.border = "5px solid lightblue";
-            } else {
-                roleCard.style.border = "5px solid brown";
-            }
-        }
-
-        if (isHost()) {
-            document.getElementById("select-roles-other-components").style.display = "flex";
-            for (const roleCard of document.getElementById("select-roles-screen").children) {
-                roleCard.style.cursor = "pointer";
-            }
-        }
-
-        document.getElementById("start-game-button").style.display = "none";
-        if (lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length && players.length >= 3) {
-            document.getElementById("start-game-button").style.display = "flex";
-        }
-        validateRoleSelection(lobby);
-        document.getElementById("role-count-display").textContent = lobby.selectedRoles.length + "/" + lobby.cards.filter(card => card.name !== "middle-card4").length + " Roles";
-    }
-
     document.getElementById("resize-handle").addEventListener("mousedown", (e) => {
         e.preventDefault();
 
@@ -357,6 +324,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("chat-container").addEventListener("click", () => {
         document.getElementById("chat-input").focus();
+    });
+
+    socket.on("update-selected-roles", (lobby) => {
+        updateSelectedRoles(lobby);
     });
 });
 

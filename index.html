@@ -79,7 +79,21 @@
     </div>
     <div id="cards"></div>
     <button id="select-roles-button">Select Roles</button>
-    <div id="select-roles-screen"></div>
+    <div id="select-roles-screen">
+        <div class="overlay-content">
+            <h2>Role Selection</h2>
+
+            <div id="edition-filters">
+                <label><input type="checkbox" value="base game"> Base Game</label>
+                <label><input type="checkbox" value="daybreak"> Daybreak</label>
+                <label><input type="checkbox" value="vampire"> Vampire</label>
+                <label><input type="checkbox" value="alien"> Alien</label>
+                <label><input type="checkbox" value="bonus"> Bonus Pack</label>
+            </div>
+
+            <div id="roles-list"></div>
+        </div>
+    </div>
     <div id="select-roles-other-components">
         <button id="close-button">Close</button>
         <button id="start-game-button">Start Game</button>

@@ -724,82 +724,6 @@ function isDoppelganger(player) {
     return player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role === "Doppelganger";
 }
 
-function setupRoleSelection() {
-    const selectRolesScreen = document.getElementById("select-roles-screen");
-    selectRolesScreen.innerHTML = "";
-    selectRolesScreen.style.display = "grid";
-
-    const roles = [
-        {id: 20, name: "Copycat", text: "View a center card. Copy that role"},
-        {id: 19, name: "Sentinel", text: "May place a shield token"},
-        {id: 16, name: "Doppelganger", text: "View another player's card. Copy their role"},
-        {id: 4, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
-        {id: 5, name: "Werewolf", text: "See other werewolves. If alone, may view 1 center card"},
-        {id: 24, name: "Cow", text: "Werewolves know him. Knows if he has werewolf neighbor"},
-        {id: 21, name: "Alpha Wolf", text: "Swap center wolf card with other player"},
-        {id: 23, name: "Mystic Wolf", text: "May view a player's card"},
-        {id: 15, name: "Minion", text: "See werewolves, but they not him"},
-        {id: 11, name: "Mason", text: "See the other Mason"},
-        {id: 12, name: "Mason", text: "See the other Mason"},
-        {id: 6, name: "Seer", text: "May either view 1 player´s card or 2 center cards"},
-        {id: 17, name: "Apprentice Seer", text: "May view 1 center card"},
-        {id: 31, name: "Paranormal Investigator", text: "May view up to 2 player's cards. Becomes bad if sees bad"},
-        {id: 7, name: "Robber", text: "May swap own card with other player. Then view it"},
-        {id: 22, name: "Witch", text: "May view 1 center card and swap with any player"},
-        {id: 8, name: "Troublemaker", text: "May swap two other players' cards"},
-        {id: 9, name: "Drunk", text: "Swap your card with center"},
-        {id: 10, name: "Insomniac", text: "Look at your card at night´s end"},
-        {id: 18, name: "Revealer", text: "May turn over 1 other player's card if village"},
-        {id: 30, name: "Exposer", text: "May turn over 1 center card"},
-        {id: 32, name: "Blob", text: "If players near you survive, you win."},
-        {id: 25, name: "Mortician", text: "May view random card. Wins if any neighbor dies"},
-        {id: 1, name: "Villager", text: "No special ability"},
-        {id: 2, name: "Villager", text: "No special ability"},
-        {id: 3, name: "Villager", text: "No special ability"},
-        {id: 13, name: "Hunter", text: "If killed, player they voted for dies, too"},
-        {id: 14, name: "Tanner", text: "Wins if killed"},
-        {id: 29, name: "Dream Wolf", text: "Does not wake up. Known by other wolves"},
-        {id: 27, name: "Bodyguard", text: "Player they voted for cannot die"},
-        {id: 26, name: "Prince", text: "Votes for him do not count"},
-        {id: 28, name: "Cursed", text: "Becomes a werewolf, if voted for by one"}
-    ];
-
-    document.getElementById("close-button").addEventListener("click", () => {
-        socket.emit("update-state", "waiting");
-    });
-
-    document.getElementById("discuss-time-save-button").addEventListener("click", () => {
-        let discussTime = Number(document.getElementById("discuss-time-input").value) || 0;
-        if (discussTime > 900) discussTime = 600;
-        socket.emit("change-discuss-time", discussTime);
-    });
-
-    for (const role of roles) {
-        const container = document.createElement("div");
-        container.className = "card";
-        container.style.border = "5px solid brown";
-        container.id = role.id + "-" +role.name + "-select-role";
-
-        const img = document.createElement("img");
-        img.src = "./images/" + role.name.toLowerCase().replace(" ", "_") + ".png";
-        img.alt = role.name;
-
-        const ability = document.createElement("div");
-        ability.className = "card-ability";
-        ability.textContent = role.text;
-
-        container.append(img, ability);
-
-        selectRolesScreen.append(container);
-
-        container.addEventListener("click", () => {
-            if (isHost()) {
-                socket.emit("request-update-selected-roles", role);
-            }
-        });
-    }
-}
-
 function setupLookAtRole() {
     getCardElement(myId).addEventListener("click", () => {
         const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
@@ -821,5 +745,5 @@ function removeAllImg(id) {
 export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
-    showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, setupRoleSelection, isHost,
+    showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
     validateRoleSelection, removeAllImg};
