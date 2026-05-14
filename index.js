@@ -111,7 +111,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     displayCards(lobby);
                 }
             }
-            displaySentinelShieldToken(players);
+            if (you.startingRole !== "Copycat") {
+                displaySentinelShieldToken(players);
+            }
             updateKickMenu(lobby);
             if (document.getElementById("general-rules-list").querySelectorAll(".dynamic-rule").length === 0 && you.role) {
                 setupGeneralInfo(you, lobby.selectedRoles);
@@ -135,8 +137,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("select-roles-screen").style.display = "grid";
                 document.getElementById("show-roles-button").style.display = "none";
                 document.getElementById("discuss-time-private").style.display = "none";
+                document.getElementById("edition-filters").querySelectorAll("label").forEach(label => label.style.cursor = "default");
                 if (isHost()) {
                     document.getElementById("discuss-time-private").style.display = "flex";
+                    document.getElementById("edition-filters").querySelectorAll("label").forEach(label => label.style.cursor = "pointer");
                 }
                 updateSelectedRoles(lobby);
             }
