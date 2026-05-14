@@ -146,12 +146,15 @@ function showRoleActions() {
         return;
     }
 
-    const length = players.filter(p => p.hasClickedConfirm || p.sawWaitMessage || p.startingRole === "Cow" || p.startingRole === "Minion" || p.startingRole === "Mason").length;
+    const length = players.filter(p => p.hasClickedConfirm || p.sawWaitMessage).length;
 
     if (players.find(p => p.startingRole === "Copycat" || p.roleChain[0] === "Copycat" && p.selectedCards[0].role === "Doppelganger" && !p.hasCopiedRole || p.startingRole === "Doppelganger") ||
         (lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Copycat") || lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger")) &&
-        (length < players.length - 1 || lobby.nightTimer < (8 + Math.floor(Math.random() * 10)))) {
+        (length < players.length - 2 || lobby.nightTimer < (8 + Math.floor(Math.random() * 10)))) {
         if (player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Cow" || player.startingRole === "Minion" || player.startingRole === "Mason") {
+            if (!player.sawWaitMessage) {
+                document.getElementById("confirm-waiting-button").style.display = "flex";
+            }
             return;
         }
     }

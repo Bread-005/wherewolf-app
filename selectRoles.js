@@ -26,6 +26,14 @@ function setupRoleSelection() {
         socket.emit("change-discuss-time", discussTime);
     });
 
+    document.getElementById("discuss-time-input").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+            let discussTime = Number(document.getElementById("discuss-time-input").value) || 0;
+            if (discussTime > 900) discussTime = 600;
+            socket.emit("change-discuss-time", discussTime);
+        }
+    });
+
     for (const role of allRoles) {
         const roleCard = document.createElement("div");
         roleCard.className = "card";
@@ -87,7 +95,7 @@ function updateSelectedRoles(lobby) {
         document.getElementById("start-game-button").style.display = "flex";
     }
     validateRoleSelection(lobby);
-    document.getElementById("role-count-display").textContent = lobby.selectedRoles.length + "/" + lobby.cards.filter(card => card.name !== "middle-card4").length + " Roles";
+    document.getElementById("role-count-display").textContent = lobby.selectedRoles.length + "/" + lobby.cards.filter(card => card.name !== "middle-card4").length + " Roles selected";
 }
 
 export {setupRoleSelection, updateSelectedRoles};

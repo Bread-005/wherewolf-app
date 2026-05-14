@@ -2,7 +2,7 @@ import {
     showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents,
     viewCard, resetNightActionTexts, showVoteResults, clearEverything, getCardElement,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, receiveMessage, loadMessages,
-    sendConsoleMessage, showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken
+    sendConsoleMessage, showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isHost
 } from "./functions.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 import {buildGameSummary} from "./gameSummary.js";
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lobby.selectedRoles.find(role => role.name === "Alpha Wolf")) {
                 document.getElementById("select-roles-button").style.top = "22.5%";
                 document.getElementById("night-action-text").style.top = "17.5%";
-                document.getElementById("game-buttons").style.top = "22.5%";
+                document.getElementById("game-buttons").style.top = "25%";
             }
 
             if (lobby.state === "waiting") {
@@ -134,6 +134,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 getCardElement(myId).style.opacity = "0%";
                 document.getElementById("select-roles-screen").style.display = "grid";
                 document.getElementById("show-roles-button").style.display = "none";
+                document.getElementById("discuss-time-private").style.display = "none";
+                if (isHost()) {
+                    document.getElementById("discuss-time-private").style.display = "flex";
+                }
                 updateSelectedRoles(lobby);
             }
             if (lobby.state === "look-at-role") {

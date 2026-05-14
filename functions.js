@@ -197,7 +197,7 @@ function createLobbyDisplay() {
 
         const joinButton = document.createElement("button");
         joinButton.textContent = lobby.state === "waiting" || lobby.state === "select-roles" ? "Join" : "Spectate";
-        joinButton.className = "join-lobby-button";
+        joinButton.className = "join-lobby-button button-primary";
 
         joinButton.addEventListener("click", () => {
             if (joinButton.textContent === "Spectate") {

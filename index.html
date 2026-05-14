@@ -8,7 +8,7 @@
 </head>
 <body>
 <div id="lobby-page">
-    <button id="go-to-wiki-button" onclick='window.location = "wiki.html"'>go to wiki</button>
+    <button id="go-to-wiki-button" class="button-primary" onclick='window.location = "wiki.html"'>go to wiki</button>
 
     <h2 style="margin-bottom: 25px">Wherewolf App</h2>
 
@@ -18,7 +18,7 @@
 
     <div id="lobby"></div>
 
-    <button id="create-lobby-button">Create Lobby</button>
+    <button id="create-lobby-button" class="button-primary">Create Lobby</button>
 
     <div id="discord-link">
         <a href="https://discord.gg/JQFPVur48" target="_blank">
@@ -78,11 +78,18 @@
         </div>
     </div>
     <div id="cards"></div>
-    <button id="select-roles-button">Select Roles</button>
+    <button id="select-roles-button" class="button-primary">Select Roles</button>
     <div id="select-roles-screen">
-        <div class="overlay-content">
+        <div>
+            <div class="discuss-time">
+                <label id="discuss-time-label" for="discuss-time-input">Discussion Time:</label>
+                <div id="discuss-time-private">
+                    <input id="discuss-time-input" type="number">
+                    <button id="discuss-time-save-button" class="button-primary">Save</button>
+                </div>
+            </div>
             <h2>Role Selection</h2>
-
+            <h3 id="role-count-display"></h3>
             <div id="edition-filters">
                 <label><input type="checkbox" value="base game"> <span>Base Game</span></label>
                 <label><input type="checkbox" value="daybreak"> <span>Daybreak</span></label>
@@ -92,21 +99,12 @@
                 <label><input type="checkbox" value="custom"> <span>Custom</span></label>
                 <label><input type="checkbox" value="random"> <span>Random</span></label>
             </div>
-
             <div id="roles-list"></div>
         </div>
     </div>
     <div id="select-roles-other-components">
-        <button id="close-button">Close</button>
-        <button id="start-game-button">Start Game</button>
-        <div class="discuss-time">
-            <label id="discuss-time-label" for="discuss-time-input">Discussion Time:</label>
-            <div>
-                <input id="discuss-time-input" type="number">
-                <button id="discuss-time-save-button">Save</button>
-            </div>
-        </div>
-        <div id="role-count-display"></div>
+        <button id="close-button" class="button-primary">Close</button>
+        <button id="start-game-button" class="button-primary">Start Game</button>
         <div id="roles-warning-container">
             <i id="roles-warning-icon" class="fa-solid fa-circle-exclamation"></i>
             <div id="roles-warning-tooltip"></div>
