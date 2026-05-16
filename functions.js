@@ -292,63 +292,64 @@ function setupVotingClickEvent(card) {
     }
 }
 
-function animateCardSwap(card1, card2, text = "", duration = 2000) {
+function animateCardSwap(cards, text = "", duration = 2000) {
     const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
     const you = lobby.cards.find(player => player.id === myId);
-    const card1Element = getCardElement(card1.id);
-    const card2Element = getCardElement(card2.id);
 
-    if (!card1Element || !card2Element) return Promise.resolve();
+    const animationPromises = [];
 
-    const rect1 = card1Element.getBoundingClientRect();
-    const rect2 = card2Element.getBoundingClientRect();
+    for (let i = 0; i < cards.length; i++) {
+        const currentElement = getCardElement(cards[i].id);
+        const nextElement = getCardElement(cards[(i + 1) % cards.length].id);
 
-    const style1 = window.getComputedStyle(card1Element);
-    const style2 = window.getComputedStyle(card2Element);
+        if (!currentElement || !nextElement) continue;
 
-    const transform1 = style1.transform !== "none" ? style1.transform : "";
-    const transform2 = style2.transform !== "none" ? style2.transform : "";
+        const rect1 = currentElement.getBoundingClientRect();
+        const rect2 = nextElement.getBoundingClientRect();
 
-    const deltaX = rect2.left - rect1.left;
-    const deltaY = rect2.top - rect1.top;
+        const style1 = window.getComputedStyle(currentElement);
 
-    return new Promise((resolve) => {
-        card1Element.style.transition = `transform ${duration}ms ease-in-out`;
-        card2Element.style.transition = `transform ${duration}ms ease-in-out`;
+        const transform1 = style1.transform !== "none" ? style1.transform : "";
+
+        const deltaX = rect2.left - rect1.left;
+        const deltaY = rect2.top - rect1.top;
+
+        currentElement.style.transition = `transform ${duration}ms ease-in-out`;
 
         // move cards
-        card1Element.style.transform = `translate(${deltaX}px, ${deltaY}px) ${transform1}`;
-        card2Element.style.transform = `translate(${-deltaX}px, ${-deltaY}px) ${transform2}`;
+        currentElement.style.transform = `translate(${deltaX}px, ${deltaY}px) ${transform1}`;
 
-        setTimeout(() => {
-            // reset styles after swap
-            card1Element.style.transition = "";
-            card2Element.style.transition = "";
-            card1Element.style.transform = "";
-            if (card1.name === "middle-card4") {
-                card1Element.style.transform = "translate(-50%, -50%) rotate(-90deg)";
-            }
-            card2Element.style.transform = "";
-            if (card2.name === "middle-card4") {
-                card2Element.style.transform = "translate(-50%, -50%) rotate(-90deg)";
-            }
-            card1Element.classList.remove("selected-card");
-            card2Element.classList.remove("selected-card");
+        const animationPromise = new Promise((resolve) => {
+            setTimeout(() => {
+                // reset styles after swap
+                currentElement.style.transition = "";
+                currentElement.style.transform = "";
+                if (cards[i].name === "middle-card4") {
+                    currentElement.style.transform = "translate(-50%, -50%) rotate(-90deg)";
+                }
+                currentElement.classList.remove("selected-card");
 
-            document.getElementById("ok-button").style.display = "flex";
-            document.getElementById("night-action-text").textContent = text;
+                resolve(cards[(i + 1) % cards.length]);
+            }, duration);
+        });
 
-            if (you.startingRole === "Robber") {
-                viewCard(you, card2.role);
-                document.getElementById("night-action-text").textContent = "You swapped your card with " + card2.name + "\n" +
-                    "Now you are " + card2.role;
-            }
-            if (you.startingRole === "Alpha Wolf" && isDoppelganger(you)) {
-                wakeUpMultiple("Werewolf");
-            }
+        animationPromises.push(animationPromise);
+    }
 
-            resolve();
-        }, duration);
+    return Promise.all(animationPromises).then((results) => {
+        const nextCard = results[0];
+
+        document.getElementById("ok-button").style.display = "flex";
+        document.getElementById("night-action-text").textContent = text;
+
+        if (you.startingRole === "Robber" && nextCard) {
+            viewCard(you, nextCard.role);
+            document.getElementById("night-action-text").textContent = "You swapped your card with " + nextCard.name + "\n" +
+                "Now you are " + nextCard.role;
+        }
+        if (you.startingRole === "Alpha Wolf" && isDoppelganger(you)) {
+            wakeUpMultiple("Werewolf");
+        }
     });
 }
 

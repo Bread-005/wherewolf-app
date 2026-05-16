@@ -84,7 +84,7 @@
     "nightOrder": 2.2,
     "text": "May view a player's card",
     "description": "The Mystic Wolf learns who the other werewolves are. If there is only one werewolf player, they may look at one of the centre cards. The Mystic Wolf may additionally view any other player's card.",
-    "nightAction": "You may at another player's card.",
+    "nightAction": "You may look at another player's card.",
     "nightActionDetailed": "If you click another player's card, you select it. If you click 'confirm', you view your selected card.",
     "edition": "daybreak"
   },
@@ -187,6 +187,17 @@
     "nightAction": "You may exchange cards between two other players.",
     "nightActionDetailed": "If you click a card, you select it. If you click it again you unselect it. If you selected exactly two other player's cards, a confirm button appears. If you click 'confirm', your two selected cards get swapped.",
     "edition": "base game"
+  },
+  {
+    "id": 34,
+    "name": "Village Idiot",
+    "team": "Villager",
+    "nightOrder": 7.1,
+    "text": "May swap all other player's card to left or right",
+    "description": "The Village Idiot may swap everyone else's card around, either clockwise or anti-clockwise around the table.",
+    "nightAction": "You may move everyone's card but your own to left or right.",
+    "nightActionDetailed": "Click your left or right neighbor to choose a direction. Confirming will swap all cards (except your own) one position in that direction.",
+    "edition": "daybreak"
   },
   {
     "id": 9,

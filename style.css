@@ -879,20 +879,20 @@ body {
                             font-size: 1.1rem;
                         }
 
+                        .summary-and-text {
+                            color: #f1c40f;
+                            font-weight: bold;
+                            font-style: italic;
+                            margin: 0 5px;
+                            align-self: center;
+                            font-size: 0.9rem;
+                        }
+
                         .summary-targets {
                             display: flex;
                             gap: 10px;
                             align-items: center;
                             flex-wrap: nowrap;
-
-                            .summary-and-text {
-                                color: #f1c40f;
-                                font-weight: bold;
-                                font-style: italic;
-                                margin: 0 5px;
-                                align-self: center;
-                                font-size: 0.9rem;
-                            }
 
                             .summary-middle-wrapper {
                                 display: flex;

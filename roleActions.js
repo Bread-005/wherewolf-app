@@ -161,7 +161,7 @@ function showRoleActions() {
 
     function isUnusedSwapper(p) {
         return !p.hasDoneNightAction && (p.startingRole === "Alpha Wolf" || p.startingRole === "Robber" || p.startingRole === "Witch" ||
-            p.startingRole === "Troublemaker" || p.startingRole === "Drunk");
+            p.startingRole === "Troublemaker" || p.startingRole === "Village Idiot" || p.startingRole === "Drunk");
     }
 
     function mustWait(p, role) {
@@ -237,8 +237,8 @@ function showRoleActions() {
 
     if (player.startingRole === "Doppelganger" || (player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf") && !player.hasDoneExtraWolfAction ||
         player.startingRole === "Seer" || player.startingRole === "Paranormal Investigator" || player.startingRole === "Robber" ||
-        player.startingRole === "Witch" && player.didFirstPart || player.startingRole === "Troublemaker" || player.startingRole === "Revealer" ||
-        player.startingRole === "Mortician" && !yourRandomAction?.action.includes("yourself")) {
+        player.startingRole === "Witch" && player.didFirstPart || player.startingRole === "Troublemaker" || player.startingRole === "Village Idiot" ||
+        player.startingRole === "Revealer" || player.startingRole === "Mortician" && !yourRandomAction?.action.includes("yourself")) {
         makeCardsClickable("players");
     }
 
@@ -290,9 +290,17 @@ function showRoleActions() {
             if (player.startingRole === "Witch" && player.didFirstPart) {
                 getCardElement(myId).style.cursor = "pointer";
             }
+            const leftNeighbor = players[(myIndex + 1) % players.length];
+            const rightNeighbor = players[(myIndex - 1 + players.length) % players.length];
+
+            if (player.startingRole === "Village Idiot") {
+                for (const card of cards) {
+                    if (card.id !== leftNeighbor.id && card.id !== rightNeighbor.id) {
+                        getCardElement(card.id).style.cursor = "default";
+                    }
+                }
+            }
             if (player.startingRole === "Mortician") {
-                const leftNeighbor = players[(myIndex + 1) % players.length];
-                const rightNeighbor = players[(myIndex - 1 + players.length) % players.length];
                 for (const card of cards) {
                     if (yourRandomAction?.action.includes("left") && card.id !== leftNeighbor.id ||
                         yourRandomAction?.action.includes("right") && card.id !== rightNeighbor.id ||
@@ -361,25 +369,30 @@ function confirmButtonAction() {
     if (player.startingRole === "Alpha Wolf" && !selectedCards[0].isMiddleCard) {
         const wolfCard = lobby.cards.find(card => card.name === "middle-card4");
         socket.emit("perform-swap", {priority: 2.1, swap: [{name: wolfCard.name, role: wolfCard.role, team: wolfCard.team}, selectedCards[0]]});
-        animateCardSwap(wolfCard, selectedCards[0], "You swapped the center werewolf card with " + selectedCards[0].name);
+        animateCardSwap([wolfCard, selectedCards[0]], "You swapped the center werewolf card with " + selectedCards[0].name).then();
     }
 
     if (player.startingRole === "Robber") {
         socket.emit(isInstantSwap ? "perform-swap" : "add-swap", {priority: 6, swap: [player, selectedCards[0]]});
-        animateCardSwap(player, selectedCards[0]);
+        animateCardSwap([player, selectedCards[0]]).then();
     }
     if (player.startingRole === "Witch" && player.didFirstPart) {
         const centerSelected = lobby.cards.find(card => card.name === player.selectedCards.at(-1).name);
         socket.emit(isInstantSwap ? "perform-swap" : "add-swap", {priority: 6.1, swap: [centerSelected, selectedCards[0]]});
-        animateCardSwap(centerSelected, selectedCards[0], "You swapped " + centerSelected.name + " and " + selectedCards[0].name);
+        animateCardSwap([centerSelected, selectedCards[0]], "You swapped " + centerSelected.name + " and " + selectedCards[0].name).then();
     }
     if (player.startingRole === "Troublemaker") {
         socket.emit(isInstantSwap ? "perform-swap" : "add-swap", {priority: 7, swap: selectedCards});
-        animateCardSwap(selectedCards[0], selectedCards[1], "You swapped " + selectedCards[0].name + " and " + selectedCards[1].name);
+        animateCardSwap([selectedCards[0], selectedCards[1]], "You swapped " + selectedCards[0].name + " and " + selectedCards[1].name).then();
+    }
+    if (player.startingRole === "Village Idiot") {
+        const otherPlayers = document.getElementById("night-action-text").textContent.includes("left") ? players.filter(p => p.id !== myId) : players.filter(p => p.id !== myId).toReversed();
+        socket.emit(isInstantSwap ? "perform-swap" : "add-swap", {priority: 7.1, swap: otherPlayers.toReversed()});
+        animateCardSwap(otherPlayers, "You moved everyone's card (except your own) to the " + (document.getElementById("night-action-text").textContent.includes("left") ? "left" : "right")).then();
     }
     if (player.startingRole === "Drunk") {
         socket.emit(isInstantSwap ? "perform-swap" : "add-swap", {priority: 8, swap: [player, selectedCards[0]]});
-        animateCardSwap(player, selectedCards[0], "You swapped your card with " + selectedCards[0].name);
+        animateCardSwap([player, selectedCards[0]], "You swapped your card with " + selectedCards[0].name).then();
     }
     if (player.startingRole === "Revealer") {
         viewCard(selectedCards[0]);

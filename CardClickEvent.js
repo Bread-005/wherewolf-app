@@ -51,6 +51,18 @@ function setCardClickEvent(id) {
                 document.getElementById("confirm-button").style.display = "flex";
             }
         }
+        if (player.startingRole === "Village Idiot" && selectedCards.length > 0) {
+            lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
+            const myIndex = players.findIndex(p => p.id === player.id);
+            document.getElementById("night-action-text").textContent = "Would you like to move everyone's card (except your own) to the ";
+            if (players[(myIndex + 1) % players.length].name === card.name) {
+                document.getElementById("night-action-text").textContent += "left?";
+            }
+            if (players[(myIndex - 1 + players.length) % players.length].name === card.name) {
+                document.getElementById("night-action-text").textContent += "right?";
+            }
+            document.getElementById("confirm-button").style.display = "flex";
+        }
         if (selectedCards.length === 0) {
             document.getElementById("confirm-button").style.display = "none";
             document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
