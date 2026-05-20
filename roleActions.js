@@ -1,4 +1,6 @@
-import {animateCardSwap, getCardElement, isDoppelganger, removeAllImg, viewCard} from "./functions.js";
+import {
+    animateCardSwap, getCardElement, hasToSeeRandomActions, isDoppelganger, removeAllImg, viewCard
+} from "./functions.js";
 import {allRoles, lobbies, myId, socket} from "./index.js";
 
 function wakeUpMultiple(roleName) {
@@ -97,19 +99,20 @@ function showRoleActions() {
     if (isDoppelganger(player)) {
         yourRandomAction = lobby.randomActions.find(randomAction => randomAction.role === "Doppelganger-" + player.startingRole);
     }
+    if (lobby.selectedRoles.find(role => role.name === "Oracle") && player.roleChain[0] !== "Oracle") {
+        if (!lobby.oracleAnswer || lobby.randomActions.find(action => action.role === "Oracle").action.includes("like to exchange") &&
+            lobby.oracleAnswer.includes("go ahead") && lobby.cards.find(card => !card.isMiddleCard && card.roleChain[0] === "Oracle" && !card.hasDoneNightAction)) {
+            document.getElementById("night-action-text").textContent = "Waiting for the Oracle to answer their question ...";
+            return;
+        }
+    }
     if (player.hasDoneNightAction) {
         document.getElementById("ok-button").style.display = "none";
         document.getElementById("do-nothing-button").style.display = "none";
         document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
         lobby.cards.forEach(card => removeAllImg(card.id));
 
-        for (const action of lobby.randomActions) {
-            if (!action.seenPlayers.includes(player.name)) {
-                document.getElementById("night-action-text").textContent = action.role + " action: " + action.action;
-                document.getElementById("confirm-seen-button").style.display = "flex";
-                return;
-            }
-        }
+        if (hasToSeeRandomActions(lobby, player)) return;
         return;
     }
     if (document.getElementById("ok-button").style.display === "flex") return;
@@ -127,13 +130,35 @@ function showRoleActions() {
     }
     if (document.getElementById("confirm-waiting-button").style.display === "flex") return;
 
-    for (const action of lobby.randomActions) {
-        if (!action.seenPlayers.includes(player.name) && action.nightOrder <= allRoles.find(role => role.name === player.startingRole).nightOrder) {
-            document.getElementById("night-action-text").textContent = action.role + " action: " + action.action;
-            document.getElementById("confirm-seen-button").style.display = "flex";
-            return;
+    if (player.roleChain[0] === "Oracle") {
+        if (lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card")).length === 0) {
+            document.getElementById("night-action-text").textContent = "Oracle: " + yourRandomAction?.action;
         }
+        if (!lobby.oracleAnswer) {
+            document.getElementById("yes-button").style.display = "flex";
+            document.getElementById("no-button").style.display = "flex";
+        }
+        if (lobby.oracleAnswer) {
+            if (lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card")).length === 0) {
+                document.getElementById("night-action-text").textContent = lobby.oracleAnswer;
+            }
+            if (lobby.oracleAnswer.includes("go ahead") || lobby.oracleAnswer === "Ok, then you don´t look at it.") {
+                document.getElementById("ok-button").style.display = "flex";
+            }
+            document.getElementById("yes-button").style.display = "none";
+            document.getElementById("no-button").style.display = "none";
+
+            if (lobby.oracleAnswer.includes("go ahead")) {
+                makeCardsClickable("center");
+            }
+            if (lobby.oracleAnswer.includes("ou may")) {
+                makeCardsClickable("center");
+            }
+        }
+        return;
     }
+
+    if (hasToSeeRandomActions(lobby, player)) return;
 
     if (players.find(p => p.startingRole === "Copycat") && centerCards.find(card => card.startingRole === "Sentinel") && player.startingRole !== "Copycat") {
         return;
@@ -147,10 +172,12 @@ function showRoleActions() {
     }
 
     const length = players.filter(p => p.hasClickedConfirm || p.sawWaitMessage).length;
+    const waitTime1 = (8 + Math.floor(Math.random() * 10)) + (lobby.selectedRoles.find(role => role.name === "Oracle") ? Math.floor(Math.random() * 10) : 0);
+    const waitTime2 = (13 + Math.floor(Math.random() * 10)) + (lobby.selectedRoles.find(role => role.name === "Oracle") ? Math.floor(Math.random() * 10) : 0);
 
     if (players.find(p => p.startingRole === "Copycat" || p.roleChain[0] === "Copycat" && p.selectedCards[0].role === "Doppelganger" && !p.hasCopiedRole || p.startingRole === "Doppelganger") ||
         (lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Copycat") || lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger")) &&
-        (length < players.length - 2 || lobby.nightTimer < (8 + Math.floor(Math.random() * 10)))) {
+        (length < players.length - 2 || lobby.nightTimer < waitTime1)) {
         if (player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Cow" || player.startingRole === "Minion" || player.startingRole === "Mason") {
             if (!player.sawWaitMessage) {
                 document.getElementById("confirm-waiting-button").style.display = "flex";
@@ -174,7 +201,7 @@ function showRoleActions() {
             p.startingRole === "Alpha Wolf" && !p.hasDoneNightAction && (!player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Mystic Wolf" && player.hasMetWerewolves)) ||
         lobby.cards.find(card => card.isMiddleCard && (card.roleChain[0] === "Doppelganger" ||
             card.startingRole === "Alpha Wolf" && (!player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Mystic Wolf" && player.hasMetWerewolves))) &&
-        (length < players.length - 1 || lobby.nightTimer < (10 + Math.floor(Math.random() * 5)))) {
+        (length < players.length - 1 || lobby.nightTimer < waitTime2)) {
         if (player.startingRole.toLowerCase().includes("wolf") || mustWait(player, "Mystic Wolf") || mustWait(player, "Seer") ||
             mustWait(player, "Apprentice Seer") || mustWait(player, "Paranormal Investigator") || mustWait(player, "Robber") ||
             mustWait(player, "Witch")) {
@@ -263,13 +290,14 @@ function showRoleActions() {
             return;
         }
         viewCard(player);
-        document.getElementById("night-action-text").textContent = "You look at your card an see " + player.role;
+        document.getElementById("night-action-text").textContent = "You look at your card and see " + player.role;
         document.getElementById("ok-button").style.display = "flex";
         return;
     }
 
-    if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole === "Alpha Wolf" && player.hasMetWerewolves ||
-        player.startingRole === "Witch" && player.didFirstPart || player.startingRole === "Drunk" && !player.isSentinelled) {
+    if (player.startingRole === "Copycat" || player.startingRole === "Doppelganger" ||
+        player.startingRole === "Alpha Wolf" && player.hasMetWerewolves || player.startingRole === "Witch" && player.didFirstPart ||
+        player.startingRole === "Drunk" && !player.isSentinelled) {
         document.getElementById("do-nothing-button").style.display = "none";
     }
 
@@ -290,6 +318,37 @@ function showRoleActions() {
             if (player.startingRole === "Witch" && player.didFirstPart) {
                 getCardElement(myId).style.cursor = "pointer";
             }
+
+            if (player.roleChain[0] === "Oracle") {
+                const oracleAction = lobby.randomActions.find(action => action.role === "Oracle").action;
+                if (oracleAction.includes("center card?")) {
+                    for (const card of cards) {
+                        if (lobby.oracleAnswer.includes("Ok Oracle, you may view the")) {
+                            if (card.name === "middle-card1" && !oracleAction.includes("left")) {
+                                getCardElement(card.id).style.cursor = "default";
+                            }
+                            if (card.name === "middle-card2" && !oracleAction.includes("middle")) {
+                                getCardElement(card.id).style.cursor = "default";
+                            }
+                            if (card.name === "middle-card3" && !oracleAction.includes("right")) {
+                                getCardElement(card.id).style.cursor = "default";
+                            }
+                        }
+                        if (lobby.oracleAnswer.includes("You may look at")) {
+                            if (card.name === "middle-card1" && oracleAction.includes("left")) {
+                                getCardElement(card.id).style.cursor = "default";
+                            }
+                            if (card.name === "middle-card2" && oracleAction.includes("middle")) {
+                                getCardElement(card.id).style.cursor = "default";
+                            }
+                            if (card.name === "middle-card3" && oracleAction.includes("right")) {
+                                getCardElement(card.id).style.cursor = "default";
+                            }
+                        }
+                    }
+                }
+            }
+
             const leftNeighbor = players[(myIndex + 1) % players.length];
             const rightNeighbor = players[(myIndex - 1 + players.length) % players.length];
 
@@ -311,6 +370,11 @@ function showRoleActions() {
             }
             if (document.getElementById("cards").querySelectorAll(".selected-card").length === 0) {
                 document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
+                if (player.roleChain[0] === "Oracle") {
+                    if (!lobby.oracleAnswer.includes("now a Werewolf card")) {
+                        document.getElementById("night-action-text").textContent = lobby.oracleAnswer;
+                    }
+                }
                 if (player.startingRole === "Paranormal Investigator" && player.didFirstPart) {
                     document.getElementById("night-action-text").textContent = "Now you may view 1 more player's card.";
                 }
@@ -325,6 +389,9 @@ function showRoleActions() {
                     }
                 }
                 document.getElementById("do-nothing-button").style.display = "flex";
+                if (player.roleChain[0] === "Oracle" && !lobby.randomActions.find(action => action.role === "Oracle").action.includes("Would you like to view")) {
+                    document.getElementById("do-nothing-button").style.display = "none";
+                }
             }
         }
     }
@@ -340,8 +407,22 @@ function confirmButtonAction() {
     document.getElementById("do-nothing-button").style.display = "none";
     document.getElementById("confirm-button").style.display = "none";
 
+    if (player.roleChain[0] === "Oracle") {
+        if (lobby.oracleAnswer.includes("go ahead")) {
+            socket.emit("perform-swap", {priority: -9, swap: [player, selectedCards[0]]});
+            animateCardSwap([player, selectedCards[0]], "You swapped your card with " + selectedCards[0].name).then();
+        }
+        if (lobby.oracleAnswer.includes("ou may")) {
+            viewCard(selectedCards[0], selectedCards[0].viewableStartingRole);
+            if (selectedCards.length > 1) {
+                viewCard(selectedCards[1], selectedCards[1].viewableStartingRole);
+            }
+            document.getElementById("ok-button").style.display = "flex";
+        }
+    }
+
     if (player.startingRole === "Copycat") {
-        viewCard(selectedCards[0], selectedCards[0].roleChain[0]);
+        viewCard(selectedCards[0], selectedCards[0].viewableCopycatRole);
         document.getElementById("night-action-text").textContent = "You look at " + selectedCards[0].name + "'s card and see " + selectedCards[0].roleChain[0];
         document.getElementById("ok-button").style.display = "flex";
     }
@@ -374,7 +455,7 @@ function confirmButtonAction() {
 
     if (player.startingRole === "Robber") {
         socket.emit(isInstantSwap ? "perform-swap" : "add-swap", {priority: 6, swap: [player, selectedCards[0]]});
-        animateCardSwap([player, selectedCards[0]]).then();
+        animateCardSwap([player, selectedCards[0]], "You swapped your card with " + selectedCards[0].name + "\nNow you are " + selectedCards[0].role).then();
     }
     if (player.startingRole === "Witch" && player.didFirstPart) {
         const centerSelected = lobby.cards.find(card => card.name === player.selectedCards.at(-1).name);
@@ -414,16 +495,15 @@ function confirmButtonAction() {
         document.getElementById("ok-button").style.display = "flex";
     }
 
-    socket.emit("add-selected-cards", selectedCards.map(card => {
+    socket.emit("has-clicked-confirm", {selectedCards: selectedCards.map(card => {
         return {
             name: card.name,
-            role: player.startingRole === "Copycat" ? card.roleChain[0] : card.role,
-            team: card.team,
+            role: player.startingRole === "Copycat" ? card.viewableCopycatRole : card.role,
+            team: player.startingRole === "Copycat" ? card.viewableCopycatTeam : card.team,
             viewableStartingRole: card.viewableStartingRole,
             viewableStartingTeam: card.viewableStartingTeam
         }
-    }));
-    socket.emit("has-clicked-confirm");
+    })});
 }
 
 export {wakeUpMultiple, showRoleActions, confirmButtonAction};

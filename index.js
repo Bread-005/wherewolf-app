@@ -337,6 +337,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     socket.on("update-selected-roles", (lobby) => {
         updateSelectedRoles(lobby);
     });
+
+    document.getElementById("yes-button").addEventListener("click", () => {
+        document.getElementById("yes-button").style.display = "none";
+        document.getElementById("no-button").style.display = "none";
+        socket.emit("has-clicked-confirm", {oracleAnswer: "yes"});
+    });
+
+    document.getElementById("no-button").addEventListener("click", () => {
+        document.getElementById("yes-button").style.display = "none";
+        document.getElementById("no-button").style.display = "none";
+        socket.emit("has-clicked-confirm", {oracleAnswer: "no"});
+    });
 });
 
 export {lobbies, myId, allRoles, socket};

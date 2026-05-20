@@ -344,8 +344,6 @@ function animateCardSwap(cards, text = "", duration = 2000) {
 
         if (you.startingRole === "Robber" && nextCard) {
             viewCard(you, nextCard.role);
-            document.getElementById("night-action-text").textContent = "You swapped your card with " + nextCard.name + "\n" +
-                "Now you are " + nextCard.role;
         }
         if (you.startingRole === "Alpha Wolf" && isDoppelganger(you)) {
             wakeUpMultiple("Werewolf");
@@ -743,8 +741,20 @@ function removeAllImg(id) {
     });
 }
 
+function hasToSeeRandomActions(lobby, player) {
+    for (const action of lobby.randomActions) {
+        if (!action.seenPlayers.includes(player.name) && action.nightOrder <= allRoles.find(role => role.name === player.startingRole).nightOrder) {
+            document.getElementById("night-action-text").textContent = action.role + " action: " + action.action +
+                (action.role === "Oracle" ? "\n Answer: " + lobby.oracleAnswer : "");
+            document.getElementById("confirm-seen-button").style.display = "flex";
+            return true;
+        }
+    }
+    return false;
+}
+
 export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
     showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
-    validateRoleSelection, removeAllImg};
+    validateRoleSelection, removeAllImg, hasToSeeRandomActions};

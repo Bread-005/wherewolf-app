@@ -1,5 +1,16 @@
 [
   {
+    "id": 35,
+    "name": "Oracle",
+    "team": "Villager",
+    "nightOrder": -9,
+    "text": "Answer random question",
+    "description": "The Oracle must answer a random question asked publicly which can have varying results.",
+    "nightAction": "Oracle answer the following question.",
+    "nightActionDetailed": "Click one of the options (mostly yes or no). See what you may then do.",
+    "edition": "alien"
+  },
+  {
     "id": 20,
     "name": "Copycat",
     "team": "Villager",

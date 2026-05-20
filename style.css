@@ -599,7 +599,7 @@ body {
             align-items: center;
             gap: 10px;
 
-            #continue-button, #ok-button, #do-nothing-button, #confirm-button, #confirm-waiting-button, #confirm-seen-button {
+            #continue-button, #ok-button, #do-nothing-button, #confirm-button, #confirm-waiting-button, #confirm-seen-button, #yes-button, #no-button {
                 display: none;
                 padding: 12px 40px;
                 font-size: 1.5rem;

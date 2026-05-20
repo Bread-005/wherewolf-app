@@ -20,6 +20,14 @@ function setCardClickEvent(id) {
         }
         const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));
 
+        if (player.roleChain[0] === "Oracle") {
+            if (lobby.oracleAnswer.includes("go ahead") || lobby.oracleAnswer.includes("you may view") || lobby.oracleAnswer.includes("You may look at one")) {
+                lobby.cards.filter(c => c.id !== card.id).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
+                document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
+                document.getElementById("confirm-button").style.display = "flex";
+            }
+        }
+
         if (player.startingRole === "Copycat" || player.startingRole === "Sentinel" || player.startingRole === "Doppelganger" ||
             player.startingRole.toLowerCase().includes("wolf") && players.filter(p => p.startingRole.toLowerCase().includes("wolf")).length === 1 && !player.hasMetWerewolves ||
             player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf" || player.startingRole === "Seer" && !card.isMiddleCard ||
@@ -32,7 +40,8 @@ function setCardClickEvent(id) {
             document.getElementById("night-action-text").textContent = "Would you like to select " + card.name + "?";
             document.getElementById("confirm-button").style.display = "flex";
         }
-        if (player.startingRole === "Seer" && card.isMiddleCard ||
+        if (player.roleChain[0] === "Oracle" && lobby.oracleAnswer === "You may look at two other center cards instead." ||
+            player.startingRole === "Seer" && card.isMiddleCard ||
             player.startingRole === "Mortician" && !isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Mortician")?.action.includes("both") ||
             player.startingRole === "Mortician" && isDoppelganger(player) && lobby.randomActions.find(action => action.role === "Doppelganger-Mortician")?.action.includes("both")) {
             lobby.cards.filter(c => !c.isMiddleCard).forEach(c => getCardElement(c.id).classList.remove("selected-card"));
