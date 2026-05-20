@@ -142,7 +142,7 @@ function showRoleActions() {
             if (lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card")).length === 0) {
                 document.getElementById("night-action-text").textContent = lobby.oracleAnswer;
             }
-            if (lobby.oracleAnswer.includes("go ahead") || lobby.oracleAnswer === "Ok, then you don´t look at it.") {
+            if (lobby.oracleAnswer.includes("stays on the Villager team") || lobby.oracleAnswer.includes("keeps their card") || lobby.oracleAnswer === "Ok, then you don´t look at it.") {
                 document.getElementById("ok-button").style.display = "flex";
             }
             document.getElementById("yes-button").style.display = "none";
