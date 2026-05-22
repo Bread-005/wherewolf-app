@@ -753,8 +753,12 @@ function hasToSeeRandomActions(lobby, player) {
     return false;
 }
 
+function playerHasStartingRoleOf(player, startingRoles = []) {
+    return startingRoles.find(role => role === player.startingRole);
+}
+
 export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, showVoteResults, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
     showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
-    validateRoleSelection, removeAllImg, hasToSeeRandomActions};
+    validateRoleSelection, removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf};

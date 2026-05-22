@@ -277,6 +277,17 @@
     "edition": "alien"
   },
   {
+    "id": 36,
+    "name": "Thing",
+    "team": "Villager",
+    "nightOrder": 13.2,
+    "text": "Let a neighbor know of you",
+    "description": "The Thing may alert one of their neighbours that they are the Thing.",
+    "nightAction": "Bump the nearest shoulder of the player to your left or right.",
+    "nightActionDetailed": "If you click one of your neighbors' cards you select it. If you click 'confirm', your selected neighbor will learn that you are the Thing.",
+    "edition": "bonus"
+  },
+  {
     "id": 1,
     "name": "Villager",
     "team": "Villager",
