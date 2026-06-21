@@ -233,14 +233,25 @@
     "edition": "base game"
   },
   {
+    "id": 38,
+    "name": "Squire",
+    "team": "Werewolf",
+    "nightOrder": 9.1,
+    "text": "Views the Werewolves' cards at night's end",
+    "description": "The Squire learns who the wolves are, and views their cards at the end of the night to see if they were swapped.",
+    "nightAction": "Werewolves stick out your thumbs. Squire look at the werewolves' cards.",
+    "nightActionDetailed": "When all players that do their night action before you, have done their night action, the werewolves cards get automatically shown to you.",
+    "edition": "bonus"
+  },
+  {
     "id": 37,
     "name": "Beholder",
     "team": "Villager",
-    "nightOrder": 9.1,
-    "text": "Views the Seer's cards at night's end",
+    "nightOrder": 9.2,
+    "text": "Views the Seers' cards at night's end",
     "description": "The Beholder learns who the Seer and Apprentice Seer are, and views their cards at the end of the night to see if they were swapped.",
     "nightAction": "Seer and Apprentice Seer stick out your thumbs. Beholder look at the Seer and Apprentice Seer's card.",
-    "nightActionDetailed": "When all players that do their night action before you, have done their night action, the Seer's and Apprentice Seer's card gets automatically shown to you.",
+    "nightActionDetailed": "When all players that do their night action before you, have done their night action, the Seer's and Apprentice Seer's card get automatically shown to you.",
     "edition": "bonus"
   },
   {

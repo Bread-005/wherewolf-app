@@ -9,7 +9,7 @@ function validateRoleSelection(lobby) {
     const counts = {};
     lobby.selectedRoles.forEach(role => { counts[role.name] = (counts[role.name] || 0) + 1; });
 
-    if (!counts["Werewolf"] && !counts["Alpha Wolf"] && !counts["Mystic Wolf"] && !counts["Dream Wolf"] && !counts["Minion"]) {
+    if (!counts["Werewolf"] && !counts["Alpha Wolf"] && !counts["Mystic Wolf"] && !counts["Dream Wolf"] && !counts["Minion"] && !counts["Squire"]) {
         errors.push("• No evil roles selected!");
     }
     if (counts["Mason"] === 1) {
