@@ -1,5 +1,36 @@
-import {isHost, validateRoleSelection} from "./functions.js";
+import {isHost} from "./functions.js";
 import {allRoles, socket} from "./index.js";
+
+function validateRoleSelection(lobby) {
+    const warningContainer = document.getElementById("roles-warning-container");
+    const tooltip = document.getElementById("roles-warning-tooltip");
+    const errors = [];
+
+    const counts = {};
+    lobby.selectedRoles.forEach(role => { counts[role.name] = (counts[role.name] || 0) + 1; });
+
+    if (!counts["Werewolf"] && !counts["Alpha Wolf"] && !counts["Mystic Wolf"] && !counts["Dream Wolf"] && !counts["Minion"]) {
+        errors.push("• No evil roles selected!");
+    }
+    if (counts["Mason"] === 1) {
+        errors.push("• A single Mason is useless. Usually, you play with two.");
+    }
+    if (counts["Insomniac"]) {
+        if (!counts["Alpha Wolf"] && !counts["Robber"] && !counts["Witch"] && !counts["Troublemaker"]) {
+            errors.push("• Insomniac is useless. There are no roles that swap players' cards.");
+        }
+    }
+    if (counts["Bodyguard"] && lobby.cards.filter(card => !card.isMiddleCard).length < 5) {
+        errors.push("• It is not advised to have a Bodyguard with less than 5 players.");
+    }
+
+    if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length && lobby.cards.filter(card => !card.isMiddleCard).length >= 3) {
+        warningContainer.style.display = "flex";
+        tooltip.innerHTML = errors.join("<br>");
+    } else {
+        warningContainer.style.display = "none";
+    }
+}
 
 function setupRoleSelection() {
     const rolesList = document.getElementById("roles-list");

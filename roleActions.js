@@ -2,11 +2,12 @@ import {
     animateCardSwap, getCardElement, hasToSeeRandomActions, isDoppelganger,
     playerHasStartingRoleOf, removeAllImg, viewCard
 } from "./functions.js";
-import {allRoles, lobbies, myId, socket} from "./index.js";
+import {allRoles, myId, socket} from "./index.js";
+import {getCurrentLobby} from "./lobby.js";
 
 function wakeUpMultiple(roleName) {
 
-    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    const lobby = getCurrentLobby();
     const players = lobby.cards.filter(card1 => !card1.isMiddleCard);
 
     const samePlayers = [];
@@ -64,7 +65,7 @@ function wakeUpMultiple(roleName) {
 
 function minionSeeWerewolves() {
 
-    const lobby = lobbies.find(lobby => lobby.cards.find(p => p.id === myId));
+    const lobby = getCurrentLobby();
     const players = lobby.cards.filter(card1 => !card1.isMiddleCard);
 
     const werewolfPlayers = [];
@@ -83,7 +84,7 @@ function minionSeeWerewolves() {
 }
 
 function showRoleActions() {
-    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    const lobby = getCurrentLobby();
     if (!lobby) return;
     lobby.cards.forEach(card => getCardElement(card.id).style.cursor = "default");
     if (lobby.state !== "night") return;
@@ -405,7 +406,7 @@ function showRoleActions() {
 }
 
 function confirmButtonAction() {
-    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    const lobby = getCurrentLobby();
     const players = lobby.cards.filter(card => !card.isMiddleCard);
     const player = players.find(player => player.id === myId);
     const selectedCards = lobby.cards.filter(c => getCardElement(c.id).classList.contains("selected-card"));

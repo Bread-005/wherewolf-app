@@ -1,12 +1,15 @@
 import {
     showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents,
-    viewCard, resetNightActionTexts, showVoteResults, clearEverything, getCardElement,
-    updateKickMenu, openRolesDisplay, setupTokens, sendMessage, receiveMessage, loadMessages,
-    sendConsoleMessage, showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isHost
+    viewCard, resetNightActionTexts, clearEverything, getCardElement,
+    updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isHost
 } from "./functions.js";
+import {showVoteResults, showVoteResultBoard} from "./voteResults.js";
+import {setupTokens} from "./tokens.js";
+import {sendMessage, receiveMessage, loadMessages, sendConsoleMessage} from "./chat.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 import {buildGameSummary} from "./gameSummary.js";
 import {setupRoleSelection, updateSelectedRoles,} from "./selectRoles.js";
+import {getCurrentLobby} from "./lobby.js";
 
 let lobbies = [];
 let myId = "";
@@ -81,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket.on("update-lobbies", (serverLobbies) => {
         lobbies = serverLobbies;
-        lobby = lobbies.find(l => l.cards.find(card => card.id === myId));
+        lobby = getCurrentLobby();
         if (!lobby) {
             document.getElementById("lobby-page").style.display = "flex";
             document.getElementById("game").style.display = "none";
@@ -245,7 +248,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("confirm-button").addEventListener("click", confirmButtonAction);
 
     document.getElementById("show-roles-button").addEventListener("click", () => {
-        const lobby = lobbies.find(lobby => lobby.cards.find(card => card.id === myId));
+        const lobby = getCurrentLobby();
         if (lobby) {
             if (document.getElementById("roles-display").style.right === "0px") {
                 document.getElementById("roles-display").style.right = "-350px";
@@ -256,7 +259,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     document.getElementById("skip-to-vote-button").addEventListener("click", () => {
-        const lobby = lobbies.find(lobby => lobby.cards.find(card => card.id === myId));
+        const lobby = getCurrentLobby();
         document.getElementById("skip-to-vote-button").style.display = "none";
         sendConsoleMessage(lobby.cards.find(p => p.id === myId).name + " has skipped to vote " + (lobby.cards.filter(p => p.hasSkippedToVote).length + 1) + "/" + (lobby.cards.filter(card => !card.isMiddleCard).length));
         socket.emit("skip-to-vote");

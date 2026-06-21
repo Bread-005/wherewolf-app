@@ -1,9 +1,10 @@
-import {allRoles, lobbies, myId} from "./index.js";
+import {allRoles, myId} from "./index.js";
+import {getCurrentLobby} from "./lobby.js";
 import {getCardElement, isDoppelganger, playerHasStartingRoleOf} from "./functions.js";
 
 function setCardClickEvent(id) {
     getCardElement(id).addEventListener("click", (event) => {
-        const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+        const lobby = getCurrentLobby();
         const card = lobby.cards.find(card => card.id === event.target.id.replace("card", ""));
         if (!card) return;
         if (lobby.state !== "night") return;

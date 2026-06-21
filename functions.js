@@ -1,8 +1,7 @@
 import {allRoles, lobbies, myId, socket} from "./index.js";
+import {getCurrentLobby} from "./lobby.js";
 import {wakeUpMultiple} from "./roleActions.js";
 import {setCardClickEvent} from "./CardClickEvent.js";
-
-let hasShownTokenHint = false;
 
 function showErrorPopup(message) {
     const container = document.getElementById("toast-container");
@@ -144,7 +143,7 @@ function setupButtonEvents() {
     document.getElementById("confirm-waiting-button").addEventListener("click", () => {
         document.getElementById("confirm-waiting-button").style.display = "none";
         socket.emit("saw-wait-message");
-    })
+    });
     document.getElementById("do-nothing-button").addEventListener("click", () => {
         socket.emit("has-clicked-ok-or-do-nothing", false);
         resetNightActionTexts();
@@ -160,7 +159,7 @@ function setupButtonEvents() {
 }
 
 function resetNightActionTexts() {
-    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    const lobby = getCurrentLobby();
     document.getElementById("confirm-button").style.display = "none";
     document.getElementById("ok-button").style.display = "none";
     document.getElementById("do-nothing-button").style.display = "none";
@@ -228,7 +227,7 @@ function createLobbyDisplay() {
 }
 
 function clearEverything() {
-    const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
+    const lobby = getCurrentLobby();
     if (lobby) {
         const players = lobby.cards.filter(card => !card.isMiddleCard);
         document.body.style.backgroundImage = `url("./assets/wherewolf_background_day.png")`;
@@ -259,30 +258,17 @@ function clearEverything() {
     }
 }
 
-function showVoteResults() {
-    document.getElementById("vote-result-display").style.display = "grid";
-
-    const lobby = lobbies.find(l => l.cards.find(player => player.id === myId));
-    const players = lobby.cards.filter(card => !card.isMiddleCard);
-
-    showVoteResultBoard(lobby, players);
-
-    for (const player of players) {
-        getCardElement(player.id).style.background = "#f0f0f0";
-    }
-}
-
 function setupVotingClickEvent(card) {
     if (card.id !== "card" + myId) {
         card.addEventListener("click", () => {
-            const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
-            if (lobby.state !== "voting") return;
+            const lobby = getCurrentLobby();
+            if (lobby.state !== "voting") { return; }
             if (card.style.cursor !== "pointer") {
                 showErrorPopup("You have already voted!");
                 return;
             }
             for (const card1 of lobby.cards) {
-                if (card1.isMiddleCard) continue;
+                if (card1.isMiddleCard) { continue; }
 
                 getCardElement(card1.id).style.cursor = "default";
             }
@@ -293,7 +279,7 @@ function setupVotingClickEvent(card) {
 }
 
 function animateCardSwap(cards, text = "", duration = 2000) {
-    const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+    const lobby = getCurrentLobby();
     const you = lobby.cards.find(player => player.id === myId);
 
     const animationPromises = [];
@@ -302,7 +288,7 @@ function animateCardSwap(cards, text = "", duration = 2000) {
         const currentElement = getCardElement(cards[i].id);
         const nextElement = getCardElement(cards[(i + 1) % cards.length].id);
 
-        if (!currentElement || !nextElement) continue;
+        if (!currentElement || !nextElement) { continue; }
 
         const rect1 = currentElement.getBoundingClientRect();
         const rect2 = nextElement.getBoundingClientRect();
@@ -360,7 +346,7 @@ function updateKickMenu(lobby) {
         document.getElementById("kick-list").innerHTML = "";
 
         for (const player of players) {
-            if (player.id === myId) continue;
+            if (player.id === myId) { continue; }
 
             const item = document.createElement("div");
             item.className = "kick-item";
@@ -424,249 +410,6 @@ function openRolesDisplay(lobby) {
     }
 }
 
-function setupTokens(lobby) {
-    const container = document.getElementById("tokens-container");
-    container.innerHTML = "";
-
-    const roles = [];
-
-    for (const role of lobby.selectedRoles) {
-        roles.push({
-            name: role.name,
-            nightOrder: allRoles.find(role1 => role1.name === role.name)?.nightOrder
-        });
-    }
-
-    roles.sort((a, b) => a.nightOrder - b.nightOrder);
-
-    if (lobby.selectedRoles.find(role => role.name === "Alpha Wolf")) {
-        roles.push({
-            name: "Werewolf",
-            nightOrder: 2
-        });
-    }
-
-    roles.forEach((role) => {
-        const token = document.createElement("div");
-        token.className = "role-token";
-        token.style.backgroundImage = `url('./images/${role.name.toLowerCase().replace(" ", "_")}.png')`;
-
-        const role1 = allRoles.find(role1 => role1.name === role.name);
-
-        if (role1.team === "Werewolf") {
-            token.style.border = "2px solid red";
-        }
-        if (role1.team === "Tanner") {
-            token.style.border = "2px solid #f1c40f";
-        }
-        if (role1.team === "Mortician") {
-            token.style.border = "2px solid #24150a";
-        }
-        if (role1.team === "Blob") {
-            token.style.border = "2px solid #54533a";
-        }
-
-        // Drag & Drop logic
-        let isDragging = false;
-        let offsetX, offsetY;
-
-        token.addEventListener("mousedown", (event) => {
-            isDragging = true;
-
-            const rect = token.getBoundingClientRect();
-
-            offsetX = event.clientX - rect.left;
-            offsetY = event.clientY - rect.top;
-
-            if (!token.classList.contains("dragging")) {
-                token.style.left = rect.left + "px";
-                token.style.top = rect.top + "px";
-
-                document.body.append(token);
-                token.classList.add("dragging");
-            }
-        });
-
-        document.addEventListener("mousemove", (event) => {
-            if (!isDragging) return;
-
-            let x = event.clientX - offsetX;
-            let y = event.clientY - offsetY;
-
-            const minX = 0;
-            const minY = 0;
-            const maxX = window.innerWidth - token.offsetWidth;
-            const maxY = window.innerHeight - token.offsetHeight;
-
-            x = Math.max(minX, Math.min(x, maxX));
-            y = Math.max(minY, Math.min(y, maxY));
-
-            token.style.left = x + "px";
-            token.style.top = y + "px";
-        });
-
-        document.addEventListener("mouseup", () => {
-            isDragging = false;
-            token.style.zIndex = "1400";
-        });
-
-        const hint = document.createElement("div");
-        hint.className = "token-hint-popup";
-        hint.textContent = "If you move a token only you see that";
-
-        token.addEventListener("mouseenter", () => {
-            if (!hasShownTokenHint) {
-                hint.style.top = "-15px";
-
-                token.append(hint);
-                hasShownTokenHint = true;
-            }
-        });
-
-        token.addEventListener("mouseleave", () => {
-            hint.remove();
-        });
-
-        container.appendChild(token);
-    });
-
-    requestAnimationFrame(() => {
-        if (container.children.length > 0) {
-            const rect = container.getBoundingClientRect();
-            container.style.width = rect.width + "px";
-            container.style.height = rect.height + "px";
-        }
-    });
-}
-
-function sendMessage() {
-    const chatInput = document.getElementById("chat-input");
-    const message = chatInput.value.trim();
-    if (message) {
-        socket.emit("send-chat-message", message);
-        chatInput.value = "";
-    }
-}
-
-function sendConsoleMessage(message) {
-    socket.emit("send-console-message", message);
-}
-
-function loadMessages(lobby) {
-    if (document.getElementById("chat-messages").children.length <= lobby.messages.length) {
-        document.getElementById("chat-messages").innerHTML = "";
-        for (const message of lobby.messages) {
-            receiveMessage(message);
-        }
-    }
-}
-
-function receiveMessage(data) {
-    const messagesBox = document.getElementById("chat-messages");
-    const div = document.createElement("div");
-    div.className = "chat-msg";
-    div.innerHTML = `<b>${data.sender}:</b> ${data.message}`;
-    messagesBox.appendChild(div);
-    messagesBox.scrollTop = messagesBox.scrollHeight;
-}
-
-function showVoteResultBoard(lobby, players) {
-
-    if (document.getElementById("vote-result-display").querySelectorAll(".dynamic-result").length === 0) {
-        document.getElementById("toggle-show-stage-button").addEventListener("click", () => {
-            const lobby1 = lobbies.find(l => l.cards.find(player => player.id === myId));
-            if (document.getElementById("role-show-stage").textContent === "Shows Ending Roles") {
-                showStartingRoles(lobby1);
-            } else {
-                showEndingRoles(lobby1);
-            }
-        });
-    }
-
-    document.getElementById("vote-result-display").querySelectorAll(".dynamic-result").forEach(element => element.remove());
-
-    for (const player of players) {
-        const name = document.createElement("div");
-        name.textContent = player.name;
-        name.className = "dynamic-result";
-        const numberOfVotes = document.createElement("div");
-        numberOfVotes.textContent = players.filter(p => p.vote === player.name).length;
-        numberOfVotes.className = "dynamic-result";
-        const voters = document.createElement("div");
-        voters.textContent = players.filter(p => p.vote === player.name).map(p => p.name).join(", ");
-        voters.className = "dynamic-result";
-
-        document.getElementById("vote-result-display").append(name, numberOfVotes, voters);
-    }
-
-    document.getElementById("display-text").textContent = lobby.voteResultText;
-    document.getElementById("display-text-2").textContent = (lobby.winningTeam !== "No-one" ? "Team " : "") + lobby.winningTeam + " wins";
-    document.getElementById("display-text-3").textContent = "You lose";
-    for (const team of lobby.winningTeam.split(" and ")) {
-        if (team === players.find(p => p.id === myId).team) {
-            document.getElementById("display-text-3").textContent = "You win";
-        }
-    }
-
-    showEndingRoles(lobby);
-
-    function showEndingRoles(lobby) {
-        for (const card of lobby.cards) {
-            viewCard(card);
-            document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
-            if (card.dies) {
-                document.getElementById("death-overlay" + card.id).style.display = "flex";
-                getCardElement(card.id).style.filter = "grayscale(80%)";
-            }
-        }
-    }
-
-    function showStartingRoles(lobby) {
-        for (const card of lobby.cards) {
-            viewCard(card, card.roleChain[0]);
-            document.getElementById("role-show-stage").textContent = "Shows Starting Roles";
-            if (!card.isMiddleCard) {
-                document.getElementById("death-overlay" + card.id).style.display = "none";
-                getCardElement(card.id).style.filter = "";
-            }
-        }
-    }
-}
-
-function validateRoleSelection(lobby) {
-    const warningContainer = document.getElementById("roles-warning-container");
-    const tooltip = document.getElementById("roles-warning-tooltip");
-    let errors = [];
-
-    const counts = {};
-    lobby.selectedRoles.forEach(r => counts[r.name] = (counts[r.name] || 0) + 1);
-
-    if (!counts["Werewolf"] && !counts["Alpha Wolf"] && !counts["Mystic Wolf"] && !counts["Dream Wolf"] && !counts["Minion"]) {
-        errors.push("• No evil roles selected!");
-    }
-
-    if (counts["Mason"] === 1) {
-        errors.push("• A single Mason is useless. Usually, you play with two.");
-    }
-
-    if (counts["Insomniac"]) {
-        if (!counts["Alpha Wolf"] && !counts["Robber"] && !counts["Witch"] && !counts["Troublemaker"]) {
-            errors.push("• Insomniac is useless. There are no roles that swap players' cards.");
-        }
-    }
-
-    if (counts["Bodyguard"] && lobby.cards.filter(card => !card.isMiddleCard).length < 5) {
-        errors.push("• It is not advised to have a Bodyguard with less than 5 players.");
-    }
-
-    if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length && lobby.cards.filter(card => !card.isMiddleCard).length >= 3) {
-        warningContainer.style.display = "flex";
-        tooltip.innerHTML = errors.join("<br>");
-    } else {
-        warningContainer.style.display = "none";
-    }
-}
-
 function setupGeneralInfo(you, selectedRoles) {
     const list = document.getElementById("general-rules-list");
 
@@ -715,7 +458,7 @@ function displaySentinelShieldToken(players) {
 }
 
 function isHost() {
-    const lobby1 = lobbies.find(lobby1 => lobby1.cards.find(player => player.id === myId));
+    const lobby1 = getCurrentLobby();
     return !!(lobby1 && lobby1.cards.filter(card => !card.isMiddleCard)[0].id === myId);
 }
 
@@ -725,7 +468,7 @@ function isDoppelganger(player) {
 
 function setupLookAtRole() {
     getCardElement(myId).addEventListener("click", () => {
-        const lobby = lobbies.find(lobby => lobby.cards.find(player => player.id === myId));
+        const lobby = getCurrentLobby();
         if (lobby && lobby.state === "look-at-role" && getCardElement(myId).style.cursor === "pointer") {
             viewCard(lobby.cards.find(player => player.id === myId));
             document.getElementById("continue-button").style.display = "flex";
@@ -758,7 +501,6 @@ function playerHasStartingRoleOf(player, startingRoles = []) {
 }
 
 export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,
-    resetNightActionTexts, createLobbyDisplay, showVoteResults, clearEverything, animateCardSwap,
-    updateKickMenu, openRolesDisplay, setupTokens, sendMessage, sendConsoleMessage, loadMessages, receiveMessage,
-    showVoteResultBoard, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
-    validateRoleSelection, removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf};
+    resetNightActionTexts, createLobbyDisplay, clearEverything, animateCardSwap,
+    updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
+    removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf};
