@@ -112,6 +112,17 @@
     "edition": "base game"
   },
   {
+    "id": 39,
+    "name": "Apprentice Tanner",
+    "team": "Tanner",
+    "nightOrder": 3.1,
+    "text": "Knows the Tanner. Wins if they die.",
+    "description": "The Apprentice Tanner learns who the Tanner is. If there is no Tanner, the Apprentice Tanner wins, if they die themselves.",
+    "nightAction": "Tanner stick out your thumb so the Apprentice Tanner can see who you are.",
+    "nightActionDetailed": "When you wake up, you learn who the Tanner is.",
+    "edition": "bonus"
+  },
+  {
     "id": 11,
     "name": "Mason",
     "team": "Villager",
@@ -241,6 +252,7 @@
     "description": "The Squire learns who the wolves are, and views their cards at the end of the night to see if they were swapped.",
     "nightAction": "Werewolves stick out your thumbs. Squire look at the werewolves' cards.",
     "nightActionDetailed": "When all players that do their night action before you, have done their night action, the werewolves cards get automatically shown to you.",
+    "votingRules": "If you die during voting and there are werewolves, the werewolf team wins. If you die and there are no werewolves, the Villager team wins.",
     "edition": "bonus"
   },
   {

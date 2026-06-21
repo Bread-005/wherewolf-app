@@ -83,6 +83,30 @@ function minionSeeWerewolves() {
     document.getElementById("ok-button").style.display = "flex";
 }
 
+function apprenticeTannerSeesTanner() {
+    const lobby = getCurrentLobby();
+    const players = lobby.cards.filter(card1 => !card1.isMiddleCard);
+
+    const tannerPlayers = [];
+
+    for (const p of players) {
+        if (p.startingRole === "Tanner") {
+            tannerPlayers.push(p.name);
+            viewCard(p, "Tanner");
+        }
+    }
+    if (tannerPlayers.length === 0) {
+        document.getElementById("night-action-text").textContent = "There is no Tanner";
+    }
+    if (tannerPlayers.length === 1) {
+        document.getElementById("night-action-text").textContent = "The Tanner is: " + tannerPlayers[0];
+    }
+    if (tannerPlayers.length >= 2) {
+        document.getElementById("night-action-text").textContent = "The Tanners are: " + tannerPlayers.join(", ");
+    }
+    document.getElementById("ok-button").style.display = "flex";
+}
+
 function showRoleActions() {
     const lobby = getCurrentLobby();
     if (!lobby) return;
@@ -185,7 +209,8 @@ function showRoleActions() {
     if (players.find(p => p.startingRole === "Copycat" || p.roleChain[0] === "Copycat" && p.selectedCards[0].role === "Doppelganger" && !p.hasCopiedRole || p.startingRole === "Doppelganger") ||
         (lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Copycat") || lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger")) &&
         (length < players.length - 2 || lobby.nightTimer < waitTime1)) {
-        if (player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Cow" || player.startingRole === "Minion" || player.startingRole === "Mason") {
+        if (player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Cow" || player.startingRole === "Minion" ||
+            player.startingRole === "Mason" || player.startingRole === "Apprentice Tanner") {
             if (!player.sawWaitMessage) {
                 document.getElementById("confirm-waiting-button").style.display = "flex";
             }
@@ -264,6 +289,9 @@ function showRoleActions() {
 
     if (player.startingRole === "Minion") {
         minionSeeWerewolves();
+    }
+    if (player.startingRole === "Apprentice Tanner") {
+        apprenticeTannerSeesTanner();
     }
     if (player.startingRole === "Mason") {
         wakeUpMultiple("Mason");
