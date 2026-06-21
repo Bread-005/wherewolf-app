@@ -362,7 +362,7 @@
     "name": "Tanner",
     "team": "Tanner",
     "nightOrder": 103,
-    "text": "Wins if killed",
+    "text": "Wins if killed (werewolves lose then)",
     "description": "The Tanner doesn't wake up during the night. If the Tanner dies, the Tanner wins.",
     "specialRules": "If the Tanner dies, the Werewolf Team loses. If the Tanner dies and a werewolf dies, the Tanner and Villager Team wins.",
     "edition": "base game"
@@ -402,6 +402,15 @@
     "text": "Becomes a werewolf, if voted for by one",
     "description": "The Cursed doesn't wake up during the night. If they are voted for by a werewolf, they transform into a werewolf and join Team Werewolf.",
     "edition": "bonus"
+  },
+  {
+    "id": 40,
+    "name": "Sly Fox",
+    "team": "Sly Fox",
+    "nightOrder": 108,
+    "text": "Wins if they get 0 votes (others lose then)",
+    "description": "The Sly Fox doesn't wake up during the night. They win if they receive 0 votes and are not killed. Most other roles cannot win with the Sly Fox.",
+    "edition": "custom"
   },
   {
     "id": 33,
