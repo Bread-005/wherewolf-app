@@ -220,7 +220,7 @@ function showRoleActions() {
     }
 
     if (player.startingRole === "Insomniac" || player.startingRole === "Revealer" || player.startingRole === "Exposer" ||
-        player.startingRole === "Mortician") {
+        player.startingRole === "Mortician" || player.startingRole === "Beholder") {
         if (length < players.length - 1 || !player.mayDoLateAction || lobby.nightTimer < (13 + Math.floor(Math.random() * 7))) {
             if (!player.sawWaitMessage) {
                 document.getElementById("confirm-waiting-button").style.display = "flex";
@@ -289,6 +289,19 @@ function showRoleActions() {
         }
         document.getElementById("night-action-text").textContent = "You wake up to see your role. You see " + player.role;
         viewCard(player);
+        document.getElementById("ok-button").style.display = "flex";
+    }
+    if (player.startingRole === "Beholder") {
+        const seerPlayers = players.filter(p => p.startingRole === "Seer" || p.startingRole === "Apprentice Seer");
+        if (seerPlayers.length === 0) {
+            document.getElementById("night-action-text").textContent = "There is no Seer or Apprentice Seer in this game.";
+        } else {
+            const names = seerPlayers.map(p => p.name).join(", ");
+            document.getElementById("night-action-text").textContent = "The Seer(s) are: " + names;
+            for (const seerPlayer of seerPlayers) {
+                viewCard(seerPlayer);
+            }
+        }
         document.getElementById("ok-button").style.display = "flex";
     }
     if (player.startingRole === "Mortician" && yourRandomAction?.action.includes("yourself")) {

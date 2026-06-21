@@ -23,6 +23,9 @@ function validateRoleSelection(lobby) {
     if (counts["Bodyguard"] && lobby.cards.filter(card => !card.isMiddleCard).length < 5) {
         errors.push("• It is not advised to have a Bodyguard with less than 5 players.");
     }
+    if (counts["Beholder"] && !counts["Seer"] && !counts["Apprentice Seer"]) {
+        errors.push("• The Beholder does not do anything without any Seer.");
+    }
 
     if (errors.length > 0 && lobby.selectedRoles.length === lobby.cards.filter(card => card.name !== "middle-card4").length && lobby.cards.filter(card => !card.isMiddleCard).length >= 3) {
         warningContainer.style.display = "flex";
