@@ -433,13 +433,23 @@ function setupGeneralInfo(you, selectedRoles) {
         text.textContent += ", your team wins.";
     }
     if (yourRole.team === "Tanner") {
-        text.textContent += "During voting, if you die, you win.";
+        if (yourRole.startingRole !== "Apprentice Tanner") {
+            text.textContent += "During voting, if you die, you win.";
+        } else {
+            text.textContent += "During voting, if the Tanner dies, you win.";
+        }
     }
     if (yourRole.team === "Mortician") {
         text.textContent += "During voting, if any of your neighbor dies, you win.";
     }
     if (yourRole.team === "Blob") {
         text.textContent += "During voting, if all specific players (announced by the website) survive, you win.";
+    }
+    if (yourRole.team === "Sly Fox") {
+        text.textContent += "During voting, if you receive 0 votes, you win.";
+    }
+    if (selectedRoles.find(role => role.name === "Sly Fox") && yourRole.team !== "Sly Fox") {
+        text.textContent += " If the Sly Fox receives 0 votes, you lose.";
     }
 
     list.append(yourRoleDescription, text);

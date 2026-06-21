@@ -409,7 +409,7 @@
     "team": "Sly Fox",
     "nightOrder": 108,
     "text": "Wins if they get 0 votes (others lose then)",
-    "description": "The Sly Fox doesn't wake up during the night. They win if they receive 0 votes and are not killed. Most other roles cannot win with the Sly Fox.",
+    "description": "The Sly Fox doesn't wake up during the night. They win if they receive 0 votes. All other roles lose, if the Sly Fox wins.",
     "edition": "custom"
   },
   {
