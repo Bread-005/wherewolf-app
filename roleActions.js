@@ -5,6 +5,147 @@ import {
 import {allRoles, myId, socket} from "./index.js";
 import {getCurrentLobby} from "./lobby.js";
 
+function isUnusedSwapper(player) {
+    return !player.hasDoneNightAction && (player.startingRole === "Alpha Wolf" || player.startingRole === "Robber" ||
+        player.startingRole === "Witch" || player.startingRole === "Troublemaker" ||
+        player.startingRole === "Village Idiot" || player.startingRole === "Drunk");
+}
+
+function mustWait(player, role) {
+    return player.roleChain[0] === role ||
+        player.roleChain[0] === "Copycat" && player.selectedCards[0]?.role !== "Doppelganger" && player.startingRole === role;
+}
+
+function shouldWaitForCopycatAndDoppelganger(players, lobby, length, waitTime1) {
+    const hasCopycatOrDoppelgangerPlayer = players.find(otherPlayer =>
+        otherPlayer.startingRole === "Copycat" ||
+        otherPlayer.roleChain[0] === "Copycat" && otherPlayer.selectedCards[0].role === "Doppelganger" && !otherPlayer.hasCopiedRole ||
+        otherPlayer.startingRole === "Doppelganger");
+
+    const hasCopycatOrDoppelgangerInCenter =
+        lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Copycat") ||
+        lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger");
+
+    return Boolean(hasCopycatOrDoppelgangerPlayer) ||
+        Boolean(hasCopycatOrDoppelgangerInCenter) && (length < players.length - 2 || lobby.nightTimer < waitTime1);
+}
+
+function shouldWaitForAlphaWolfAndDoppelganger(players, centerCards, player, lobby, length, waitTime2) {
+    const hasBlockingPlayer = players.find(otherPlayer =>
+        otherPlayer.startingRole === "Copycat" && centerCards.find(card => card.startingRole === "Sentinel" || card.startingRole === "Doppelganger" || card.startingRole === "Alpha Wolf") ||
+        otherPlayer.roleChain[0] === "Copycat" && otherPlayer.selectedCards[0]?.role === "Doppelganger" && isUnusedSwapper(otherPlayer) ||
+        otherPlayer.startingRole === "Doppelganger" ||
+        otherPlayer.roleChain[0] === "Doppelganger" && isUnusedSwapper(otherPlayer) && player.roleChain[0] !== "Doppelganger" ||
+        otherPlayer.startingRole === "Alpha Wolf" && !otherPlayer.hasDoneNightAction &&
+            (!player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Mystic Wolf" && player.hasMetWerewolves)
+    );
+    const hasBlockingMiddleCard = lobby.cards.find(card =>
+        card.isMiddleCard && (
+            card.roleChain[0] === "Doppelganger" ||
+            card.startingRole === "Alpha Wolf" &&
+                (!player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Mystic Wolf" && player.hasMetWerewolves)
+        )
+    );
+
+    return Boolean(hasBlockingPlayer) ||
+        Boolean(hasBlockingMiddleCard) && (length < players.length - 1 || lobby.nightTimer < waitTime2);
+}
+
+function makeCardsClickable(type, player, lobby, myIndex, players, yourRandomAction) {
+    if (!player.hasClickedConfirm) {
+        if (player.isSentinelled && (player.startingRole === "Robber" || player.startingRole === "Drunk")) {
+            document.getElementById("night-action-text").textContent = "There is a shield token on your card. Therefore you cannot perform your night action.";
+            document.getElementById("ok-button").style.display = "flex";
+            return;
+        }
+
+        const cards = lobby.cards.filter(card => !card.isMiddleCard && type === "players" && card.id !== myId || card.isMiddleCard && type === "center");
+        for (const card of cards) {
+            if (!card.isSentinelled) {
+                getCardElement(card.id).style.cursor = "pointer";
+            }
+        }
+        if (player.startingRole === "Witch" && player.didFirstPart) {
+            getCardElement(myId).style.cursor = "pointer";
+        }
+
+        if (player.roleChain[0] === "Oracle") {
+            const oracleAction = lobby.randomActions.find(action => action.role === "Oracle").action;
+            if (oracleAction.includes("center card?")) {
+                for (const card of cards) {
+                    if (lobby.oracleAnswer.includes("Ok Oracle, you may view the")) {
+                        if (card.name === "middle-card1" && !oracleAction.includes("left")) {
+                            getCardElement(card.id).style.cursor = "default";
+                        }
+                        if (card.name === "middle-card2" && !oracleAction.includes("middle")) {
+                            getCardElement(card.id).style.cursor = "default";
+                        }
+                        if (card.name === "middle-card3" && !oracleAction.includes("right")) {
+                            getCardElement(card.id).style.cursor = "default";
+                        }
+                    }
+                    if (lobby.oracleAnswer.includes("You may look at")) {
+                        if (card.name === "middle-card1" && oracleAction.includes("left")) {
+                            getCardElement(card.id).style.cursor = "default";
+                        }
+                        if (card.name === "middle-card2" && oracleAction.includes("middle")) {
+                            getCardElement(card.id).style.cursor = "default";
+                        }
+                        if (card.name === "middle-card3" && oracleAction.includes("right")) {
+                            getCardElement(card.id).style.cursor = "default";
+                        }
+                    }
+                }
+            }
+        }
+
+        const leftNeighbor = players[(myIndex + 1) % players.length];
+        const rightNeighbor = players[(myIndex - 1 + players.length) % players.length];
+
+        if (player.startingRole === "Village Idiot" || player.startingRole === "Thing") {
+            for (const card of cards) {
+                if (card.id !== leftNeighbor.id && card.id !== rightNeighbor.id) {
+                    getCardElement(card.id).style.cursor = "default";
+                }
+            }
+        }
+        if (player.startingRole === "Mortician") {
+            for (const card of cards) {
+                if (yourRandomAction?.action.includes("left") && card.id !== leftNeighbor.id ||
+                    yourRandomAction?.action.includes("right") && card.id !== rightNeighbor.id ||
+                    (yourRandomAction?.action.includes("one") || yourRandomAction?.action.includes("both")) && card.id !== leftNeighbor.id && card.id !== rightNeighbor.id) {
+                    getCardElement(card.id).style.cursor = "default";
+                }
+            }
+        }
+        if (document.getElementById("cards").querySelectorAll(".selected-card").length === 0) {
+            document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
+            if (player.roleChain[0] === "Oracle") {
+                if (!lobby.oracleAnswer.includes("now a Werewolf card")) {
+                    document.getElementById("night-action-text").textContent = lobby.oracleAnswer;
+                }
+            }
+            if (player.startingRole === "Paranormal Investigator" && player.didFirstPart) {
+                document.getElementById("night-action-text").textContent = "Now you may view 1 more player's card.";
+            }
+            if (player.startingRole === "Witch" && player.didFirstPart) {
+                document.getElementById("night-action-text").textContent = "You now must swap " + player.selectedCards.at(-1).name + " with any player.";
+            }
+            if (player.startingRole === "Mortician") {
+                document.getElementById("night-action-text").textContent = lobby.randomActions.find(action => action.role === "Mortician").action;
+
+                if (isDoppelganger(player)) {
+                    document.getElementById("night-action-text").textContent = lobby.randomActions.find(action => action.role === "Doppelganger-Mortician").action;
+                }
+            }
+            document.getElementById("do-nothing-button").style.display = "flex";
+            if (player.roleChain[0] === "Oracle" && !lobby.randomActions.find(action => action.role === "Oracle").action.includes("Would you like to view")) {
+                document.getElementById("do-nothing-button").style.display = "none";
+            }
+        }
+    }
+}
+
 function wakeUpMultiple(roleName) {
 
     const lobby = getCurrentLobby();
@@ -180,10 +321,10 @@ function showRoleActions() {
             document.getElementById("no-button").style.display = "none";
 
             if (lobby.oracleAnswer.includes("go ahead")) {
-                makeCardsClickable("center");
+                makeCardsClickable("center", player, lobby, myIndex, players, yourRandomAction);
             }
             if (lobby.oracleAnswer.includes("ou may")) {
-                makeCardsClickable("center");
+                makeCardsClickable("center", player, lobby, myIndex, players, yourRandomAction);
             }
         }
         return;
@@ -198,7 +339,7 @@ function showRoleActions() {
         return;
     }
     if (players.find(p => p.startingRole === "Doppelganger") && players.find(p => p.startingRole === "Sentinel") &&
-        player.startingRole !== "Sentinel" && player.startingRole !== "Doppelganger") {
+        player.startingRole !== "Copycat" && player.startingRole !== "Sentinel" && player.startingRole !== "Doppelganger") {
         return;
     }
 
@@ -206,9 +347,7 @@ function showRoleActions() {
     const waitTime1 = (8 + Math.floor(Math.random() * 10)) + (lobby.selectedRoles.find(role => role.name === "Oracle") ? Math.floor(Math.random() * 10) : 0);
     const waitTime2 = (13 + Math.floor(Math.random() * 10)) + (lobby.selectedRoles.find(role => role.name === "Oracle") ? Math.floor(Math.random() * 10) : 0);
 
-    if (players.find(p => p.startingRole === "Copycat" || p.roleChain[0] === "Copycat" && p.selectedCards[0].role === "Doppelganger" && !p.hasCopiedRole || p.startingRole === "Doppelganger") ||
-        (lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Copycat") || lobby.cards.find(card => card.isMiddleCard && card.roleChain[0] === "Doppelganger")) &&
-        (length < players.length - 2 || lobby.nightTimer < waitTime1)) {
+    if (shouldWaitForCopycatAndDoppelganger(players, lobby, length, waitTime1)) {
         if (player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Cow" || player.startingRole === "Minion" ||
             player.startingRole === "Mason" || player.startingRole === "Apprentice Tanner") {
             if (!player.sawWaitMessage) {
@@ -218,22 +357,7 @@ function showRoleActions() {
         }
     }
 
-    function isUnusedSwapper(p) {
-        return !p.hasDoneNightAction && (p.startingRole === "Alpha Wolf" || p.startingRole === "Robber" || p.startingRole === "Witch" ||
-            p.startingRole === "Troublemaker" || p.startingRole === "Village Idiot" || p.startingRole === "Drunk");
-    }
-
-    function mustWait(p, role) {
-        return p.roleChain[0] === role || p.roleChain[0] === "Copycat" && p.selectedCards[0]?.role !== "Doppelganger" && p.startingRole === role;
-    }
-
-    if (players.find(p => p.startingRole === "Copycat" && centerCards.find(card => card.startingRole === "Sentinel" || card.startingRole === "Doppelganger" || card.startingRole === "Alpha Wolf") ||
-            p.roleChain[0] === "Copycat" && p.selectedCards[0]?.role === "Doppelganger" && isUnusedSwapper(p) ||
-            p.startingRole === "Doppelganger" || p.roleChain[0] === "Doppelganger" && isUnusedSwapper(p) && player.roleChain[0] !== "Doppelganger" ||
-            p.startingRole === "Alpha Wolf" && !p.hasDoneNightAction && (!player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Mystic Wolf" && player.hasMetWerewolves)) ||
-        lobby.cards.find(card => card.isMiddleCard && (card.roleChain[0] === "Doppelganger" ||
-            card.startingRole === "Alpha Wolf" && (!player.startingRole.toLowerCase().includes("wolf") || player.startingRole === "Mystic Wolf" && player.hasMetWerewolves))) &&
-        (length < players.length - 1 || lobby.nightTimer < waitTime2)) {
+    if (shouldWaitForAlphaWolfAndDoppelganger(players, centerCards, player, lobby, length, waitTime2)) {
         if (player.startingRole.toLowerCase().includes("wolf") || mustWait(player, "Mystic Wolf") || mustWait(player, "Seer") ||
             mustWait(player, "Apprentice Seer") || mustWait(player, "Paranormal Investigator") || mustWait(player, "Robber") ||
             mustWait(player, "Witch")) {
@@ -261,11 +385,11 @@ function showRoleActions() {
     // show night actions (buttons, cards selections, etc.)
 
     if (player.startingRole === "Sentinel") {
-        makeCardsClickable("players");
+        makeCardsClickable("players", player, lobby, myIndex, players, yourRandomAction);
     }
 
     if (isDoppelganger(player) && (player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf") && !player.hasDoneExtraWolfAction) {
-        makeCardsClickable("players");
+        makeCardsClickable("players", player, lobby, myIndex, players, yourRandomAction);
         if (player.startingRole === "Alpha Wolf") {
             document.getElementById("do-nothing-button").style.display = "none";
         }
@@ -302,12 +426,12 @@ function showRoleActions() {
         (player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf") && !player.hasDoneExtraWolfAction ||
         player.startingRole === "Witch" && player.didFirstPart ||
         player.startingRole === "Mortician" && !yourRandomAction?.action.includes("yourself")) {
-        makeCardsClickable("players");
+        makeCardsClickable("players", player, lobby, myIndex, players, yourRandomAction);
     }
 
     if (player.startingRole === "Copycat" || player.startingRole === "Seer" || player.startingRole === "Apprentice Seer" ||
         player.startingRole === "Witch" && !player.didFirstPart || player.startingRole === "Drunk" || player.startingRole === "Exposer") {
-        makeCardsClickable("center");
+        makeCardsClickable("center", player, lobby, myIndex, players, yourRandomAction);
     }
     if (player.startingRole === "Insomniac") {
         if (player.isSentinelled) {
@@ -361,101 +485,6 @@ function showRoleActions() {
         player.startingRole === "Alpha Wolf" && player.hasMetWerewolves || player.startingRole === "Witch" && player.didFirstPart ||
         player.startingRole === "Drunk" && !player.isSentinelled) {
         document.getElementById("do-nothing-button").style.display = "none";
-    }
-
-    function makeCardsClickable(type = "") {
-        if (!player.hasClickedConfirm) {
-            if (player.isSentinelled && (player.startingRole === "Robber" || player.startingRole === "Drunk")) {
-                document.getElementById("night-action-text").textContent = "There is a shield token on your card. Therefore you cannot perform your night action.";
-                document.getElementById("ok-button").style.display = "flex";
-                return;
-            }
-
-            const cards = lobby.cards.filter(card => !card.isMiddleCard && type === "players" && card.id !== myId || card.isMiddleCard && type === "center");
-            for (const card of cards) {
-                if (!card.isSentinelled) {
-                    getCardElement(card.id).style.cursor = "pointer";
-                }
-            }
-            if (player.startingRole === "Witch" && player.didFirstPart) {
-                getCardElement(myId).style.cursor = "pointer";
-            }
-
-            if (player.roleChain[0] === "Oracle") {
-                const oracleAction = lobby.randomActions.find(action => action.role === "Oracle").action;
-                if (oracleAction.includes("center card?")) {
-                    for (const card of cards) {
-                        if (lobby.oracleAnswer.includes("Ok Oracle, you may view the")) {
-                            if (card.name === "middle-card1" && !oracleAction.includes("left")) {
-                                getCardElement(card.id).style.cursor = "default";
-                            }
-                            if (card.name === "middle-card2" && !oracleAction.includes("middle")) {
-                                getCardElement(card.id).style.cursor = "default";
-                            }
-                            if (card.name === "middle-card3" && !oracleAction.includes("right")) {
-                                getCardElement(card.id).style.cursor = "default";
-                            }
-                        }
-                        if (lobby.oracleAnswer.includes("You may look at")) {
-                            if (card.name === "middle-card1" && oracleAction.includes("left")) {
-                                getCardElement(card.id).style.cursor = "default";
-                            }
-                            if (card.name === "middle-card2" && oracleAction.includes("middle")) {
-                                getCardElement(card.id).style.cursor = "default";
-                            }
-                            if (card.name === "middle-card3" && oracleAction.includes("right")) {
-                                getCardElement(card.id).style.cursor = "default";
-                            }
-                        }
-                    }
-                }
-            }
-
-            const leftNeighbor = players[(myIndex + 1) % players.length];
-            const rightNeighbor = players[(myIndex - 1 + players.length) % players.length];
-
-            if (player.startingRole === "Village Idiot" || player.startingRole === "Thing") {
-                for (const card of cards) {
-                    if (card.id !== leftNeighbor.id && card.id !== rightNeighbor.id) {
-                        getCardElement(card.id).style.cursor = "default";
-                    }
-                }
-            }
-            if (player.startingRole === "Mortician") {
-                for (const card of cards) {
-                    if (yourRandomAction?.action.includes("left") && card.id !== leftNeighbor.id ||
-                        yourRandomAction?.action.includes("right") && card.id !== rightNeighbor.id ||
-                        (yourRandomAction?.action.includes("one") || yourRandomAction?.action.includes("both")) && card.id !== leftNeighbor.id && card.id !== rightNeighbor.id) {
-                        getCardElement(card.id).style.cursor = "default";
-                    }
-                }
-            }
-            if (document.getElementById("cards").querySelectorAll(".selected-card").length === 0) {
-                document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
-                if (player.roleChain[0] === "Oracle") {
-                    if (!lobby.oracleAnswer.includes("now a Werewolf card")) {
-                        document.getElementById("night-action-text").textContent = lobby.oracleAnswer;
-                    }
-                }
-                if (player.startingRole === "Paranormal Investigator" && player.didFirstPart) {
-                    document.getElementById("night-action-text").textContent = "Now you may view 1 more player's card.";
-                }
-                if (player.startingRole === "Witch" && player.didFirstPart) {
-                    document.getElementById("night-action-text").textContent = "You now must swap " + player.selectedCards.at(-1).name + " with any player.";
-                }
-                if (player.startingRole === "Mortician") {
-                    document.getElementById("night-action-text").textContent = lobby.randomActions.find(action => action.role === "Mortician").action;
-
-                    if (isDoppelganger(player)) {
-                        document.getElementById("night-action-text").textContent = lobby.randomActions.find(action => action.role === "Doppelganger-Mortician").action;
-                    }
-                }
-                document.getElementById("do-nothing-button").style.display = "flex";
-                if (player.roleChain[0] === "Oracle" && !lobby.randomActions.find(action => action.role === "Oracle").action.includes("Would you like to view")) {
-                    document.getElementById("do-nothing-button").style.display = "none";
-                }
-            }
-        }
     }
 }
 
