@@ -432,6 +432,12 @@ body {
                 input {
                     border-radius: 10px;
                 }
+
+                @media (max-width: 600px) {
+                    position: static;
+                    transform: none;
+                    margin: 10px auto;
+                }
             }
 
             #edition-filters {
@@ -707,6 +713,7 @@ body {
             background: rgba(0, 0, 0, 0.6);
             border: 2px solid #34495e;
             border-radius: 10px;
+            box-sizing: border-box;
             display: none;
             flex-direction: column;
             margin: 10px auto;
@@ -718,8 +725,7 @@ body {
 
             @media (max-width: 500px) {
                 bottom: -22.5%;
-                left: 27.5%;
-                transform: translateX(-50%);
+                right: 10%;
                 width: 200px;
                 height: 100px;
             }

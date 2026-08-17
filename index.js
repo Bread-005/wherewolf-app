@@ -5,7 +5,7 @@ import {
 } from "./functions.js";
 import {showVoteResults, showVoteResultBoard} from "./voteResults.js";
 import {setupTokens} from "./tokens.js";
-import {sendMessage, receiveMessage, loadMessages, sendConsoleMessage} from "./chat.js";
+import {sendMessage, receiveMessage, loadMessages, sendConsoleMessage, setupChatBoxInteractions} from "./chat.js";
 import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 import {buildGameSummary} from "./gameSummary.js";
 import {setupRoleSelection, updateSelectedRoles,} from "./selectRoles.js";
@@ -308,34 +308,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     setupRoleSelection();
-
-    document.getElementById("resize-handle").addEventListener("mousedown", (e) => {
-        e.preventDefault();
-
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startWidth = document.getElementById("chat-container").offsetWidth;
-        const startHeight = document.getElementById("chat-container").offsetHeight;
-
-        function doDrag(e) {
-            const deltaX = startX - e.clientX;
-            const deltaY = startY - e.clientY;
-
-            document.getElementById("chat-container").style.width = (startWidth + deltaX) + "px";
-            document.getElementById("chat-container").style.height = (startHeight + deltaY) + "px";
-        }
-
-        function stopDrag() {
-            document.documentElement.removeEventListener("mousemove", doDrag);
-            document.documentElement.removeEventListener("mouseup", stopDrag);
-        }
-        document.documentElement.addEventListener("mousemove", doDrag);
-        document.documentElement.addEventListener("mouseup", stopDrag);
-    });
-
-    document.getElementById("chat-container").addEventListener("click", () => {
-        document.getElementById("chat-input").focus();
-    });
+    setupChatBoxInteractions();
 
     socket.on("update-selected-roles", (lobby) => {
         updateSelectedRoles(lobby);
