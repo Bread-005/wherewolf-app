@@ -112,10 +112,22 @@ button {
     top: 5%;
     left: 2.5%;
     padding: 4px;
+
+    @media (max-width: 600px) {
+        top: 2%;
+        left: 2%;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
 }
 
 .join-lobby-button {
     padding: 5px 10px;
+
+    @media (max-width: 600px) {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
 }
 
 #create-lobby-button {
@@ -123,6 +135,12 @@ button {
     bottom: 10%;
     left: 50%;
     transform: translateX(-50%);
+
+    @media (max-width: 600px) {
+        padding: 10px 20px;
+        font-size: 1rem;
+        white-space: nowrap;
+    }
 }
 
 #leave-game-button {

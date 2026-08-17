@@ -107,6 +107,35 @@ body {
                 margin-bottom: 0;
             }
         }
+
+        @media (max-width: 600px) {
+            h2 {
+                font-size: 1.2rem;
+                margin-top: 45px;
+            }
+
+            #enter-name-input {
+                padding: 5px;
+                font-size: 0.9rem;
+                width: 40vw;
+            }
+
+            #lobby {
+                font-size: 0.9rem;
+                gap: 10px;
+                padding: 10px;
+            }
+
+            #discord-link {
+                font-size: 1rem;
+                bottom: 3%;
+                right: 3%;
+            }
+
+            #how-to-play-container i {
+                scale: 1.8;
+            }
+        }
     }
 
     #game {
@@ -934,6 +963,10 @@ body {
         color: yellow;
         cursor: help;
         z-index: 1000;
+
+        @media (max-width: 600px) {
+            font-size: 1.8rem;
+        }
 
         #game-rules-popup {
             display: none;
