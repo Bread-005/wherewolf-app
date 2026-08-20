@@ -67,13 +67,13 @@ function setupDragAndDrop(token) {
     let isDragging = false;
     let offsetX, offsetY;
 
-    token.addEventListener("mousedown", (event) => {
+    function startDrag(clientX, clientY) {
         isDragging = true;
 
         const rect = token.getBoundingClientRect();
 
-        offsetX = event.clientX - rect.left;
-        offsetY = event.clientY - rect.top;
+        offsetX = clientX - rect.left;
+        offsetY = clientY - rect.top;
 
         if (!token.classList.contains("dragging")) {
             token.style.left = rect.left + "px";
@@ -82,13 +82,13 @@ function setupDragAndDrop(token) {
             document.body.append(token);
             token.classList.add("dragging");
         }
-    });
+    }
 
-    document.addEventListener("mousemove", (event) => {
+    function moveDrag(clientX, clientY) {
         if (!isDragging) { return; }
 
-        let x = event.clientX - offsetX;
-        let y = event.clientY - offsetY;
+        let x = clientX - offsetX;
+        let y = clientY - offsetY;
 
         const minX = 0;
         const minY = 0;
@@ -100,12 +100,35 @@ function setupDragAndDrop(token) {
 
         token.style.left = x + "px";
         token.style.top = y + "px";
-    });
+    }
 
-    document.addEventListener("mouseup", () => {
+    function stopDrag() {
         isDragging = false;
         token.style.zIndex = "1400";
+    }
+
+    token.addEventListener("mousedown", (event) => {
+        startDrag(event.clientX, event.clientY);
     });
+
+    document.addEventListener("mousemove", (event) => {
+        moveDrag(event.clientX, event.clientY);
+    });
+
+    document.addEventListener("mouseup", stopDrag);
+
+    token.addEventListener("touchstart", (event) => {
+        event.preventDefault();
+        startDrag(event.touches[0].clientX, event.touches[0].clientY);
+    }, {passive: false});
+
+    document.addEventListener("touchmove", (event) => {
+        if (!isDragging) { return; }
+        event.preventDefault();
+        moveDrag(event.touches[0].clientX, event.touches[0].clientY);
+    }, {passive: false});
+
+    document.addEventListener("touchend", stopDrag);
 }
 
 function setupTokenHint(token) {
