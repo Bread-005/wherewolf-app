@@ -604,14 +604,31 @@ body {
             top: 0;
             left: 50%;
             transform: translateX(-50%);
+
+            @media (max-width: 600px) {
+                width: 90%;
+                margin: 0;
+                justify-content: center;
+                text-align: center;
+                font-size: 0.85rem;
+                line-height: 1.2;
+            }
         }
 
         #display-text-2 {
             top: 5%;
+
+            @media (max-width: 600px) {
+                top: 7%;
+            }
         }
 
         #display-text-3 {
             top: 10%;
+
+            @media (max-width: 600px) {
+                top: 11%;
+            }
         }
 
         #night-action-text {
@@ -622,6 +639,16 @@ body {
             transform: translateX(-50%);
             white-space: pre-line;
             text-align: center;
+
+            @media (max-width: 600px) {
+                top: 18%;
+                font-size: 0.85rem;
+            }
+
+            @media (max-width: 500px) {
+                top: 16%;
+                font-size: 0.7rem;
+            }
         }
 
         #game-buttons {
@@ -633,6 +660,14 @@ body {
             justify-content: center;
             align-items: center;
             gap: 10px;
+
+            @media (max-width: 600px) {
+                top: 25%;
+            }
+
+            @media (max-width: 500px) {
+                top: 23%;
+            }
 
             #continue-button, #ok-button, #do-nothing-button, #confirm-button, #confirm-waiting-button, #confirm-seen-button, #yes-button, #no-button {
                 display: none;
@@ -662,6 +697,16 @@ body {
                     transform: scale(0.98);
                     box-shadow: 0 0 5px #ffcc33, inset 0 0 15px rgba(0,0,0,0.8);
                 }
+
+                @media (max-width: 600px) {
+                    padding: 8px 20px;
+                    font-size: 0.9rem;
+                }
+
+                @media (max-width: 500px) {
+                    padding: 6px 14px;
+                    font-size: 0.75rem;
+                }
             }
 
             #do-nothing-button {
@@ -677,6 +722,14 @@ body {
                     background: #3e3e4a;
                     color: #bdc3c7;
                     border-color: #333;
+                }
+
+                @media (max-width: 600px) {
+                    padding: 6px 16px;
+                }
+
+                @media (max-width: 500px) {
+                    padding: 5px 12px;
                 }
             }
         }
@@ -797,6 +850,10 @@ body {
             align-items: center;
             border-radius: 8px;
 
+            @media (max-width: 600px) {
+                width: 90%;
+            }
+
             .dynamic-result {
                 white-space: nowrap;
                 overflow: hidden;
@@ -824,6 +881,24 @@ body {
 
             p {
                 font-size: 1.2rem;
+            }
+
+            @media (max-width: 600px) {
+                top: auto;
+                bottom: 0;
+                left: auto;
+                right: -2.5%;
+                transform: none;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 4px;
+                max-width: 45%;
+
+                p {
+                    font-size: 0.75rem;
+                    text-align: right;
+                    margin: 0;
+                }
             }
         }
 
@@ -968,7 +1043,7 @@ body {
         font-size: 1.5rem;
         color: yellow;
         cursor: help;
-        z-index: 1000;
+        z-index: 999;
 
         @media (max-width: 600px) {
             font-size: 1.8rem;

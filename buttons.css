@@ -201,6 +201,10 @@ button {
     position: absolute;
     bottom: -15%;
     right: 0;
+
+    @media (max-width: 600px) {
+        right: -2.5%;
+    }
 }
 
 #show-roles-button {
@@ -209,6 +213,11 @@ button {
     bottom: -7.5%;
     right: -2.5%;
     transform: translateX(-50%);
+
+    @media (max-width: 600px) {
+        right: -2.5%;
+        transform: none;
+    }
 }
 
 #go-back-button {
