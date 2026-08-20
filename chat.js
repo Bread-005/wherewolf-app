@@ -79,6 +79,12 @@ function startChatResize(startX, startY) {
     const fixedRight = chatRect.right;
     const fixedBottom = chatRect.bottom;
 
+    // #chat-container has "margin: 10px auto" for its default centered/anchored CSS
+    // position. As soon as top/left are set explicitly (right/bottom "auto"), the browser
+    // still adds margin-top on top of the computed "top" value, shifting the box further
+    // down than intended. Clearing the margin once we take over positioning avoids that.
+    chatContainer.style.margin = "0";
+
     function doDrag(currentX, currentY) {
         const deltaX = startX - currentX;
         const deltaY = startY - currentY;
@@ -155,6 +161,7 @@ function startChatMove(startClientX, startClientY) {
     const maxViewportLeft = document.documentElement.clientWidth - chatRect.width;
     const maxViewportTop = document.documentElement.clientHeight - chatRect.height;
 
+    chatContainer.style.margin = "0";
     chatContainer.style.left = startLeft + "px";
     chatContainer.style.top = startTop + "px";
     chatContainer.style.right = "auto";

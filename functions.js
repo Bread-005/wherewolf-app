@@ -22,12 +22,39 @@ function showErrorPopup(message) {
     }, 5000);
 }
 
+/**
+ * Returns the horizontal spacing (in % of #game's width) to use between center cards,
+ * matching the .center-card width set for the current viewport's media breakpoint.
+ * A fixed step would overlap on narrow viewports once the card width exceeds the step's
+ * pixel equivalent of #game's width (90vw).
+ * @returns {number}
+ */
+function getCenterCardHorizontalStep() {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 500) {
+        return 21;
+    }
+    if (viewportWidth <= 600) {
+        return 16;
+    }
+    if (viewportWidth <= 800) {
+        return 15;
+    }
+    if (viewportWidth <= 1000) {
+        return 14;
+    }
+    return 12;
+}
+
 function displayCards(lobby) {
     const players = lobby.cards.filter(card => !card.isMiddleCard);
+    const centerCardsCount = lobby.cards.filter(card => card.isMiddleCard && card.name !== "middle-card4").length;
+    const centerCardStep = getCenterCardHorizontalStep();
     const cardsContainer = document.getElementById("cards");
     cardsContainer.innerHTML = "";
 
-    lobby.cards.forEach((card1, index) => {
+    let centerCardIndex = 0;
+    lobby.cards.forEach((card1) => {
         const card = document.createElement("div");
         card.id = "card" + card1.id;
         if (!card1.isMiddleCard) {
@@ -40,12 +67,16 @@ function displayCards(lobby) {
 
         if (card1.isMiddleCard) {
             card.className = "center-card";
-            card.style.left = (34 + (index * 12)) + "%";
 
             if (card1.name === "middle-card4") {
                 card.style.top = "45%";
                 card.style.left = "50%";
                 card.style.transform = "translate(-50%, -50%) rotate(-90deg)";
+            } else {
+                const offsetFromCenter = (centerCardIndex - (centerCardsCount - 1) / 2) * centerCardStep;
+                card.style.left = (50 + offsetFromCenter) + "%";
+                card.style.transform = "translate(-50%, -50%)";
+                centerCardIndex++;
             }
         }
 
@@ -312,6 +343,10 @@ function animateCardSwap(cards, text = "", duration = 2000) {
                 currentElement.style.transform = "";
                 if (cards[i].name === "middle-card4") {
                     currentElement.style.transform = "translate(-50%, -50%) rotate(-90deg)";
+                } else if (cards[i].isMiddleCard) {
+                    // center cards are horizontally centered via an inline transform (see displayCards),
+                    // which gets wiped by the reset above and must be reapplied.
+                    currentElement.style.transform = "translate(-50%, -50%)";
                 }
                 currentElement.classList.remove("selected-card");
 
