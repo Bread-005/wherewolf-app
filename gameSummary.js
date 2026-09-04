@@ -194,6 +194,45 @@ function buildGameSummary(lobby) {
             });
         }
 
+        if (role.name === "Squire") {
+            const werewolves = cards.filter(p => !p.name.includes("middle-card") && p.beginningRole.toLowerCase().includes("wolf"));
+            actionText.textContent = "saw";
+            if (werewolves.length === 0) {
+                actionText.textContent += " no werewolves";
+            }
+
+            werewolves.forEach((werewolf, index) => {
+                targetsContainer.append(createSummaryCard(werewolf.name, werewolf.role));
+
+                if (index < werewolves.length - 1) {
+                    const andText = document.createElement("span");
+                    andText.className = "summary-and-text";
+                    andText.textContent = "and";
+                    targetsContainer.append(andText);
+                }
+            });
+        }
+
+        if (role.name === "Beholder") {
+            const seerPlayers = cards.filter(p => !p.name.includes("middle-card") &&
+                (p.beginningRole === "Seer" || p.beginningRole === "Apprentice Seer"));
+            actionText.textContent = "saw";
+            if (seerPlayers.length === 0) {
+                actionText.textContent += " no Seer or Apprentice Seer";
+            }
+
+            seerPlayers.forEach((seerPlayer, index) => {
+                targetsContainer.append(createSummaryCard(seerPlayer.name, seerPlayer.role));
+
+                if (index < seerPlayers.length - 1) {
+                    const andText = document.createElement("span");
+                    andText.className = "summary-and-text";
+                    andText.textContent = "and";
+                    targetsContainer.append(andText);
+                }
+            });
+        }
+
         if (player.selectedCards.length > 0) {
             if (role.name !== "Copycat" && role.name !== "Werewolf" && role.name !== "Village Idiot") {
                 if ((role.name === "Seer" || role.name === "Doppelganger" && player.doppelgangerCopy === "Seer") &&
