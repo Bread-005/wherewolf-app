@@ -6,7 +6,7 @@ import {fileURLToPath} from "url";
 import path from "path";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
-const rolesFilePath = path.join(currentDirectory, "..", "roles.json");
+const rolesFilePath = path.join(currentDirectory, "roles.json");
 
 const connectionString = "mongodb+srv://" + process.env.DATABASE_USERNAME + ":" + process.env.DATABASE_PASSWORD + "@cluster0.rwh4ibp.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(connectionString);

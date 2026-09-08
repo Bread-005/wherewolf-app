@@ -11,8 +11,8 @@ The game logic runs on a backend server (Socket.IO), deployed at `https://wherew
 ## Repository Structure
 
 ```
-index.html, wiki.html, roles.json, js/, css/, assets/, images/   # frontend — see below
-backend/                                                          # backend — see below
+index.html, wiki.html, js/, css/, assets/, images/   # frontend — see below
+backend/                                             # backend — see below (also holds roles.json)
 ```
 
 ## Frontend Structure
@@ -20,7 +20,6 @@ backend/                                                          # backend — 
 ```
 index.html        # Main game view — all game UI lives in a single HTML file
 wiki.html         # Role wiki/reference page
-roles.json        # Role metadata: name, edition, image path, description text
 js/
   index.js          # Entry point: Socket.IO wiring, lobby state reactions
   functions.js      # DOM helpers: card rendering, UI updates, toast popups, token display
@@ -68,12 +67,12 @@ Each state branch in `index.js` shows/hides DOM elements and calls helpers from 
 - **`chat.js`** — sends and renders chat/console messages; emits to the server via `socket` imported from `index.js`.
 - **`tokens.js`** — renders draggable role tokens into the tokens container during the day phase, ordered by `nightOrder` from `allRoles`.
 - **`voteResults.js`** — reveals role cards and renders the vote result board after voting ends.
-- **`roles.json`** — the single source of truth for role metadata on the client. Each entry has `name`, `edition`, `image`, `text` (short description), and `id`.
+- **`backend/roles.json`** — the single source of truth for role metadata, shared by frontend and backend. Each entry has `name`, `edition`, `image`, `text` (short description), and `id`. The frontend fetches it from the backend (`../backend/roles.json` from `js/index.js` and `js/wiki.js`); the backend reads it from disk in `database.js`.
 
 ### Adding a New Role (Frontend)
 
 1. Add a PNG to `images/` — filename must be `rolename_with_underscores.png` (lowercase).
-2. Add an entry to `roles.json` with `name`, `edition`, `image`, and `text`.
+2. Add an entry to `backend/roles.json` with `name`, `edition`, `image`, and `text`.
 3. If the role requires a unique night action UI, add a handler in `roleActions.js`.
 
 ## Backend
@@ -112,7 +111,7 @@ Express + Socket.IO server. All game logic lives here as Socket.IO event handler
 
 #### `backend/database.js`
 - Connects to MongoDB Atlas (`Wherewolf` database, `games` collection) on startup.
-- Reads role definitions from the local `roles.json` at repository root on startup and passes them to `server.js` via `setAllRoles`.
+- Reads role definitions from the local `roles.json` in `backend/` on startup and passes them to `server.js` via `setAllRoles`.
 - `saveGameToDatabase` is called once per completed game (skipped in test mode).
 
 #### `backend/votingResults.js`

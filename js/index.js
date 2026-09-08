@@ -20,7 +20,7 @@ const socket = io("https://wherewolf-server-bhut.onrender.com", {
 
 document.addEventListener("DOMContentLoaded", async () => {
     let lobby = {};
-    allRoles = await fetch("./roles.json").then(res => res.json());
+    allRoles = await fetch("../backend/roles.json").then(res => res.json());
     document.getElementById("lobby-page").style.display = "flex";
     document.getElementById("game").style.display = "none";
 
