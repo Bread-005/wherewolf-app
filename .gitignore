@@ -1,3 +1,7 @@
 .idea/
 **/.DS_Store
 copyOfRoleDescriptions.js
+backend/node_modules/
+backend/.dockerignore
+backend/Dockerfile
+backend/package-lock.json

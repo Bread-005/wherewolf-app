@@ -6,7 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Wherewolf is a browser-based companion app for the "One Night Ultimate Werewolf" board game. Players join lobbies, receive hidden role cards, perform night actions, discuss, and vote — without a human moderator. There is no build step; all frontend code is plain HTML/CSS/JavaScript (ES modules) served statically.
 
-The game logic runs on a separate backend server (Socket.IO at `https://wherewolf-server-bhut.onrender.com`). The `Game_Code/` directory contains that server-side code and is out of scope for frontend work.
+The game logic runs on a backend server (Socket.IO), deployed at `https://wherewolf-server-bhut.onrender.com`. Frontend and backend live together in this repository — the `backend/` directory contains the server-side code.
+
+## Repository Structure
+
+```
+index.html, wiki.html, roles.json, js/, css/, assets/, images/   # frontend — see below
+backend/                                                          # backend — see below
+```
 
 ## Frontend Structure
 
@@ -68,3 +75,68 @@ Each state branch in `index.js` shows/hides DOM elements and calls helpers from 
 1. Add a PNG to `images/` — filename must be `rolename_with_underscores.png` (lowercase).
 2. Add an entry to `roles.json` with `name`, `edition`, `image`, and `text`.
 3. If the role requires a unique night action UI, add a handler in `roleActions.js`.
+
+## Backend
+
+### Commands
+
+All commands must be run inside the Docker container — never directly on the host.
+
+```bash
+# Build the image
+docker build -t wherewolf-server backend/
+
+# Run (requires env vars for MongoDB Atlas)
+docker run -p 3003:3003 \
+  -e DATABASE_USERNAME=<user> \
+  -e DATABASE_PASSWORD=<pass> \
+  wherewolf-server
+```
+
+The server starts with `npm start` → `node server.js` and listens on port 3003.
+
+### Environment Variables
+
+| Variable            | Purpose                        |
+|---------------------|--------------------------------|
+| `DATABASE_USERNAME` | MongoDB Atlas username         |
+| `DATABASE_PASSWORD` | MongoDB Atlas password         |
+
+### Backend Architecture
+
+Three source files under `backend/`, no build step, ES modules (`"type": "module"`).
+
+#### `backend/server.js`
+Express + Socket.IO server. All game logic lives here as Socket.IO event handlers attached to each client connection. Lobbies are stored in-memory in a module-level `lobbies` array — there is no persistence between server restarts (only completed games are saved to MongoDB).
+
+#### `backend/database.js`
+- Connects to MongoDB Atlas (`Wherewolf` database, `games` collection) on startup.
+- Fetches the role definitions from `roles.json` in this repository and passes them to `server.js` via `setAllRoles`.
+- `saveGameToDatabase` is called once per completed game (skipped in test mode).
+
+#### `backend/votingResults.js`
+Pure function `evaluateVotingResults(lobby, players)` — no I/O. Mutates `lobby.winningTeam`, `lobby.voteResultText`, and `player.dies` based on vote counts and role effects.
+
+### Key Data Structures
+
+**Lobby** — `{ id, name, cards[], state, selectedRoles[], pendingSwaps[], discussTime, randomActions[], oracleAnswer, ... }`
+
+**Card** — represents either a player or a middle card (`isMiddleCard: true`). Tracks the full role history in `roleChain[]` (index 0 = starting role, last = current role), night-action flags, vote, etc.
+
+### Game State Machine
+
+```
+waiting → select-roles → look-at-role → night → day → voting → voting-results
+```
+
+- The night cycle runs as a `setInterval` on the server, advancing once all players have acted and all `randomActions` have been acknowledged.
+- Card swaps (Robber, Troublemaker, etc.) are queued in `lobby.pendingSwaps` during the night and executed in priority order when early-acting roles finish.
+- `middle-card4` is a special extra middle card used only when Alpha Wolf is selected.
+
+### Test Mode
+
+If a lobby contains players named exactly `Bread1`, `Bread2`, and `Bread3`, `isTesting()` returns `true`. Test mode shortens discussion time to 5 s and skips the MongoDB write.
+
+### Adding a New Role (Backend)
+
+Implement the role's night action and win-condition effects directly in `backend/server.js` (action handling) and `backend/votingResults.js` (if it affects vote outcomes or win conditions).
