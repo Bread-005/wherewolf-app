@@ -13,20 +13,22 @@ The game logic runs on a separate backend server (Socket.IO at `https://wherewol
 ```
 index.html        # Main game view — all game UI lives in a single HTML file
 wiki.html         # Role wiki/reference page
-index.js          # Entry point: Socket.IO wiring, lobby state reactions
-functions.js      # DOM helpers: card rendering, UI updates, toast popups, token display
-roleActions.js    # Night action UI handling: which buttons/cards to show per role
-selectRoles.js    # Role selection screen logic (host-only controls)
-CardClickEvent.js # Card click interactions during night and voting phases
-gameSummary.js    # End-of-game log/summary overlay
-chat.js           # Chat message sending/receiving
-tokens.js         # Draggable role token rendering for the day phase
-voteResults.js    # Vote result board and role reveal
-lobby.js          # Lobby lookup helpers (current lobby, players, own card)
-wiki.js           # Wiki page population from roles.json
 roles.json        # Role metadata: name, edition, image path, description text
-style.css         # Main styles
-buttons.css       # Button component styles
+js/
+  index.js          # Entry point: Socket.IO wiring, lobby state reactions
+  functions.js      # DOM helpers: card rendering, UI updates, toast popups, token display
+  roleActions.js    # Night action UI handling: which buttons/cards to show per role
+  selectRoles.js    # Role selection screen logic (host-only controls)
+  CardClickEvent.js # Card click interactions during night and voting phases
+  gameSummary.js    # End-of-game log/summary overlay
+  chat.js           # Chat message sending/receiving
+  tokens.js         # Draggable role token rendering for the day phase
+  voteResults.js    # Vote result board and role reveal
+  lobby.js          # Lobby lookup helpers (current lobby, players, own card)
+  wiki.js           # Wiki page population from roles.json
+css/
+  style.css         # Main styles
+  buttons.css       # Button component styles
 assets/           # Background images, card backs, mark/token images
 images/           # Role card images (one PNG per role, snake_case filename)
 ```
