@@ -97,10 +97,11 @@ The server starts with `npm start` → `node server.js` and listens on port 3003
 
 ### Environment Variables
 
-| Variable            | Purpose                        |
-|---------------------|--------------------------------|
-| `DATABASE_USERNAME` | MongoDB Atlas username         |
-| `DATABASE_PASSWORD` | MongoDB Atlas password         |
+| Variable            | Purpose                                |
+|---------------------|-----------------------------------------|
+| `DATABASE_USERNAME` | MongoDB Atlas username                  |
+| `DATABASE_PASSWORD` | MongoDB Atlas password                  |
+| `PORT`              | Server port (optional, defaults to 3003) |
 
 ### Backend Architecture
 
@@ -111,7 +112,7 @@ Express + Socket.IO server. All game logic lives here as Socket.IO event handler
 
 #### `backend/database.js`
 - Connects to MongoDB Atlas (`Wherewolf` database, `games` collection) on startup.
-- Fetches the role definitions from `roles.json` in this repository and passes them to `server.js` via `setAllRoles`.
+- Reads role definitions from the local `roles.json` at repository root on startup and passes them to `server.js` via `setAllRoles`.
 - `saveGameToDatabase` is called once per completed game (skipped in test mode).
 
 #### `backend/votingResults.js`

@@ -1,6 +1,12 @@
 import {setAllRoles} from "./server.js";
 import "dotenv/config";
 import {MongoClient} from "mongodb";
+import {readFile} from "fs/promises";
+import {fileURLToPath} from "url";
+import path from "path";
+
+const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
+const rolesFilePath = path.join(currentDirectory, "..", "roles.json");
 
 const connectionString = "mongodb+srv://" + process.env.DATABASE_USERNAME + ":" + process.env.DATABASE_PASSWORD + "@cluster0.rwh4ibp.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(connectionString);
@@ -10,7 +16,7 @@ async function connectDatabase() {
     try {
         await client.connect();
         database = client.db("Wherewolf");
-        setAllRoles(await fetch("https://raw.githubusercontent.com/Bread-005/wherewolf-app/main/roles.json").then(res => res.json()));
+        setAllRoles(JSON.parse(await readFile(rolesFilePath, "utf-8")));
         console.log("MongoDB connected");
     }
     catch (error) {
