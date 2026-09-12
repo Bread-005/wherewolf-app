@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
-    const roles = await fetch("../backend/roles.json").then(res => res.json());
+    const roles = await fetch("https://wherewolf-server-bhut.onrender.com/roles.json").then(res => res.json());
 
     for (const role of roles) {
         if (role.name.toLowerCase().includes("random")) {

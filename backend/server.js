@@ -19,6 +19,10 @@ const io = new Server(server, {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+app.use((request, response, next) => {
+    response.header("Access-Control-Allow-Origin", "https://bread-005.github.io");
+    next();
+});
 app.use(express.static(__dirname));
 
 let lobbies = [];
