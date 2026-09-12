@@ -9,171 +9,171 @@
     <link rel="stylesheet" crossorigin="anonymous" href="https://core.ontavio.de/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
-<div id="lobby-page">
-    <button id="go-to-wiki-button" class="button-primary" onclick='window.location = "wiki.html"'>go to wiki</button>
+    <div id="lobby-page">
+        <button id="go-to-wiki-button" class="button-primary" onclick='window.location = "wiki.html"'>go to wiki</button>
 
-    <h2 style="margin-bottom: 25px">Wherewolf App</h2>
+        <h2 style="margin-bottom: 25px">Wherewolf App</h2>
 
-    <label>Enter Name
-        <input id="enter-name-input" maxlength="15">
-    </label>
+        <label>Enter Name
+            <input id="enter-name-input" maxlength="15">
+        </label>
 
-    <div id="lobby"></div>
+        <div id="lobby"></div>
 
-    <button id="create-lobby-button" class="button-primary">Create Lobby</button>
+        <button id="create-lobby-button" class="button-primary">Create Lobby</button>
 
-    <div id="discord-link">
-        <a href="https://discord.gg/JQFPVur48" target="_blank">
-            <i class="fa-brands fa-discord"></i> Join our Discord
-        </a>
-    </div>
-    <div id="loading-screen">
-        <div class="loader-content">
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            <p>Connecting to Server...</p>
+        <div id="discord-link">
+            <a href="https://discord.gg/JQFPVur48" target="_blank">
+                <i class="fa-brands fa-discord"></i> Join our Discord
+            </a>
         </div>
-    </div>
-    <div id="how-to-play-container">
-        <div id="how-to-play-text">
-            <p>
-                Each player gets a hidden role card, while three additional cards are placed face-down in the center of the table.
-                After everyone has secretly looked at their own role, the night phase begins.
-                The most important rule to remember is: One Night, One Day.
-                Unlike other social deduction games, there is only one single night and one single day.
-                Nobody is eliminated until the very end.
-            </p>
-            <p>
-                During the night, the Werewolves wake up to identify each other, and most Villager roles perform a special action.
-                For example, the Troublemaker may swap the cards of two other players without them knowing.
-            </p>
-            <p>
-                When everyone has finished their night actions, all players wake up.
-                It is now day.
-                Players discuss who they are, what they did, and who might be a Werewolf.
-                This is the heart of the game: Villagers try to find a Werewolf, while the Werewolves lie about their identity to stay hidden.
-            </p>
-            <p>
-                When the day ends, everyone votes for another player.
-                The player with the most votes dies. If at least one Werewolf dies, the Villagers win.
-                If all Werewolves survive, the Werewolf team wins.
-                Since a round usually takes only 5 to 15 minutes, there is always enough time for another game!
-            </p>
-        </div>
-        <div>How to Play:</div>
-        <i id="how-to-play-icon" class="fa-solid fa-circle-info"></i>
-    </div>
-</div>
-
-<div id="game">
-    <div id="host-admin-area">
-        <button id="open-kick-menu-button" class="admin-main-button">
-            <i class="fa-solid fa-user-slash"></i> Kick Players
-        </button>
-
-        <div id="kick-menu-overlay">
-            <div id="kick-menu-content">
-                <div class="kick-menu-header">
-                    <span>Manage Players</span>
-                </div>
-                <div id="kick-list"></div>
+        <div id="loading-screen">
+            <div class="loader-content">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Connecting to Server...</p>
             </div>
         </div>
+        <div id="how-to-play-container">
+            <div id="how-to-play-text">
+                <p>
+                    Each player gets a hidden role card, while three additional cards are placed face-down in the center of the table.
+                    After everyone has secretly looked at their own role, the night phase begins.
+                    The most important rule to remember is: One Night, One Day.
+                    Unlike other social deduction games, there is only one single night and one single day.
+                    Nobody is eliminated until the very end.
+                </p>
+                <p>
+                    During the night, the Werewolves wake up to identify each other, and most Villager roles perform a special action.
+                    For example, the Troublemaker may swap the cards of two other players without them knowing.
+                </p>
+                <p>
+                    When everyone has finished their night actions, all players wake up.
+                    It is now day.
+                    Players discuss who they are, what they did, and who might be a Werewolf.
+                    This is the heart of the game: Villagers try to find a Werewolf, while the Werewolves lie about their identity to stay hidden.
+                </p>
+                <p>
+                    When the day ends, everyone votes for another player.
+                    The player with the most votes dies. If at least one Werewolf dies, the Villagers win.
+                    If all Werewolves survive, the Werewolf team wins.
+                    Since a round usually takes only 5 to 15 minutes, there is always enough time for another game!
+                </p>
+            </div>
+            <div>How to Play:</div>
+            <i id="how-to-play-icon" class="fa-solid fa-circle-info"></i>
+        </div>
     </div>
-    <div id="cards"></div>
-    <button id="select-roles-button" class="button-primary">Select Roles</button>
-    <div id="select-roles-screen">
-        <div>
-            <h2>Role Selection</h2>
-            <div class="discuss-time">
-                <label id="discuss-time-label" for="discuss-time-input">Discussion Time:</label>
-                <div id="discuss-time-private">
-                    <input id="discuss-time-input" type="number">
-                    <button id="discuss-time-save-button" class="button-primary">Save</button>
+
+    <div id="game">
+        <div id="host-admin-area">
+            <button id="open-kick-menu-button" class="admin-main-button">
+                <i class="fa-solid fa-user-slash"></i> Kick Players
+            </button>
+
+            <div id="kick-menu-overlay">
+                <div id="kick-menu-content">
+                    <div class="kick-menu-header">
+                        <span>Manage Players</span>
+                    </div>
+                    <div id="kick-list"></div>
                 </div>
             </div>
-            <h3 id="role-count-display"></h3>
-            <div id="edition-filters">
-                <label><input type="checkbox" value="base game"> <span>Base Game</span></label>
-                <label><input type="checkbox" value="daybreak"> <span>Daybreak</span></label>
-                <label><input type="checkbox" value="vampire"> <span>Vampire</span></label>
-                <label><input type="checkbox" value="alien"> <span>Alien</span></label>
-                <label><input type="checkbox" value="bonus"> <span>Bonus Pack</span></label>
-                <label><input type="checkbox" value="custom"> <span>Custom</span></label>
-                <label><input type="checkbox" value="random"> <span>Random</span></label>
+        </div>
+        <div id="cards"></div>
+        <button id="select-roles-button" class="button-primary">Select Roles</button>
+        <div id="select-roles-screen">
+            <div>
+                <h2>Role Selection</h2>
+                <div class="discuss-time">
+                    <label id="discuss-time-label" for="discuss-time-input">Discussion Time:</label>
+                    <div id="discuss-time-private">
+                        <input id="discuss-time-input" type="number">
+                        <button id="discuss-time-save-button" class="button-primary">Save</button>
+                    </div>
+                </div>
+                <h3 id="role-count-display"></h3>
+                <div id="edition-filters">
+                    <label><input type="checkbox" value="base game"> <span>Base Game</span></label>
+                    <label><input type="checkbox" value="daybreak"> <span>Daybreak</span></label>
+                    <label><input type="checkbox" value="vampire"> <span>Vampire</span></label>
+                    <label><input type="checkbox" value="alien"> <span>Alien</span></label>
+                    <label><input type="checkbox" value="bonus"> <span>Bonus Pack</span></label>
+                    <label><input type="checkbox" value="custom"> <span>Custom</span></label>
+                    <label><input type="checkbox" value="random"> <span>Random</span></label>
+                </div>
+                <div id="roles-list"></div>
             </div>
-            <div id="roles-list"></div>
+        </div>
+        <div id="select-roles-other-components">
+            <button id="close-button" class="button-primary">Close</button>
+            <button id="start-game-button" class="button-primary">Start Game</button>
+            <div id="roles-warning-container">
+                <i id="roles-warning-icon" class="fa-solid fa-circle-exclamation"></i>
+                <div id="roles-warning-tooltip"></div>
+            </div>
+        </div>
+        <button id="leave-game-button" class="button-secondary">Leave Game</button>
+        <button id="restart-game-button" class="button-secondary">Restart Game</button>
+        <button id="show-roles-button" class="button-3">Roles</button>
+        <div id="roles-display"></div>
+        <div id="night-action-text"></div>
+        <div id="game-buttons">
+            <button id="continue-button">Continue</button>
+            <button id="confirm-button">Confirm</button>
+            <button id="ok-button">Ok</button>
+            <button id="do-nothing-button">Do Nothing</button>
+            <button id="confirm-waiting-button">Confirm Waiting</button>
+            <button id="confirm-seen-button">Confirm Seen</button>
+            <button id="yes-button">Yes</button>
+            <button id="no-button">No</button>
+        </div>
+        <div id="tokens-container"></div>
+        <button id="skip-to-vote-button" class="button-secondary">Skip to Vote</button>
+        <div id="chat-container">
+            <div id="resize-handle"></div>
+            <div id="chat-messages"></div>
+            <div id="chat-input-area">
+                <label for="chat-input"></label>
+                <input id="chat-input" type="text" placeholder="Type a message..." maxlength="200">
+                <button id="send-chat-button"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <h3 id="display-text"></h3>
+        <h3 id="display-text-2"></h3>
+        <h3 id="display-text-3"></h3>
+        <div id="vote-result-display">
+            <div>Playername</div>
+            <div>Votes</div>
+            <div>Voters</div>
+        </div>
+        <div id="role-show-stage-container">
+            <p id="role-show-stage">Shows Ending Roles</p>
+            <button id="toggle-show-stage-button" class="button-3">Toggle</button>
+        </div>
+        <button id="game-summary-button" class="button-3">Game Log</button>
+        <div id="game-summary-overlay" class="overlay">
+            <div class="overlay-content">
+                <span class="close-overlay" id="close-summary">&times;</span>
+                <h2>Game Summary</h2>
+                <div id="summary-list"></div>
+            </div>
         </div>
     </div>
-    <div id="select-roles-other-components">
-        <button id="close-button" class="button-primary">Close</button>
-        <button id="start-game-button" class="button-primary">Start Game</button>
-        <div id="roles-warning-container">
-            <i id="roles-warning-icon" class="fa-solid fa-circle-exclamation"></i>
-            <div id="roles-warning-tooltip"></div>
-        </div>
-    </div>
-    <button id="leave-game-button" class="button-secondary">Leave Game</button>
-    <button id="restart-game-button" class="button-secondary">Restart Game</button>
-    <button id="show-roles-button" class="button-3">Roles</button>
-    <div id="roles-display"></div>
-    <div id="night-action-text"></div>
-    <div id="game-buttons">
-        <button id="continue-button">Continue</button>
-        <button id="confirm-button">Confirm</button>
-        <button id="ok-button">Ok</button>
-        <button id="do-nothing-button">Do Nothing</button>
-        <button id="confirm-waiting-button">Confirm Waiting</button>
-        <button id="confirm-seen-button">Confirm Seen</button>
-        <button id="yes-button">Yes</button>
-        <button id="no-button">No</button>
-    </div>
-    <div id="tokens-container"></div>
-    <button id="skip-to-vote-button" class="button-secondary">Skip to Vote</button>
-    <div id="chat-container">
-        <div id="resize-handle"></div>
-        <div id="chat-messages"></div>
-        <div id="chat-input-area">
-            <label for="chat-input"></label>
-            <input id="chat-input" type="text" placeholder="Type a message..." maxlength="200">
-            <button id="send-chat-button"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </div>
-    <h3 id="display-text"></h3>
-    <h3 id="display-text-2"></h3>
-    <h3 id="display-text-3"></h3>
-    <div id="vote-result-display">
-        <div>Playername</div>
-        <div>Votes</div>
-        <div>Voters</div>
-    </div>
-    <div id="role-show-stage-container">
-        <p id="role-show-stage">Shows Ending Roles</p>
-        <button id="toggle-show-stage-button" class="button-3">Toggle</button>
-    </div>
-    <button id="game-summary-button" class="button-3">Game Log</button>
-    <div id="game-summary-overlay" class="overlay">
-        <div class="overlay-content">
-            <span class="close-overlay" id="close-summary">&times;</span>
-            <h2>Game Summary</h2>
-            <div id="summary-list"></div>
-        </div>
-    </div>
-</div>
 
-<div id="game-info-icon">
-    <i id="game-rules-icon" class="fa-solid fa-circle-question"></i>
-    <div id="game-rules-popup">
-        <h4>General Rules</h4>
-        <ul id="general-rules-list">
-            <li><b>Roles:</b> Players only perform the action of the role they saw when the game begins. (Exceptions: Copycat, Doppelganger)</li>
-            <li><b>Reloading:</b> If you reload the page during the night you might not get your info or do your night action.</li>
-        </ul>
+    <div id="game-info-icon">
+        <i id="game-rules-icon" class="fa-solid fa-circle-question"></i>
+        <div id="game-rules-popup">
+            <h4>General Rules</h4>
+            <ul id="general-rules-list">
+                <li><b>Roles:</b> Players only perform the action of the role they saw when the game begins. (Exceptions: Copycat, Doppelganger)</li>
+                <li><b>Reloading:</b> If you reload the page during the night you might not get your info or do your night action.</li>
+            </ul>
+        </div>
     </div>
-</div>
 
-<div id="toast-container"></div>
+    <div id="toast-container"></div>
 
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="js/index.js" type="module" defer></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="js/index.js" type="module" defer></script>
 </body>
 </html>
