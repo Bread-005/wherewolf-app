@@ -19,8 +19,13 @@ const io = new Server(server, {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const allowedOrigins = ['http://localhost:63342', 'https://bread-005.github.io'];
+
 app.use((request, response, next) => {
-    response.header("Access-Control-Allow-Origin", "https://bread-005.github.io");
+    const requestOrigin = request.headers.origin;
+    if (allowedOrigins.includes(requestOrigin)) {
+        response.header("Access-Control-Allow-Origin", requestOrigin);
+    }
     next();
 });
 app.use(express.static(__dirname));
