@@ -247,6 +247,14 @@ function createLobbyDisplay() {
                 showErrorPopup("Your name may not contain 'middle-card'");
                 return;
             }
+            if (nameInput.includes(":")) {
+                showErrorPopup("Your name may not contain ':'");
+                return;
+            }
+            if (nameInput.trim().toLowerCase() === "system") {
+                showErrorPopup("Your name may not be 'System'");
+                return;
+            }
             if (lobby.cards.filter(card => !card.isMiddleCard).length >= 10) {
                 showErrorPopup("There cannot be more than 10 players in one game!");
                 return;

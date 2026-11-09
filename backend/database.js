@@ -46,7 +46,7 @@ async function saveGameToDatabase(lobby) {
         winningTeams: lobby.winningTeam,
         discussTime: lobby.discussTime,
         nightLength: lobby.nightTimer,
-        messages: lobby.tempMessages,
+        messages: lobby.tempMessages.map(message => message.sender + ": " + message.message),
         randomActions: lobby.randomActions.map(action => {
             return {
                 role: action.role,
@@ -58,4 +58,8 @@ async function saveGameToDatabase(lobby) {
     });
 }
 
-export {connectDatabase, saveGameToDatabase};
+async function getGames() {
+    return await database.collection("games").find().toArray();
+}
+
+export {connectDatabase, saveGameToDatabase, getGames};

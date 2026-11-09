@@ -47,6 +47,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             showErrorPopup("Name may not be longer than 15 letters");
             return;
         }
+        if (userName.includes(":")) {
+            showErrorPopup("Your name may not contain ':'");
+            return;
+        }
+        if (userName.trim().toLowerCase() === "system") {
+            showErrorPopup("Your name may not be 'System'");
+            return;
+        }
         socket.emit("create-lobby", userName.trim());
     });
 

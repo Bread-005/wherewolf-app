@@ -3,7 +3,7 @@ import {Server} from "socket.io";
 import http from "http";
 import {fileURLToPath} from "url";
 import {dirname} from "path";
-import {connectDatabase, saveGameToDatabase} from "./database.js";
+import {connectDatabase, saveGameToDatabase, getGames} from "./database.js";
 import {evaluateVotingResults} from "./votingResults.js";
 
 const app = express();
@@ -29,6 +29,16 @@ app.use((request, response, next) => {
     next();
 });
 app.use(express.static(__dirname));
+
+app.get("/games", async (request, response) => {
+    try {
+        response.json(await getGames());
+    }
+    catch (error) {
+        console.error("Failed to load games", error);
+        response.status(500).json({error: "Failed to load games"});
+    }
+});
 
 let lobbies = [];
 let leavingPlayerNames = [];
@@ -150,7 +160,22 @@ io.on("connection", async (socket) => {
         return (minutes < 10 ? "0" : "") + minutes + ":" + (remainingSeconds < 10 ? "0" : "") + remainingSeconds;
     }
 
+    function getInvalidNameMessage(name) {
+        if (name.includes(":")) {
+            return "Your name may not contain ':'";
+        }
+        if (name.toLowerCase() === "system") {
+            return "Your name may not be 'System'";
+        }
+        return "";
+    }
+
     socket.on("create-lobby", (playerName) => {
+        const invalidNameMessage = getInvalidNameMessage(playerName);
+        if (invalidNameMessage) {
+            socket.emit("broadcast-message", invalidNameMessage);
+            return;
+        }
 
         const lobby = {
             id: crypto.randomUUID(),
@@ -183,6 +208,11 @@ io.on("connection", async (socket) => {
     });
 
     socket.on("join-game", ({name, lobbyId}) => {
+        const invalidNameMessage = getInvalidNameMessage(name);
+        if (invalidNameMessage) {
+            socket.emit("broadcast-message", invalidNameMessage);
+            return;
+        }
         const lobby = lobbies.find(l => l.id === lobbyId);
         if (lobby) {
             lobby.cards.push(createCard(socket.id, name));
