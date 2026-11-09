@@ -38,9 +38,54 @@ function findLobbyByCardId(cardId) {
     return lobbies.find(lobby => lobby.cards.find(card => card.id === cardId));
 }
 
+/**
+ * Shuffles an array in place (Fisher-Yates) and returns it.
+ */
+function shuffle(array) {
+    for (let index = array.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [array[index], array[randomIndex]] = [array[randomIndex], array[index]];
+    }
+    return array;
+}
+
+/**
+ * Reduces a lobby to what the join screen needs. No ids and no roles.
+ */
+function toLobbySummary(lobby) {
+    return {
+        id: lobby.id,
+        name: lobby.name,
+        state: lobby.state,
+        cards: lobby.cards
+            .filter(card => !card.id.includes("-disconnected"))
+            .map(card => ({name: card.name, isMiddleCard: card.isMiddleCard}))
+    };
+}
+
+/**
+ * Sends the full lobby to its own players only.
+ */
+function emitToLobby(lobby) {
+    io.to(lobby.id).emit("update-lobbies", [lobby]);
+}
+
+/**
+ * Sends lobby summaries to everyone who is not inside a lobby.
+ */
+function emitLobbyList() {
+    const lobbyIds = lobbies.map(lobby => lobby.id);
+    io.except(lobbyIds).emit("update-lobbies", lobbies.map(toLobbySummary));
+}
+
+function emitLobbyUpdate(lobby) {
+    emitToLobby(lobby);
+    emitLobbyList();
+}
+
 io.on("connection", async (socket) => {
 
-    io.emit("update-lobbies", lobbies);
+    socket.emit("update-lobbies", lobbies.map(toLobbySummary));
     socket.emit("init", socket.id);
 
     function resetCardState(card) {
@@ -125,7 +170,7 @@ io.on("connection", async (socket) => {
         socket.join(lobby.id);
         lobbies.push(lobby);
 
-        io.emit("update-lobbies", lobbies);
+        emitLobbyUpdate(lobby);
     });
 
     socket.on("join-game", ({name, lobbyId}) => {
@@ -136,7 +181,7 @@ io.on("connection", async (socket) => {
             if (isTesting(lobby)) {
                 lobby.discussTime = 5;
             }
-            io.emit("update-lobbies", lobbies);
+            emitLobbyUpdate(lobby);
         }
     });
 
@@ -194,11 +239,11 @@ io.on("connection", async (socket) => {
                     }
                 }
             }
-            io.emit("update-lobbies", lobbies);
             const socketTarget = io.sockets.sockets.get(targetId);
             if (socketTarget) {
                 socketTarget.leave(lobby.id);
             }
+            emitLobbyUpdate(lobby);
         }
     }
 
@@ -215,7 +260,7 @@ io.on("connection", async (socket) => {
                 let role1 = role;
                 if (role.name === "Any Random") {
                     const roles = allRoles.filter(role2 => !lobby.selectedRoles.find(role3 => role2.id === role3.id) && !role2.name.includes("Random"));
-                    role1 = roles.sort(() => Math.random() - 0.5)[0];
+                    role1 = shuffle(roles)[0];
                     if (!role1) {
                         return;
                     }
@@ -255,7 +300,7 @@ io.on("connection", async (socket) => {
                 roleNames.push(role.name);
             }
             if (!isTesting(lobby)) {
-                roleNames.sort(() => Math.random() - 0.5);
+                shuffle(roleNames);
             }
 
             for (const card of lobby.cards) {
@@ -304,7 +349,7 @@ io.on("connection", async (socket) => {
             ]);
 
             lobby.state = "look-at-role";
-            io.emit("update-lobbies", lobbies);
+            emitLobbyUpdate(lobby);
         }
     });
 
@@ -312,8 +357,8 @@ io.on("connection", async (socket) => {
         const lobby = findLobbyBySocketId();
         if (lobby) {
             lobby.state = state;
+            emitLobbyUpdate(lobby);
         }
-        io.emit("update-lobbies", lobbies);
     });
 
     socket.on("reset-lobby", () => {
@@ -330,7 +375,7 @@ io.on("connection", async (socket) => {
             lobby.randomActions = [];
             lobby.tempMessages = [];
             lobby.oracleAnswer = "";
-            io.emit("update-lobbies", lobbies);
+            emitLobbyUpdate(lobby);
         }
     });
 
@@ -351,13 +396,13 @@ io.on("connection", async (socket) => {
 
             // night cycle
             lobby.nightTimer = 0;
-            io.emit("update-lobbies", lobbies);
+            emitLobbyUpdate(lobby);
             let swapsHappened = false;
             let nightEnds = false;
             const nightCycle = setInterval(() => {
                 lobby.nightTimer++;
                 lobby.displayText = "It is night time - " + formatTime(lobby.nightTimer);
-                io.to(lobby.id).emit("update-lobbies", lobbies);
+                emitToLobby(lobby);
 
                 const players = getPlayers(lobby);
 
@@ -367,7 +412,7 @@ io.on("connection", async (socket) => {
                         if (lobby.randomActions.find(action => action.role === "Oracle").action.includes("Werewolf?")) {
                             randomAnswers.push("no", "no");
                         }
-                        const randomOracleAnswer = randomAnswers.sort(() => Math.random() - 0.5)[0];
+                        const randomOracleAnswer = shuffle(randomAnswers)[0];
                         submitOracleAnswer(randomOracleAnswer);
                     }
                     return;
@@ -385,7 +430,7 @@ io.on("connection", async (socket) => {
                         }
                         swapsHappened = true;
                         players.forEach(p => p.mayDoLateAction = true);
-                        io.to(lobby.id).emit("update-lobbies", lobbies);
+                        emitToLobby(lobby);
                     }
                 }
                 if (!players.every(player => player.hasDoneNightAction)) {
@@ -420,9 +465,9 @@ io.on("connection", async (socket) => {
                         if (lobby.remainingDiscussTime <= 0) {
                             clearInterval(dayCycle);
                             lobby.state = "voting";
-                            io.emit("update-lobbies", lobbies);
+                            emitLobbyList();
                         }
-                        io.to(lobby.id).emit("update-lobbies", lobbies);
+                        emitToLobby(lobby);
                     }, 1000);
                 }
             }, 1000);
@@ -484,7 +529,7 @@ io.on("connection", async (socket) => {
 
             const players = getPlayers(lobby);
             lobby.cards.find(player => player.id === socket.id).vote = votedPlayerName;
-            io.emit("update-lobbies", lobbies);
+            emitToLobby(lobby);
             if (!players.every(player => player.vote)) return;
 
             lobby.state = "voting-results";
@@ -496,7 +541,7 @@ io.on("connection", async (socket) => {
                 await saveGameToDatabase(lobby);
             }
 
-            io.emit("update-lobbies", lobbies);
+            emitLobbyUpdate(lobby);
             io.to(lobby.id).emit("everyone-voted");
 
             let lobbyCloseCount = 0;
@@ -510,16 +555,28 @@ io.on("connection", async (socket) => {
                     io.to(lobby.id).emit("broadcast-message", "The lobby closed due to inactivity");
                     io.socketsLeave(lobby.id);
                     lobbies = lobbies.filter(l => l.id !== lobby.id);
-                    io.emit("update-lobbies", lobbies);
+                    emitLobbyList();
                     clearInterval(lobbyCloseInterval);
                 }
             }, 1000);
         }
     }
 
+    const allowedSwapPriorities = [-9, 2.1, 6, 6.1, 7, 7.1, 8];
+
+    function isValidSwapRequest(lobby, priority, swap) {
+        if (lobby.state !== "night" || !allowedSwapPriorities.includes(priority) || !Array.isArray(swap)) {
+            return false;
+        }
+        const swapNames = swap.map(swapItem => swapItem?.name);
+        const hasDuplicateNames = new Set(swapNames).size !== swapNames.length;
+        const allCardsExist = swapNames.every(name => lobby.cards.some(card => card.name === name));
+        return swap.length >= 2 && !hasDuplicateNames && allCardsExist;
+    }
+
     socket.on("add-swap", ({priority, swap}) => {
         const lobby = findLobbyBySocketId();
-        if (lobby) {
+        if (lobby && isValidSwapRequest(lobby, priority, swap)) {
             lobby.pendingSwaps.push({
                 priority: priority,
                 swap: swap
@@ -537,7 +594,7 @@ io.on("connection", async (socket) => {
                 if (lobby.state === "night" && !player.hasDoneNightAction) {
                     player.hasDoneNightAction = true;
                     player.hasClickedConfirm = true;
-                    if (player.roleChain[0] === "Oracle" && lobby.oracleAnswer.includes("go ahead") && player.roleChain.length === 1 ||
+                    if (player.roleChain[0] === "Oracle" && lobby.oracleAnswer?.includes("go ahead") && player.roleChain.length === 1 ||
                         player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole === "Alpha Wolf" && !player.hasDoneExtraWolfAction ||
                         player.startingRole === "Witch" && (player.witchHasViewedCard || player.didFirstPart) || player.startingRole === "Drunk" && !lobby.pendingSwaps.find(swap => swap.priority === 8) ||
                         !player.mayDoLateAction && allRoles.find(role => role.name === player.startingRole)?.nightOrder >= 9) {
@@ -550,22 +607,23 @@ io.on("connection", async (socket) => {
                     }
                 }
                 socket.join(lobby.id);
-                io.emit("update-lobbies", lobbies);
+                emitLobbyUpdate(lobby);
             }
         }
     });
 
     socket.on("kick-player", async (targetId) => {
         const lobby = lobbies.find(lobby => lobby.cards.find(c => c.id === targetId));
+        const isHost = lobby && getPlayers(lobby)[0]?.id === socket.id;
 
-        if (lobby) {
+        if (lobby && isHost) {
             await handlePlayerLeave(targetId);
             const socketTarget = io.sockets.sockets.get(targetId);
             if (socketTarget) {
                 socketTarget.emit("broadcast-message", "You were kicked from the lobby.");
             }
             lobby.cards = lobby.cards.filter(c => c.id !== targetId);
-            io.emit("update-lobbies", lobbies);
+            emitLobbyUpdate(lobby);
         }
     });
 
@@ -574,7 +632,7 @@ io.on("connection", async (socket) => {
         if (lobby) {
             lobby.discussTime = discussTime;
             io.to(lobby.id).emit("update-select-roles-screen", lobby);
-            io.to(lobby.id).emit("update-lobbies", lobbies);
+            emitToLobby(lobby);
         }
     });
 
@@ -620,16 +678,17 @@ io.on("connection", async (socket) => {
 
     socket.on("perform-swap", ({priority, swap}) => {
         const lobby = findLobbyBySocketId();
-        if (lobby) {
+        if (lobby && isValidSwapRequest(lobby, priority, swap)) {
             const cards = swap.map(swapItem => {
                 const originalCard = lobby.cards.find(card => card.name === swapItem.name);
                 return { ...originalCard };
             });
+            const startingRole = lobby.cards.find(card => card.name === swap[0].name)?.roleChain?.[0];
             for (let i = 0; i < swap.length; i++) {
                 const currentCard = lobby.cards.find(card => card.name === swap[i].name);
                 currentCard.viewableStartingRole = cards[(i + 1) % cards.length].role;
                 currentCard.viewableStartingTeam = cards[(i + 1) % cards.length].team;
-                if (swap[0].roleChain[0] === "Oracle" && priority === -9) {
+                if (startingRole === "Oracle" && priority === -9) {
                     currentCard.viewableCopycatRole = cards[(i + 1) % cards.length].role;
                     currentCard.viewableCopycatTeam = cards[(i + 1) % cards.length].team;
                 }
@@ -638,7 +697,7 @@ io.on("connection", async (socket) => {
 
             // set Alpha Wolf has swapped to true
             const player = getPlayer();
-            if (swap[0].name === "middle-card4" && player.startingRole === "Alpha Wolf") {
+            if (swap[0].name === "middle-card4" && player?.startingRole === "Alpha Wolf") {
                 player.hasDoneExtraWolfAction = true;
                 updateLobby();
             }
@@ -761,7 +820,7 @@ io.on("connection", async (socket) => {
     function updateLobby() {
         const lobby = findLobbyBySocketId();
         if (lobby) {
-            io.to(lobby.id).emit("update-lobbies", lobbies);
+            emitToLobby(lobby);
         }
     }
 
@@ -794,7 +853,7 @@ io.on("connection", async (socket) => {
                     array.push(randomAction.text);
                 }
             }
-            array.sort(() => Math.random() - 0.5);
+            shuffle(array);
             lobby.randomActions.push({
                 nightOrder: nightOrder,
                 role: roleName,
@@ -847,7 +906,7 @@ io.on("connection", async (socket) => {
                     lobby.oracleAnswer = "Ok Oracle, you may view the " + oracleAction.action.split("the ")[1].split(" ")[0] + " center card";
                 }
                 if (answer === "no") {
-                    const randomOracleAnswer = [1, 2, 3].sort(() => Math.random() - 0.5)[0];
+                    const randomOracleAnswer = shuffle([1, 2, 3])[0];
                     if (randomOracleAnswer === 1) {
                         lobby.oracleAnswer = "Ok, then you don´t look at it.";
                     }
@@ -880,7 +939,7 @@ server.listen(process.env.PORT || 3003,"0.0.0.0", async () => {
     console.log("Access game on https://bread-005.github.io/wherewolf-app/index.html");
     await connectDatabase();
     lobbies = await loadActiveLobbies();
-    io.emit("update-lobbies", lobbies);
+    emitLobbyList();
 });
 
 process.on("SIGTERM", async () => {
