@@ -9,6 +9,11 @@ function appendWinResult(lobby, team, text) {
     }
 }
 
+// A player who left during voting has the vote "No-one", which matches no player.
+function findVotedPlayer(players, voter) {
+    return players.find(player => player.name === voter.vote);
+}
+
 function evaluateVotingResults(lobby, players) {
 
     // check Cursed Transform three times because Doppelganger-Cursed and Copycat-Cursed
@@ -43,7 +48,10 @@ function evaluateVotingResults(lobby, players) {
             player.voteAmount = 0;
         }
         if (player.mainAbility === "Bodyguard") {
-            players.find(p => p.name === player.vote).voteAmount = 0;
+            const votedPlayer = findVotedPlayer(players, player);
+            if (votedPlayer) {
+                votedPlayer.voteAmount = 0;
+            }
         }
     }
 
@@ -62,7 +70,10 @@ function evaluateVotingResults(lobby, players) {
 
         for (const player of players) {
             if (player.mainAbility === "Bodyguard") {
-                players.find(p => p.name === player.vote).dies = false;
+                const votedPlayer = findVotedPlayer(players, player);
+                if (votedPlayer) {
+                    votedPlayer.dies = false;
+                }
             }
         }
 
@@ -70,11 +81,17 @@ function evaluateVotingResults(lobby, players) {
         for (let i = 0; i < 3; i++) {
             for (const player of players) {
                 if (player.mainAbility === "Hunter") {
-                    players.find(p => p.name === player.vote).dies = true;
+                    const huntedPlayer = findVotedPlayer(players, player);
+                    if (huntedPlayer) {
+                        huntedPlayer.dies = true;
+                    }
 
-                    for (const player of players) {
-                        if (player.mainAbility === "Bodyguard") {
-                            players.find(p => p.name === player.vote).dies = false;
+                    for (const bodyguard of players) {
+                        if (bodyguard.mainAbility === "Bodyguard") {
+                            const protectedPlayer = findVotedPlayer(players, bodyguard);
+                            if (protectedPlayer) {
+                                protectedPlayer.dies = false;
+                            }
                         }
                     }
                 }

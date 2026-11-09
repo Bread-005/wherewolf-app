@@ -55,6 +55,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     document.addEventListener("click", (event) => {
+        if (!document.getElementById("leave-confirm-popup").contains(event.target)) {
+            document.getElementById("leave-confirm-popup").style.display = "none";
+        }
         if (!document.getElementById("kick-menu-content").contains(event.target) &&
             document.getElementById("open-kick-menu-button") !== event.target) {
             document.getElementById("kick-menu-overlay").style.display = "none";
@@ -68,12 +71,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         socket.emit("update-state", "select-roles");
     });
 
-    document.getElementById("leave-game-button").addEventListener("click", () => {
+    function leaveGame() {
+        document.getElementById("leave-confirm-popup").style.display = "none";
         document.getElementById("lobby-page").style.display = "flex";
         document.getElementById("game").style.display = "none";
+        document.body.style.backgroundImage = `url("./assets/wherewolf_background_day.png")`;
         socket.emit("leave");
         clearEverything();
         document.getElementById("chat-messages").innerHTML = "";
+    }
+
+    document.getElementById("leave-game-button").addEventListener("click", (event) => {
+        event.stopPropagation();
+        const states = ["waiting", "select-roles", "voting-results"];
+        if (states.includes(getCurrentLobby().state)) {
+            leaveGame();
+            return;
+        }
+        const popup = document.getElementById("leave-confirm-popup");
+        popup.style.display = popup.style.display === "flex" ? "none" : "flex";
+    });
+
+    document.getElementById("leave-confirm-yes").addEventListener("click", leaveGame);
+
+    document.getElementById("leave-confirm-no").addEventListener("click", () => {
+        document.getElementById("leave-confirm-popup").style.display = "none";
     });
 
     setupButtonEvents();
@@ -88,6 +110,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!lobby) {
             document.getElementById("lobby-page").style.display = "flex";
             document.getElementById("game").style.display = "none";
+            document.body.style.backgroundImage = `url("./assets/wherewolf_background_day.png")`;
             createLobbyDisplay();
         }
         if (lobby) {

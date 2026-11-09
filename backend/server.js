@@ -238,7 +238,7 @@ io.on("connection", async (socket) => {
                 player.hasSkippedToVote = true;
                 checkEveryoneHasSeenRole();
                 checkEveryoneHasSkippedToVote();
-                await checkEveryoneHasVoted(player.vote);
+                await checkEveryoneHasVoted(player.vote, targetId);
                 player.id = crypto.randomUUID() + "-disconnected";
                 if (getPlayers(lobby).every(p => p.id.includes("-disconnected"))) {
                     lobbies = lobbies.filter(l => l.id !== lobby.id);
@@ -535,12 +535,12 @@ io.on("connection", async (socket) => {
         await checkEveryoneHasVoted(votedPlayerName);
     });
 
-    async function checkEveryoneHasVoted(votedPlayerName) {
-        const lobby = findLobbyBySocketId();
+    async function checkEveryoneHasVoted(votedPlayerName, voterId = socket.id) {
+        const lobby = lobbies.find(l => l.cards.find(card => card.id === voterId));
         if (lobby && lobby.state === "voting") {
 
             const players = getPlayers(lobby);
-            lobby.cards.find(player => player.id === socket.id).vote = votedPlayerName;
+            lobby.cards.find(player => player.id === voterId).vote = votedPlayerName;
             emitToLobby(lobby);
             if (!players.every(player => player.vote)) return;
 

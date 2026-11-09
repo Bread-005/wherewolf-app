@@ -149,6 +149,27 @@ button {
     left: -5%;
 }
 
+#leave-confirm-popup {
+    display: none;
+    position: absolute;
+    bottom: calc(-20% + 50px);
+    left: -5%;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #2b2b2b;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 8px;
+    z-index: 10;
+    white-space: nowrap;
+
+    #leave-confirm-buttons {
+        display: flex;
+        gap: 8px;
+    }
+}
+
 #restart-game-button {
     position: absolute;
     bottom: -20%;
