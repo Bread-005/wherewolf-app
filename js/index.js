@@ -301,9 +301,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     document.getElementById("start-game-button").addEventListener("click", () => {
-        sendConsoleMessage("");
-        sendConsoleMessage("New Round has started");
-        sendConsoleMessage("");
         socket.emit("start-game");
     });
 

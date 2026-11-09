@@ -27,7 +27,7 @@ function sendConsoleMessage(message) {
 function receiveMessage(data) {
     const messagesBox = document.getElementById("chat-messages");
     const div = document.createElement("div");
-    div.className = "chat-msg";
+    div.className = data.sender === "System" ? "chat-msg system-msg" : "chat-msg";
     div.innerHTML = `<b>${data.sender}:</b> ${data.message}`;
     messagesBox.appendChild(div);
     messagesBox.scrollTop = messagesBox.scrollHeight;

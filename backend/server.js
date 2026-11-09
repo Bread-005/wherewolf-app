@@ -83,6 +83,14 @@ function emitLobbyUpdate(lobby) {
     emitLobbyList();
 }
 
+function announceToLobby(lobby, text) {
+    const messageObject = {sender: "System", message: text};
+    lobby.messages.push(messageObject);
+    lobby.tempMessages.push(messageObject);
+    io.to(lobby.id).emit("broadcast-message", text);
+    io.to(lobby.id).emit("receive-chat-message", messageObject);
+}
+
 io.on("connection", async (socket) => {
 
     socket.emit("update-lobbies", lobbies.map(toLobbySummary));
@@ -160,7 +168,8 @@ io.on("connection", async (socket) => {
             randomActions: [],
             tempMessages: [],
             selectedEditions: ["base game"],
-            oracleAnswer: ""
+            oracleAnswer: "",
+            round: 0
         }
 
         for (let i = 0; i < 3; i++) {
@@ -181,6 +190,7 @@ io.on("connection", async (socket) => {
             if (isTesting(lobby)) {
                 lobby.discussTime = 5;
             }
+            announceToLobby(lobby, name + " has joined");
             emitLobbyUpdate(lobby);
         }
     });
@@ -206,7 +216,7 @@ io.on("connection", async (socket) => {
     async function handlePlayerLeave(targetId) {
         const lobby = lobbies.find(l => l.cards.find(player => player.id === targetId));
         if (lobby) {
-            io.to(lobby.id).emit("broadcast-message", lobby.cards.find(player => player.id === targetId).name + " has left");
+            announceToLobby(lobby, lobby.cards.find(player => player.id === targetId).name + " has left");
             if (lobby.state === "waiting" || lobby.state === "select-roles" || lobby.state === "voting-results") {
                 if (lobby.state === "voting-results") {
                     const player = lobby.cards.find(player => player.id === targetId);
@@ -348,6 +358,8 @@ io.on("connection", async (socket) => {
                 {text: "You may look at both cards from both of your neighbors.", amount: 10},
             ]);
 
+            lobby.round++;
+            sendMessage(false, "Round " + lobby.round + " has started");
             lobby.state = "look-at-role";
             emitLobbyUpdate(lobby);
         }

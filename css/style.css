@@ -815,6 +815,14 @@ body {
                     b {
                         color: #f1c40f;
                     }
+
+                    &.system-msg {
+                        color: #8ecae6;
+
+                        b {
+                            color: #8ecae6;
+                        }
+                    }
                 }
             }
 
@@ -1104,24 +1112,14 @@ body {
                 bottom: 0;
                 left: 0;
                 height: 4px;
-                background: #e74c3c;
+                background: #2ecc71;
                 width: 100%;
             }
 
             .progress-animation {
-                animation: shrink 10s linear forwards;
+                animation: shrink 5s linear forwards, green-to-red 5s linear forwards;
             }
         }
-    }
-
-    @keyframes slideIn {
-        from { transform: translateX(120%); }
-        to { transform: translateX(0); }
-    }
-
-    @keyframes shrink {
-        from { width: 100%; }
-        to { width: 0; }
     }
 
     .wiki-page {
@@ -1246,4 +1244,19 @@ body {
         position: absolute;
         z-index: 1500;
     }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(120%); }
+    to { transform: translateX(0); }
+}
+
+@keyframes shrink {
+    from { width: 100%; }
+    to { width: 0; }
+}
+
+@keyframes green-to-red {
+    from { background: #2ecc71; }
+    to { background: #e74c3c; }
 }
