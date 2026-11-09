@@ -3,7 +3,7 @@ import {Server} from "socket.io";
 import http from "http";
 import {fileURLToPath} from "url";
 import {dirname} from "path";
-import {connectDatabase, saveGameToDatabase, saveActiveLobbies, loadActiveLobbies} from "./database.js";
+import {connectDatabase, saveGameToDatabase} from "./database.js";
 import {evaluateVotingResults} from "./votingResults.js";
 
 const app = express();
@@ -950,14 +950,7 @@ function setAllRoles(roles) {
 server.listen(process.env.PORT || 3003,"0.0.0.0", async () => {
     console.log("Access game on https://bread-005.github.io/wherewolf-app/index.html");
     await connectDatabase();
-    lobbies = await loadActiveLobbies();
     emitLobbyList();
-});
-
-process.on("SIGTERM", async () => {
-    console.log("Render did an automatic reset ...");
-    await saveActiveLobbies(lobbies);
-    process.exit(0);
 });
 
 export {setAllRoles};

@@ -58,25 +58,4 @@ async function saveGameToDatabase(lobby) {
     });
 }
 
-/**
- * Persists the current in-memory lobbies array to MongoDB so it survives a server restart.
- */
-async function saveActiveLobbies(lobbies) {
-    const connection = database.collection("active_lobbies");
-    await connection.updateOne(
-        {_id: "active_lobbies"},
-        {$set: {lobbies: lobbies}},
-        {upsert: true}
-    );
-}
-
-/**
- * Loads the previously persisted lobbies array so the server can restore its state after a restart.
- */
-async function loadActiveLobbies() {
-    const connection = database.collection("active_lobbies");
-    const document = await connection.findOne({_id: "active_lobbies"});
-    return document?.lobbies ?? [];
-}
-
-export {connectDatabase, saveGameToDatabase, saveActiveLobbies, loadActiveLobbies};
+export {connectDatabase, saveGameToDatabase};
