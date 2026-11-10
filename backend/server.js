@@ -7,7 +7,7 @@ import {connectDatabase, saveGameToDatabase, getGames} from "./database.js";
 import {evaluateVotingResults} from "./votingResults.js";
 
 const DISCONNECT_GRACE_DESKTOP_MS = 5000;
-const DISCONNECT_GRACE_MOBILE_MS = 90000;
+const DISCONNECT_GRACE_MOBILE_MS = 60000;
 const MOBILE_USER_AGENT_PATTERN = /Android|iPhone|iPad|iPod|Mobile/i;
 
 const app = express();

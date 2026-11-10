@@ -246,4 +246,5 @@ button {
     top: 5%;
     left: 2.5%;
     padding: 4px;
+    z-index: 100;
 }

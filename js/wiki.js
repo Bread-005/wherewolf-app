@@ -2,10 +2,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const roles = await fetch("https://wherewolf-server-bhut.onrender.com/roles.json").then(res => res.json());
 
+    const seenNames = new Set();
+
     for (const role of roles) {
-        if (role.name.toLowerCase().includes("random")) {
+        if (role.name.toLowerCase().includes("random") || seenNames.has(role.name)) {
             continue;
         }
+        seenNames.add(role.name);
         const option = new Option(role.name, JSON.stringify(role));
         document.getElementById("wiki-role-selection").add(option);
     }
