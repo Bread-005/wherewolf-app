@@ -6,6 +6,10 @@ import {dirname} from "path";
 import {connectDatabase, saveGameToDatabase, getGames} from "./database.js";
 import {evaluateVotingResults} from "./votingResults.js";
 
+const DISCONNECT_GRACE_DESKTOP_MS = 5000;
+const DISCONNECT_GRACE_MOBILE_MS = 90000;
+const MOBILE_USER_AGENT_PATTERN = /Android|iPhone|iPad|iPod|Mobile/i;
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -230,12 +234,14 @@ io.on("connection", async (socket) => {
         if (lobby) {
             const player = lobby.cards.find(player => player.id === socket.id);
             leavingPlayerNames.push(player.name);
+            const isMobile = MOBILE_USER_AGENT_PATTERN.test(socket.handshake.headers["user-agent"] ?? "");
+            const graceMilliseconds = isMobile ? DISCONNECT_GRACE_MOBILE_MS : DISCONNECT_GRACE_DESKTOP_MS;
 
             setTimeout(async () => {
                 if (leavingPlayerNames.includes(player.name)) {
                     await handlePlayerLeave(socket.id);
                 }
-            }, 5000);
+            }, graceMilliseconds);
         }
     });
 
