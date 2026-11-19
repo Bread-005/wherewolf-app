@@ -75,7 +75,7 @@ function setupRoleSelection() {
         roleCard.id = role.id + "-" + role.name + "-select-role";
 
         const img = document.createElement("img");
-        img.src = "./images/" + role.name.toLowerCase().replace(" ", "_") + ".png";
+        img.src = "./images/" + role.name.toLowerCase().replace(/ /g, "_") + ".png";
         img.alt = role.name;
 
         const ability = document.createElement("div");

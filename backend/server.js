@@ -304,7 +304,7 @@ io.on("connection", async (socket) => {
                 lobby.selectedRoles.splice(index, 1);
             } else {
                 let role1 = role;
-                if (role.name === "Any Random") {
+                if (role.name === "Add Any Random") {
                     const roles = allRoles.filter(role2 => !lobby.selectedRoles.find(role3 => role2.id === role3.id) && !role2.name.includes("Random"));
                     role1 = shuffle(roles)[0];
                     if (!role1) {

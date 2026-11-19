@@ -152,7 +152,7 @@ function displayCards(lobby) {
 
 function viewCard(card, as = card.role) {
     const img = document.createElement("img");
-    img.src = "./images/" + as.toLowerCase().replace(" ", "_") + ".png";
+    img.src = "./images/" + as.toLowerCase().replace(/ /g, "_") + ".png";
     img.style.width = "100%";
     img.style.height = "100%";
     img.style.position = "relative";
@@ -440,7 +440,7 @@ function openRolesDisplay(lobby) {
         name.textContent = role.name;
 
         const img = document.createElement("img");
-        img.src = "./images/" + role.name.toLowerCase().replace(" ", "_") + ".png";
+        img.src = "./images/" + role.name.toLowerCase().replace(/ /g, "_") + ".png";
         img.alt = role.name;
         img.className = "mini-role-img";
 

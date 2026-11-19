@@ -31,7 +31,7 @@ function setupTokens(lobby) {
     roles.forEach((role) => {
         const token = document.createElement("div");
         token.className = "role-token";
-        token.style.backgroundImage = `url('./images/${role.name.toLowerCase().replace(" ", "_")}.png')`;
+        token.style.backgroundImage = `url('./images/${role.name.toLowerCase().replace(/ /g, "_")}.png')`;
 
         const role1 = allRoles.find(role1 => role1.name === role.name);
 
