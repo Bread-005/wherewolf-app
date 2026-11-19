@@ -408,6 +408,16 @@ function updateKickMenu(lobby) {
     }
 }
 
+/**
+ * Returns what everyone may see for a role. A role that came from "Any Random" stays hidden.
+ */
+function getPublicRole(role) {
+    if (!role.isAnyRandom) {
+        return role;
+    }
+    return allRoles.find(role1 => role1.name === "Any Random");
+}
+
 function openRolesDisplay(lobby) {
     const display = document.getElementById("roles-display");
     display.innerHTML = "";
@@ -422,10 +432,11 @@ function openRolesDisplay(lobby) {
     const roles = [];
 
     for (const role of lobby.selectedRoles) {
+        const publicRole = getPublicRole(role);
         roles.push({
-            name: role.name,
-            text: role.text,
-            nightOrder: allRoles.find(role1 => role1.name === role.name)?.nightOrder
+            name: publicRole.name,
+            text: publicRole.text,
+            nightOrder: role.isAnyRandom ? Infinity : allRoles.find(role1 => role1.name === role.name)?.nightOrder
         });
     }
 
@@ -556,4 +567,4 @@ function playerHasStartingRoleOf(player, startingRoles = []) {
 export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
-    removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf};
+    removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf, getPublicRole};

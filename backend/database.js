@@ -53,6 +53,7 @@ async function saveGameToDatabase(lobby) {
                 action: action.action
             }
         }),
+        randomRoles: anyRandomRole ? {any_random: anyRandomRole.name} : {},
         startTime: lobby.startTime,
         endTime: new Date()
     });

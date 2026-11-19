@@ -48,6 +48,8 @@ let lobbies = [];
 let leavingPlayerNames = [];
 let allRoles = [];
 
+const MAX_COPIES_PER_ROLE = {"Werewolf": 2, "Mason": 2, "Villager": 3};
+
 function findLobbyByCardId(cardId) {
     return lobbies.find(lobby => lobby.cards.find(card => card.id === cardId));
 }
@@ -61,6 +63,22 @@ function shuffle(array) {
         [array[index], array[randomIndex]] = [array[randomIndex], array[index]];
     }
     return array;
+}
+
+/**
+ * Picks the role the "Any Random" card turns into.
+ * Roles already in the game are excluded, except Werewolf, Mason and Villager up to their limit.
+ * Falls back to Villager if no role is left.
+ */
+function pickAnyRandomRole(selectedRoles) {
+    const candidates = allRoles.filter(role => {
+        const copiesInGame = selectedRoles.filter(selected => selected.name === role.name).length;
+        const maxCopies = MAX_COPIES_PER_ROLE[role.name] ?? 1;
+        const isAlreadySelected = selectedRoles.some(selected => selected.id === role.id);
+        return !role.name.includes("Random") && !isAlreadySelected && copiesInGame < maxCopies;
+    });
+    const pickedRole = shuffle(candidates)[0] ?? allRoles.find(role => role.name === "Villager");
+    return {...pickedRole, isAnyRandom: true};
 }
 
 /**
@@ -341,6 +359,14 @@ io.on("connection", async (socket) => {
         const lobby = findLobbyBySocketId();
         if (lobby) {
             lobby.startTime = new Date();
+            const anyRandomIndex = lobby.selectedRoles.findIndex(role => role.name === "Any Random");
+            if (anyRandomIndex > -1) {
+                const anyRandomRole = pickAnyRandomRole(lobby.selectedRoles);
+                lobby.selectedRoles[anyRandomIndex] = anyRandomRole;
+                if (anyRandomRole.name === "Alpha Wolf" && !lobby.cards.find(card => card.name === "middle-card4")) {
+                    lobby.cards.push(createCard(crypto.randomUUID(), "middle-card4"));
+                }
+            }
             const roleNames = [];
             for (const role of lobby.selectedRoles) {
                 roleNames.push(role.name);
@@ -415,6 +441,11 @@ io.on("connection", async (socket) => {
             lobby.cards = lobby.cards.filter(player => !player.id.includes("-disconnected"));
             for (const card of lobby.cards) {
                 resetCardState(card);
+            }
+            const anyRandomRole = allRoles.find(role => role.name === "Any Random");
+            lobby.selectedRoles = lobby.selectedRoles.map(role => role.isAnyRandom ? anyRandomRole : role);
+            if (!lobby.selectedRoles.find(role => role.name === "Alpha Wolf")) {
+                lobby.cards = lobby.cards.filter(card => card.name !== "middle-card4");
             }
             lobby.state = "waiting";
             lobby.pendingSwaps = [];

@@ -413,6 +413,15 @@
     "edition": "custom"
   },
   {
+    "id": 41,
+    "name": "Any Random",
+    "team": "Any",
+    "nightOrder": 0.0,
+    "text": "Becomes a random role when the game starts",
+    "description": "When the game starts, this card turns into a random role. Nobody knows which role it is, unless they are the card or look at it. It cannot turn into a role that is already in the game. Exceptions: Werewolf (up to 2 times), Mason (up to 2 times) and Villager (up to 3 times).",
+    "edition": "random"
+  },
+  {
     "id": 33,
     "name": "Add Any Random",
     "team": "Any",

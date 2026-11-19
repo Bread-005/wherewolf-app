@@ -1,4 +1,5 @@
 import {allRoles} from "./index.js";
+import {getPublicRole} from "./functions.js";
 
 let hasShownTokenHint = false;
 
@@ -14,8 +15,8 @@ function setupTokens(lobby) {
 
     for (const role of lobby.selectedRoles) {
         roles.push({
-            name: role.name,
-            nightOrder: allRoles.find(role1 => role1.name === role.name)?.nightOrder
+            name: getPublicRole(role).name,
+            nightOrder: role.isAnyRandom ? Infinity : allRoles.find(role1 => role1.name === role.name)?.nightOrder
         });
     }
 
