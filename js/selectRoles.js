@@ -37,9 +37,13 @@ function validateRoleSelection(lobby) {
 
 const DESCRIPTION_DELAY_MS = 500;
 const TOOLTIP_MARGIN_PX = 10;
-const isTouchDevice = window.matchMedia("(hover: none)").matches;
+const MOBILE_QUERY = "(max-width: 700px), (hover: none)";
 let descriptionTimeout;
 let activeDescriptionCard = null;
+
+function isMobileView() {
+    return window.matchMedia(MOBILE_QUERY).matches;
+}
 
 function toggleRoleDescription(roleCard, role) {
     if (activeDescriptionCard === roleCard) {
@@ -123,13 +127,13 @@ function setupRoleSelection() {
         roleCard.addEventListener("click", () => {
             if (isHost()) {
                 socket.emit("request-update-selected-roles", role);
-            } else if (isTouchDevice) {
+            } else if (isMobileView()) {
                 toggleRoleDescription(roleCard, role);
             }
         });
 
         roleCard.addEventListener("mouseenter", () => {
-            if (isTouchDevice) {
+            if (isMobileView()) {
                 return;
             }
             clearTimeout(descriptionTimeout);
@@ -139,7 +143,7 @@ function setupRoleSelection() {
         });
 
         roleCard.addEventListener("mouseleave", () => {
-            if (!isTouchDevice) {
+            if (!isMobileView()) {
                 hideRoleDescription();
             }
         });
@@ -147,7 +151,7 @@ function setupRoleSelection() {
 }
 
 document.addEventListener("click", (event) => {
-    if (isTouchDevice && !event.target.closest("#roles-list")) {
+    if (isMobileView() && !event.target.closest("#roles-list")) {
         hideRoleDescription();
     }
 });
