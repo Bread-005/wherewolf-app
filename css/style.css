@@ -598,6 +598,26 @@ body {
             }
         }
 
+        #role-description-tooltip {
+            position: fixed;
+            z-index: 1200;
+            width: 250px;
+            padding: 10px;
+            background-color: #2c3e50;
+            color: white;
+            border: 1px solid lightblue;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        #role-description-tooltip.visible {
+            opacity: 1;
+        }
+
         #display-text, #display-text-2, #display-text-3 {
             position: absolute;
             display: flex;

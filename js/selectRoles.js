@@ -35,6 +35,39 @@ function validateRoleSelection(lobby) {
     }
 }
 
+const DESCRIPTION_DELAY_MS = 500;
+const TOOLTIP_MARGIN_PX = 10;
+const isTouchDevice = window.matchMedia("(hover: none)").matches;
+let descriptionTimeout;
+let activeDescriptionCard = null;
+
+function toggleRoleDescription(roleCard, role) {
+    if (activeDescriptionCard === roleCard) {
+        hideRoleDescription();
+    } else {
+        showRoleDescription(roleCard, role);
+    }
+}
+
+function showRoleDescription(roleCard, role) {
+    activeDescriptionCard = roleCard;
+    const tooltip = document.getElementById("role-description-tooltip");
+    tooltip.textContent = "Description: " + (role.description || role.text);
+
+    const cardRect = roleCard.getBoundingClientRect();
+    const maxLeft = window.innerWidth - tooltip.offsetWidth - TOOLTIP_MARGIN_PX;
+    const maxTop = window.innerHeight - tooltip.offsetHeight - TOOLTIP_MARGIN_PX;
+    tooltip.style.left = Math.max(TOOLTIP_MARGIN_PX, Math.min(cardRect.left, maxLeft)) + "px";
+    tooltip.style.top = Math.max(TOOLTIP_MARGIN_PX, Math.min(cardRect.bottom + TOOLTIP_MARGIN_PX, maxTop)) + "px";
+    tooltip.classList.add("visible");
+}
+
+function hideRoleDescription() {
+    clearTimeout(descriptionTimeout);
+    activeDescriptionCard = null;
+    document.getElementById("role-description-tooltip").classList.remove("visible");
+}
+
 function setupRoleSelection() {
     const rolesList = document.getElementById("roles-list");
     rolesList.innerHTML = "";
@@ -90,10 +123,34 @@ function setupRoleSelection() {
         roleCard.addEventListener("click", () => {
             if (isHost()) {
                 socket.emit("request-update-selected-roles", role);
+            } else if (isTouchDevice) {
+                toggleRoleDescription(roleCard, role);
+            }
+        });
+
+        roleCard.addEventListener("mouseenter", () => {
+            if (isTouchDevice) {
+                return;
+            }
+            clearTimeout(descriptionTimeout);
+            descriptionTimeout = setTimeout(() => {
+                showRoleDescription(roleCard, role);
+            }, DESCRIPTION_DELAY_MS);
+        });
+
+        roleCard.addEventListener("mouseleave", () => {
+            if (!isTouchDevice) {
+                hideRoleDescription();
             }
         });
     }
 }
+
+document.addEventListener("click", (event) => {
+    if (isTouchDevice && !event.target.closest("#roles-list")) {
+        hideRoleDescription();
+    }
+});
 
 function updateSelectedRoles(lobby) {
     document.getElementById("discuss-time-label").textContent = "Discussion Time: " + (lobby.discussTime || 300) + " secs";
