@@ -131,13 +131,9 @@ io.on("connection", async (socket) => {
     function resetCardState(card) {
         card.role = "";
         card.team = "Villager";
-        card.vote = "";
         card.hasSeenRole = false;
         card.hasDoneNightAction = false;
-        card.dies = false;
-        card.voteAmount = 0;
         card.roleChain = [];
-        card.selectedCards = [];
         card.hasSkippedToVote = false;
         card.startingRole = "";
         card.isRevealed = false;
@@ -156,6 +152,13 @@ io.on("connection", async (socket) => {
         card.viewableCopycatRole = "";
         card.viewableCopycatTeam = "";
         card.bumpedList = [];
+
+        if (!card.isMiddleCard) {
+            card.vote = "";
+            card.dies = false;
+            card.voteAmount = 0;
+            card.selectedCards = [];
+        }
     }
 
     function createCard(id, name) {

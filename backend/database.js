@@ -26,12 +26,20 @@ async function connectDatabase() {
 
 async function saveGameToDatabase(lobby) {
     const connection = database.collection("games");
-    const games = await connection.find().toArray();
+    const [lastGame] = await connection.find().sort({id: -1}).limit(1).toArray();
+    const anyRandomRole = lobby.selectedRoles.find(role => role.isAnyRandom);
     connection.insertOne({
-        id: games.length + 1,
+        id: (lastGame?.id ?? 0) + 1,
         lobbyName: lobby.name,
         selectedRoles: lobby.selectedRoles.map(role => role.name),
         cards: lobby.cards.map(card => {
+            if (card.isMiddleCard) {
+                return {
+                    name: card.name,
+                    roles: card.roleChain,
+                    team: card.team
+                }
+            }
             return {
                 name: card.name,
                 roles: card.roleChain,
