@@ -1,5 +1,16 @@
 import {allRoles} from "./index.js";
 
+const ROLES_WITH_OWN_COPY_ENTRY = ["Insomniac", "Minion", "Squire", "Beholder", "Apprentice Tanner", "Mortician"];
+
+function findCopiedRole(doppelganger, cards) {
+    const target = doppelganger.selectedCards[0];
+    if (!target) {
+        return undefined;
+    }
+    const copiedRole = cards.find(card => card.name === target.name).startRole;
+    return copiedRole === "Copycat" ? doppelganger.selectedCards[1]?.role : copiedRole;
+}
+
 function buildGameSummary(lobby) {
     document.getElementById("game-summary-button").style.display = "flex";
 
@@ -50,10 +61,32 @@ function buildGameSummary(lobby) {
         }
     });
 
+    const doppelganger = cards.find(card => !card.name.includes("middle-card") && card.beginningRole === "Doppelganger");
+    const copiedRole = doppelganger && findCopiedRole(doppelganger, cards);
+    if (ROLES_WITH_OWN_COPY_ENTRY.includes(copiedRole)) {
+        roles.push({
+            nightOrder: allRoles.find(role => role.name === copiedRole).nightOrder,
+            name: copiedRole,
+            copier: doppelganger,
+        });
+        roles.sort((a, b) => a.nightOrder - b.nightOrder);
+    }
+
     for (const role of roles) {
-        const player = cards.find(card => !card.name.includes("middle-card") && (card.beginningRole === role.name ||
+        const isCopy = Boolean(role.copier);
+        const player = role.copier ?? cards.find(card => !card.name.includes("middle-card") && (card.beginningRole === role.name ||
             role.name === "Werewolf" && lobby.cards.find(card1 => card1.name === card.name && card1.startingRole.toLowerCase().includes("wolf") && card1.startingRole !== "Dream Wolf")));
+        if (role.name === "Oracle") {
+            const oracle = cards.find(card => card.beginningRole === "Oracle");
+            const question = lobby.randomActions.find(action => action.role === "Oracle").action;
+            summaryList.append(buildOracleItem(oracle, question, lobby.oracleAnswer));
+            continue;
+        }
         if (!player) continue;
+        if (role.name === "Blob") {
+            summaryList.append(buildBlobItem(player, lobby.randomActions.find(action => action.role === "Blob").action));
+            continue;
+        }
         if (role.nightOrder > 100) continue;
         if (role.name === "Cow") continue;
 
@@ -76,7 +109,7 @@ function buildGameSummary(lobby) {
         }
         if (player.beginningRole === "Mystic Wolf" || player.beginningRole === "Seer" || player.beginningRole === "Apprentice Seer" ||
             player.beginningRole === "Paranormal Investigator" || player.beginningRole === "Revealer" || player.beginningRole === "Exposer" ||
-            player.beginningRole === "Mortician") {
+            role.name === "Mortician") {
             actionText.textContent = "looked at";
         }
         if (player.beginningRole === "Robber" || player.beginningRole === "Drunk") {
@@ -85,15 +118,20 @@ function buildGameSummary(lobby) {
         if (player.beginningRole === "Alpha Wolf" || player.beginningRole === "Witch" || player.beginningRole === "Troublemaker") {
             actionText.textContent = "swapped";
         }
+        if (player.beginningRole === "Thing") {
+            actionText.textContent = "bumped";
+        }
         if (player.selectedCards.length === 0) {
             actionText.textContent = "did nothing";
         }
-        if (player.beginningRole === "Insomniac") {
+        if (role.name === "Insomniac") {
             actionText.textContent = "woke up as";
         }
 
         itemDiv.append(createSummaryCard(player.name, player.startRole));
-        if (player.startRole !== player.beginningRole) {
+        if (isCopy) {
+            itemDiv.append(createSummaryCard("", role.name));
+        } else if (player.startRole !== player.beginningRole) {
             itemDiv.append(createSummaryCard("", player.beginningRole));
         }
         itemDiv.append(actionText);
@@ -109,7 +147,7 @@ function buildGameSummary(lobby) {
             if (player.doppelgangerCopy === "Copycat") {
                 player.doppelgangerCopy = player.selectedCards[1].role;
             }
-            if (player.selectedCards.length > 1) {
+            if (player.selectedCards.length > 1 && player.doppelgangerCopy !== "Mortician") {
                 const andText = document.createElement("span");
                 andText.className = "summary-and-text";
                 andText.textContent = "and then selected";
@@ -233,8 +271,28 @@ function buildGameSummary(lobby) {
             });
         }
 
+        if (role.name === "Apprentice Tanner") {
+            const tannerPlayers = lobby.cards.filter(card => !card.isMiddleCard && card.startingRole === "Tanner");
+            actionText.textContent = "saw";
+            if (tannerPlayers.length === 0) {
+                actionText.textContent += " no Tanner";
+            }
+
+            tannerPlayers.forEach((tannerPlayer, index) => {
+                targetsContainer.append(createSummaryCard(tannerPlayer.name, tannerPlayer.roleChain[0]));
+
+                if (index < tannerPlayers.length - 1) {
+                    const andText = document.createElement("span");
+                    andText.className = "summary-and-text";
+                    andText.textContent = "and";
+                    targetsContainer.append(andText);
+                }
+            });
+        }
+
         if (player.selectedCards.length > 0) {
-            if (role.name !== "Copycat" && role.name !== "Werewolf" && role.name !== "Village Idiot") {
+            const isDoppelgangerMortician = role.name === "Doppelganger" && player.doppelgangerCopy === "Mortician";
+            if (role.name !== "Copycat" && role.name !== "Werewolf" && role.name !== "Village Idiot" && !isDoppelgangerMortician) {
                 if ((role.name === "Seer" || role.name === "Doppelganger" && player.doppelgangerCopy === "Seer") &&
                     player.selectedCards.at(-1).name.includes("middle-card") && player.selectedCards.at(-2).name.includes("middle-card")) {
                     buildCenterCards([player.selectedCards.at(-2), player.selectedCards.at(-1)], targetsContainer);
@@ -309,7 +367,8 @@ function buildGameSummary(lobby) {
             targetsContainer.append(createSummaryCard(player.name, player.role));
         }
         if (role.name === "Mortician") {
-            const randomAction = lobby.randomActions.find(action => action.role === "Mortician").action;
+            const randomActionRole = isCopy ? "Doppelganger-Mortician" : "Mortician";
+            const randomAction = lobby.randomActions.find(action => action.role === randomActionRole).action;
             if (randomAction.includes("yourself")) {
                 actionText.textContent = "looked at themself";
                 targetsContainer.append(createSummaryCard(player.name, player.role));
@@ -318,6 +377,72 @@ function buildGameSummary(lobby) {
         }
         itemDiv.append(targetsContainer);
         summaryList.append(itemDiv);
+    }
+
+    function buildOracleItem(oracle, question, answer) {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "summary-item";
+        itemDiv.append(createSummaryCard(oracle.name, oracle.startRole, true, oracle.name.includes("middle-card")));
+
+        const hasAnsweredYes = answer.includes("Congratulations") || answer.includes("go ahead") || answer.includes("you may view the");
+        const actionText = document.createElement("span");
+        actionText.className = "summary-action-text";
+        const askedText = `was asked "${question}"`;
+        const answeredText = `and answered ${hasAnsweredYes ? "yes" : "no"}`;
+
+        const targetsContainer = document.createElement("div");
+        targetsContainer.className = "summary-targets";
+        const selectedCards = oracle.selectedCards ?? [];
+        const followUpText = document.createElement("span");
+        followUpText.className = "summary-and-text";
+
+        if (answer.includes("Congratulations")) {
+            followUpText.textContent = "and turned into";
+            targetsContainer.append(followUpText, createSummaryCard("", "Werewolf", true, true));
+            oracle.role = "Werewolf";
+        }
+        if (answer.includes("go ahead") && selectedCards.length > 0) {
+            followUpText.textContent = "and swapped with";
+            targetsContainer.append(followUpText);
+            buildCenterCards([selectedCards[0]], targetsContainer);
+
+            const swappedCard = cards.find(card => card.name === selectedCards[0].name);
+            [oracle.role, swappedCard.role] = [swappedCard.role, oracle.role];
+        }
+        if (answer.toLowerCase().includes("you may") && selectedCards.length > 0) {
+            followUpText.textContent = "and looked at";
+            targetsContainer.append(followUpText);
+            buildCenterCards(selectedCards, targetsContainer);
+        }
+
+        if (targetsContainer.children.length === 0) {
+            actionText.textContent = `${askedText} ${answeredText}`;
+            itemDiv.append(actionText);
+            return itemDiv;
+        }
+        actionText.append(askedText, document.createElement("br"), answeredText);
+        itemDiv.append(actionText, targetsContainer);
+        return itemDiv;
+    }
+
+    function buildBlobItem(player, randomAction) {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "summary-item";
+
+        const actionText = document.createElement("span");
+        actionText.className = "summary-action-text";
+        const neighbors = randomAction.match(/(\d+) players (on each side|to your left|to your right)/);
+        if (neighbors) {
+            const [, amount, position] = neighbors;
+            const playerWord = amount === "1" ? "player" : "players";
+            actionText.textContent = `was told to keep themselves and the ${amount} ${playerWord} ${position.replace("your", "their")} alive`;
+        } else {
+            actionText.textContent = "was told to keep themselves alive";
+        }
+
+        itemDiv.append(createSummaryCard(player.name, player.startRole));
+        itemDiv.append(actionText);
+        return itemDiv;
     }
 
     function buildCenterCards(selectedCards, targetsContainer, isAlphaWolf = false) {

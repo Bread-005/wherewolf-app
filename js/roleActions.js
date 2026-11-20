@@ -279,7 +279,7 @@ function showRoleActions() {
         document.getElementById("night-action-text").textContent = "waiting until every player has done their night actions ...";
         lobby.cards.forEach(card => removeAllImg(card.id));
 
-        if (hasToSeeRandomActions(lobby, player)) return;
+        if (hasToSeeRandomActions(lobby, player, true)) return;
         if (player.bumpedList.length > 0) {
             document.getElementById("night-action-text").textContent = player.bumpedList.join(" and ") + " is the Thing!";
             document.getElementById("confirm-seen-button").style.display = "flex";

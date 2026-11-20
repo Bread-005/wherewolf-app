@@ -550,9 +550,10 @@ function removeAllImg(id) {
     });
 }
 
-function hasToSeeRandomActions(lobby, player) {
+function hasToSeeRandomActions(lobby, player, ignoreNightOrder = false) {
     for (const action of lobby.randomActions) {
-        if (!action.seenPlayers.includes(player.name) && action.nightOrder <= allRoles.find(role => role.name === player.startingRole).nightOrder) {
+        if (!action.seenPlayers.includes(player.name) &&
+            (ignoreNightOrder || action.nightOrder <= allRoles.find(role => role.name === player.startingRole).nightOrder)) {
             document.getElementById("night-action-text").textContent = action.role + " action: " + action.action +
                 (action.role === "Oracle" ? "\n Answer: " + lobby.oracleAnswer : "");
             document.getElementById("confirm-seen-button").style.display = "flex";

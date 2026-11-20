@@ -334,6 +334,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("game-summary-overlay").style.display = "none";
     });
 
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            document.getElementById("game-summary-overlay").style.display = "none";
+        }
+    });
+
     document.getElementById("start-game-button").addEventListener("click", () => {
         socket.emit("start-game");
     });
