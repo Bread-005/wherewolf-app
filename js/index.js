@@ -10,6 +10,7 @@ import {confirmButtonAction, showRoleActions} from "./roleActions.js";
 import {buildGameSummary} from "./gameSummary.js";
 import {setupRoleSelection, updateSelectedRoles,} from "./selectRoles.js";
 import {getCurrentLobby} from "./lobby.js";
+import {getSavedName, saveName} from "./appStorage.js";
 
 let lobbies = [];
 let myId = "";
@@ -23,6 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     allRoles = await fetch("https://wherewolf-server-bhut.onrender.com/roles.json").then(res => res.json());
     document.getElementById("lobby-page").style.display = "flex";
     document.getElementById("game").style.display = "none";
+    document.getElementById("enter-name-input").value = getSavedName();
 
     socket.on("connect", () => {
         document.getElementById("loading-screen").style.display = "none";
@@ -55,6 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             showErrorPopup("Your name may not be 'System'");
             return;
         }
+        saveName(userName.trim());
         socket.emit("create-lobby", userName.trim());
     });
 

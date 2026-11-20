@@ -2,6 +2,7 @@ import {allRoles, lobbies, myId, socket} from "./index.js";
 import {getCurrentLobby} from "./lobby.js";
 import {wakeUpMultiple} from "./roleActions.js";
 import {setCardClickEvent} from "./CardClickEvent.js";
+import {saveName} from "./appStorage.js";
 
 function showErrorPopup(message) {
     const container = document.getElementById("toast-container");
@@ -259,6 +260,7 @@ function createLobbyDisplay() {
                 showErrorPopup("There cannot be more than 10 players in one game!");
                 return;
             }
+            saveName(nameInput.trim());
             socket.emit("join-game", { name: nameInput.trim(), lobbyId: lobby.id });
         });
         lobbyDiv.append(lobbyName, playerCount, state, joinButton);
