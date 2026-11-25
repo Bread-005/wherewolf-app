@@ -726,10 +726,23 @@ function setupLookAtRole() {
     getCardElement(myId).addEventListener("click", () => {
         const lobby = getCurrentLobby();
         if (lobby && lobby.state === "look-at-role" && getCardElement(myId).style.cursor === "pointer") {
-            viewCard(lobby.cards.find(player => player.id === myId));
+            const player = lobby.cards.find(card => card.id === myId);
+            viewCard(player);
+            document.getElementById("display-text-2").textContent = getRoleInfoText(player);
             document.getElementById("continue-button").style.display = "flex";
         }
     });
+}
+
+/**
+ * Builds the team and description text for the starting role of a player.
+ */
+function getRoleInfoText(player) {
+    const role = allRoles.find(entry => entry.name === player.startingRole);
+    if (!role) {
+        return "";
+    }
+    return `${role.name} (Team: ${role.team}) - ${role.description}`;
 }
 
 function removeAllImg(id) {
@@ -760,7 +773,7 @@ function playerHasStartingRoleOf(player, startingRoles = []) {
     return startingRoles.find(role => role === player.startingRole);
 }
 
-export {showToast, getNameError,displayCards, viewCard, setupButtonEvents, getCardElement,
+export {getRoleInfoText, showToast, getNameError,displayCards, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
     removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf, getPublicRole, getMarkElement, setMarkFace,

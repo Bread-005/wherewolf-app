@@ -2,7 +2,7 @@ import {
     showToast, getNameError, createLobbyDisplay, displayCards, setupButtonEvents,
     viewCard, resetNightActionTexts, clearEverything, getCardElement,
     updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isHost, showMarkViewing,
-    resetMarkCursors, setCenterMarkVisible, updateMarkTokens
+    resetMarkCursors, setCenterMarkVisible, updateMarkTokens, getRoleInfoText
 } from "./functions.js";
 import {showVoteResults, showVoteResultBoard} from "./voteResults.js";
 import {setupTokens} from "./tokens.js";
@@ -179,6 +179,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     document.getElementById("display-text").textContent = "Look at your role, by clicking your card";
                 } else {
                     document.getElementById("display-text").textContent = "Wait for the other players to look at their cards";
+                    document.getElementById("display-text-2").textContent = getRoleInfoText(you);
                 }
                 getCardElement(myId).style.cursor = you.hasSeenRole ? "default" : "pointer";
                 document.getElementById("chat-container").style.display = "none";
@@ -194,6 +195,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
                 document.body.style.backgroundImage = `url("./assets/wherewolf_background_night.png")`;
                 document.getElementById("display-text").textContent = lobby.displayText;
+                document.getElementById("display-text-2").textContent = "";
                 if (lobby.state === "dusk" && lobby.duskActionsDone) {
                     showMarkViewing(you);
                 } else if (lobby.nightTimer > 2) {
