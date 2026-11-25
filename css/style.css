@@ -682,6 +682,25 @@ body {
             opacity: 1;
         }
 
+        #suggest-role-popup {
+            display: none;
+            position: fixed;
+            z-index: 1200;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background-color: #2c3e50;
+            color: white;
+            border: 1px solid lightblue;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        #suggest-role-popup.visible {
+            display: flex;
+        }
+
         #display-text, #display-text-2, #display-text-3 {
             position: absolute;
             display: flex;

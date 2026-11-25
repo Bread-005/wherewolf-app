@@ -40,6 +40,9 @@ const TOOLTIP_MARGIN_PX = 10;
 const MOBILE_QUERY = "(max-width: 700px), (hover: none)";
 let descriptionTimeout;
 let activeDescriptionCard = null;
+let idSuggestedRole = null;
+// Kept here because "update-selected-roles" does not refresh the shared lobbies list.
+let selectedRoles = [];
 
 function isMobileView() {
     return window.matchMedia(MOBILE_QUERY).matches;
@@ -72,10 +75,40 @@ function hideRoleDescription() {
     document.getElementById("role-description-tooltip").classList.remove("visible");
 }
 
+function hideSuggestRolePopup() {
+    document.getElementById("suggest-role-popup").classList.remove("visible");
+    idSuggestedRole = null;
+}
+
+function showSuggestRolePopup(roleCard, role) {
+    const popup = document.getElementById("suggest-role-popup");
+    idSuggestedRole = role.id;
+    popup.classList.add("visible");
+
+    const cardRect = roleCard.getBoundingClientRect();
+    const rightLeft = cardRect.right + TOOLTIP_MARGIN_PX;
+    const hasSpaceRight = rightLeft + popup.offsetWidth <= window.innerWidth - TOOLTIP_MARGIN_PX;
+    const left = hasSpaceRight ? rightLeft : cardRect.left - popup.offsetWidth - TOOLTIP_MARGIN_PX;
+    const maxTop = window.innerHeight - popup.offsetHeight - TOOLTIP_MARGIN_PX;
+    popup.style.left = Math.max(TOOLTIP_MARGIN_PX, left) + "px";
+    popup.style.top = Math.max(TOOLTIP_MARGIN_PX, Math.min(cardRect.top, maxTop)) + "px";
+}
+
+function isRoleSelected(role) {
+    return selectedRoles.some(selected => selected.id === role.id);
+}
+
 function setupRoleSelection() {
     const rolesList = document.getElementById("roles-list");
     rolesList.innerHTML = "";
     rolesList.style.display = "grid";
+
+    document.getElementById("suggest-role-button").addEventListener("click", () => {
+        if (idSuggestedRole !== null) {
+            socket.emit("suggest-role", idSuggestedRole);
+        }
+        hideSuggestRolePopup();
+    });
 
     document.getElementById("close-button").addEventListener("click", () => {
         socket.emit("update-state", "waiting");
@@ -127,8 +160,15 @@ function setupRoleSelection() {
         roleCard.addEventListener("click", () => {
             if (isHost()) {
                 socket.emit("request-update-selected-roles", role);
-            } else if (isMobileView()) {
-                toggleRoleDescription(roleCard, role);
+            } else {
+                const isSamePopupOpen = idSuggestedRole === role.id;
+                hideSuggestRolePopup();
+                if (!isSamePopupOpen && !isRoleSelected(role)) {
+                    showSuggestRolePopup(roleCard, role);
+                }
+                if (isMobileView()) {
+                    toggleRoleDescription(roleCard, role);
+                }
             }
         });
 
@@ -154,9 +194,14 @@ document.addEventListener("click", (event) => {
     if (isMobileView() && !event.target.closest("#roles-list")) {
         hideRoleDescription();
     }
+    if (!event.target.closest("#roles-list .card") && !event.target.closest("#suggest-role-popup")) {
+        hideSuggestRolePopup();
+    }
 });
 
 function updateSelectedRoles(lobby) {
+    selectedRoles = lobby.selectedRoles;
+    hideSuggestRolePopup();
     document.getElementById("discuss-time-label").textContent = "Discussion Time: " + (lobby.discussTime || 300) + " secs";
     document.getElementById("discuss-time-input").value = lobby.discussTime || 300;
 

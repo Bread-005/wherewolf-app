@@ -406,6 +406,23 @@ io.on("connection", async (socket) => {
         }
     });
 
+    socket.on("suggest-role", (idRole) => {
+        const lobby = findLobbyBySocketId();
+        if (!lobby || lobby.state !== "select-roles") {
+            return;
+        }
+        const host = getPlayers(lobby)[0];
+        const sender = lobby.cards.find(card => card.id === socket.id);
+        const role = allRoles.find(candidate => candidate.id === idRole);
+        const isAlreadySelected = lobby.selectedRoles.some(selected => selected.id === idRole);
+        if (!role || !sender || sender.id === host.id || isAlreadySelected) {
+            return;
+        }
+        // The client shows this text as HTML, so player names must be escaped.
+        const senderName = sender.name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        io.to(host.id).emit("broadcast-message", `${senderName} suggests you to add ${role.name}`);
+    });
+
     socket.on("request-update-selected-editions", (edition) => {
         const lobby = findLobbyBySocketId();
         if (lobby) {
