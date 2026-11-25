@@ -1,5 +1,5 @@
 import {
-    showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents,
+    showToast, getNameError, createLobbyDisplay, displayCards, setupButtonEvents,
     viewCard, resetNightActionTexts, clearEverything, getCardElement,
     updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isHost, showMarkViewing,
     resetMarkCursors, setCenterMarkVisible, updateMarkTokens
@@ -42,20 +42,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("create-lobby-button").addEventListener("click", () => {
         const userName = document.getElementById("enter-name-input").value;
-        if (!userName.trim()) {
-            showErrorPopup("You have to enter a name");
-            return;
-        }
-        if (userName.length > 15) {
-            showErrorPopup("Name may not be longer than 15 letters");
-            return;
-        }
-        if (userName.includes(":")) {
-            showErrorPopup("Your name may not contain ':'");
-            return;
-        }
-        if (userName.trim().toLowerCase() === "system") {
-            showErrorPopup("Your name may not be 'System'");
+        const nameError = getNameError(userName);
+        if (nameError) {
+            showToast(nameError);
             return;
         }
         saveName(userName.trim());
@@ -282,7 +271,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     socket.on("broadcast-message", (message) => {
-        showErrorPopup(message);
+        showToast(message);
     });
 
     document.getElementById("confirm-button").addEventListener("click", confirmButtonAction);

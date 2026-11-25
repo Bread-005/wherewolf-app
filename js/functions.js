@@ -8,7 +8,7 @@ import {saveName} from "./appStorage.js";
 const MARK_GIVER_ROLES = ["Assassin", "Instigator"];
 const MARK_TITLES = {Assassin: "the Assassin", Instigator: "the Traitor"};
 
-function showErrorPopup(message) {
+function showToast(message) {
     const container = document.getElementById("toast-container");
 
     const toast = document.createElement("div");
@@ -386,6 +386,30 @@ function getCardElement(id) {
     return document.getElementById("card" + id);
 }
 
+/**
+ * Checks the rules every player name must follow, for creating and joining a lobby.
+ * @param {string} name Raw value of the name input.
+ * @returns {string|null} Error message, or null if the name is valid.
+ */
+function getNameError(name) {
+    if (!name.trim()) {
+        return "You have to enter a name";
+    }
+    if (name.length > 15) {
+        return "Name may not be longer than 15 letters";
+    }
+    if (name.includes("middle-card")) {
+        return "Your name may not contain 'middle-card'";
+    }
+    if (name.includes(":")) {
+        return "Your name may not contain ':'";
+    }
+    if (name.trim().toLowerCase() === "system") {
+        return "Your name may not be 'System'";
+    }
+    return null;
+}
+
 function createLobbyDisplay() {
     const lobbyDiv = document.getElementById("lobby");
     lobbyDiv.innerHTML = `<div>Name</div><div>Players</div><div>State</div><div>Action</div>`;
@@ -408,32 +432,21 @@ function createLobbyDisplay() {
 
         joinButton.addEventListener("click", () => {
             if (joinButton.textContent === "Spectate") {
-                showErrorPopup("Spectating is currently not available");
+                showToast("Spectating is currently not available");
                 return;
             }
             const nameInput = document.getElementById("enter-name-input").value;
-            if (!nameInput.trim()) {
-                showErrorPopup("You have to enter a name");
+            const nameError = getNameError(nameInput);
+            if (nameError) {
+                showToast(nameError);
                 return;
             }
             if (lobby.cards.find(card => card.name === nameInput.trim())) {
-                showErrorPopup("Name already exists in that Lobby");
-                return;
-            }
-            if (nameInput.trim().includes("middle-card")) {
-                showErrorPopup("Your name may not contain 'middle-card'");
-                return;
-            }
-            if (nameInput.includes(":")) {
-                showErrorPopup("Your name may not contain ':'");
-                return;
-            }
-            if (nameInput.trim().toLowerCase() === "system") {
-                showErrorPopup("Your name may not be 'System'");
+                showToast("Name already exists in that Lobby");
                 return;
             }
             if (lobby.cards.filter(card => !card.isMiddleCard).length >= 10) {
-                showErrorPopup("There cannot be more than 10 players in one game!");
+                showToast("There cannot be more than 10 players in one game!");
                 return;
             }
             saveName(nameInput.trim());
@@ -482,7 +495,7 @@ function setupVotingClickEvent(card) {
             const lobby = getCurrentLobby();
             if (lobby.state !== "voting") { return; }
             if (card.style.cursor !== "pointer") {
-                showErrorPopup("You have already voted!");
+                showToast("You have already voted!");
                 return;
             }
             for (const card1 of lobby.cards) {
@@ -747,7 +760,7 @@ function playerHasStartingRoleOf(player, startingRoles = []) {
     return startingRoles.find(role => role === player.startingRole);
 }
 
-export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,
+export {showToast, getNameError,displayCards, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
     removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf, getPublicRole, getMarkElement, setMarkFace,
