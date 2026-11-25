@@ -1,7 +1,7 @@
 import {allRoles, lobbies, myId, socket} from "./index.js";
 import {getCurrentLobby} from "./lobby.js";
 import {wakeUpMultiple} from "./roleActions.js";
-import {setCardClickEvent} from "./CardClickEvent.js";
+import {setCardClickEvent, setMarkClickEvent} from "./CardClickEvent.js";
 import {saveName} from "./appStorage.js";
 
 function showErrorPopup(message) {
@@ -145,9 +145,151 @@ function displayCards(lobby) {
         document.getElementById("card" + player.id).style.top = (startTop + (index * verticalGap)) + "%";
     });
 
+    updateMarkTokens(lobby);
+
     // set night action events
     for (const card of lobby.cards) {
         setCardClickEvent(card.id);
+    }
+}
+
+/**
+ * True if a selected role has isDuskRole in roles.json (a role that works with marks).
+ * @param {{name: string}[]} selectedRoles
+ * @returns {boolean}
+ */
+function hasDuskRole(selectedRoles) {
+    return selectedRoles.some(role => allRoles.find(role1 => role1.name === role.name)?.isDuskRole === true);
+}
+
+/**
+ * Shows a mark next to every player card as long as a role with a mark is selected.
+ * Call it after the card positions are set. It rebuilds all marks, but no cards.
+ * @param {object} lobby
+ */
+function updateMarkTokens(lobby) {
+    document.querySelectorAll(".mark-token").forEach(markToken => markToken.remove());
+    if (!lobby.hasDusk && !hasDuskRole(lobby.selectedRoles)) {
+        return;
+    }
+    for (const player of lobby.cards.filter(card => !card.isMiddleCard)) {
+        const card = getCardElement(player.id);
+        if (!card) {
+            continue;
+        }
+        if (player.id === myId) {
+            addMarkToken(player.id, "mark-you");
+        } else if (card.style.left) {
+            addMarkToken(player.id, "mark-right");
+        } else {
+            addMarkToken(player.id, "mark-left");
+        }
+    }
+}
+
+/**
+ * Adds a mark next to a player's card.
+ * The mark is a sibling of the card, so card hover and card swaps do not affect it.
+ * It copies the card's position, so call it after the card position is set.
+ * @param {string} idPlayer
+ * @param {"mark-left" | "mark-right" | "mark-you"} positionClass Side of the card the mark appears on.
+ */
+function addMarkToken(idPlayer, positionClass) {
+    const card = getCardElement(idPlayer);
+    const markToken = document.createElement("div");
+    markToken.id = "mark" + idPlayer;
+    markToken.className = "mark-token " + positionClass;
+    markToken.style.top = card.style.top;
+    markToken.style.left = card.style.left;
+    markToken.style.right = card.style.right;
+    document.getElementById("cards").append(markToken);
+    setMarkClickEvent(idPlayer);
+}
+
+function getMarkElement(idPlayer) {
+    return document.getElementById("mark" + idPlayer);
+}
+
+/**
+ * Shows a mark face-up. An empty name turns it face-down again.
+ * @param {string} idPlayer
+ * @param {string} markName Mark name, e.g. "Clarity". Loads assets/marks/clarity_mark.png. Empty for the back.
+ */
+function setMarkFace(idPlayer, markName) {
+    const markElement = getMarkElement(idPlayer);
+    markElement.style.backgroundImage = markName ? `url("./assets/marks/${markName.toLowerCase()}_mark.png")` : "";
+    markElement.classList.toggle("revealed", Boolean(markName));
+}
+
+function resetMarkCursors() {
+    document.querySelectorAll(".mark-token").forEach(markElement => {
+        markElement.style.cursor = "default";
+    });
+}
+
+function clearMarkSelection() {
+    document.querySelectorAll(".selected-mark").forEach(markElement => {
+        markElement.classList.remove("selected-mark");
+    });
+}
+
+/**
+ * Shows or hides the Assassin mark in the middle of the table.
+ * @param {boolean} isVisible
+ */
+function setCenterMarkVisible(isVisible) {
+    document.getElementById("center-mark").style.display = isVisible ? "block" : "none";
+}
+
+/**
+ * Swaps the center mark with a player's mark. Only the two marks move, no cards.
+ * @param {string} idTarget Id of the player whose mark is swapped.
+ * @param {number} duration Animation time in ms.
+ * @returns {Promise<void>} Resolves when the marks are back in their original place.
+ */
+function animateMarkSwap(idTarget, duration = 2000) {
+    const centerMark = document.getElementById("center-mark");
+    const targetMark = getMarkElement(idTarget);
+    const centerRect = centerMark.getBoundingClientRect();
+    const targetRect = targetMark.getBoundingClientRect();
+    const deltaX = (targetRect.left + targetRect.width / 2) - (centerRect.left + centerRect.width / 2);
+    const deltaY = (targetRect.top + targetRect.height / 2) - (centerRect.top + centerRect.height / 2);
+    const centerTransform = window.getComputedStyle(centerMark).transform;
+    const targetTransform = window.getComputedStyle(targetMark).transform;
+    const baseCenterTransform = centerTransform !== "none" ? centerTransform : "";
+    const baseTargetTransform = targetTransform !== "none" ? targetTransform : "";
+
+    centerMark.style.transition = `transform ${duration}ms ease-in-out`;
+    targetMark.style.transition = `transform ${duration}ms ease-in-out`;
+    centerMark.style.transform = `translate(${deltaX}px, ${deltaY}px) ${baseCenterTransform}`;
+    targetMark.style.transform = `translate(${-deltaX}px, ${-deltaY}px) ${baseTargetTransform}`;
+
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            centerMark.style.transition = "";
+            targetMark.style.transition = "";
+            centerMark.style.transform = "";
+            targetMark.style.transform = "";
+            resolve();
+        }, duration);
+    });
+}
+
+/**
+ * Dusk, after all dusk actions are done: the player looks at their own mark.
+ * @param {object} you The local player.
+ */
+function showMarkViewing(you) {
+    const markElement = getMarkElement(myId);
+    setCenterMarkVisible(false);
+    resetMarkCursors();
+    if (you.hasSeenMark) {
+        document.getElementById("night-action-text").textContent = "Wait for the other players to look at their marks";
+        return;
+    }
+    if (!markElement.classList.contains("revealed")) {
+        document.getElementById("night-action-text").textContent = "Look at your mark, by clicking it";
+        markElement.style.cursor = "pointer";
     }
 }
 
@@ -168,6 +310,12 @@ function viewCard(card, as = card.role) {
 function setupButtonEvents() {
     document.getElementById("continue-button").addEventListener("click", () => {
         document.getElementById("continue-button").style.display = "none";
+        if (getCurrentLobby().state === "dusk") {
+            setMarkFace(myId, "");
+            document.getElementById("night-action-text").textContent = "Wait for the other players to look at their marks";
+            socket.emit("check-has-seen-mark");
+            return;
+        }
         getCardElement(myId).querySelectorAll("img").forEach(img => img.remove());
         document.getElementById("display-text").textContent = "Wait for the other players to look at their roles";
         socket.emit("check-has-seen-role");
@@ -204,6 +352,9 @@ function resetNightActionTexts() {
         removeAllImg(card.id);
         getCardElement(card.id).style.cursor = "default";
     }
+    clearMarkSelection();
+    resetMarkCursors();
+    setCenterMarkVisible(false);
 }
 
 function getCardElement(id) {
@@ -296,6 +447,7 @@ function clearEverything() {
         document.getElementById("general-rules-list").querySelectorAll(".dynamic-rule").forEach(element => element.remove());
         document.getElementById("game-summary-button").style.display = "none";
         document.getElementById("game-summary-overlay").style.display = "none";
+        setCenterMarkVisible(false);
     }
 }
 
@@ -552,6 +704,9 @@ function removeAllImg(id) {
 
 function hasToSeeRandomActions(lobby, player, ignoreNightOrder = false) {
     for (const action of lobby.randomActions) {
+        if (lobby.state === "dusk" && action.nightOrder >= 0) {
+            continue;
+        }
         if (!action.seenPlayers.includes(player.name) &&
             (ignoreNightOrder || action.nightOrder <= allRoles.find(role => role.name === player.startingRole).nightOrder)) {
             document.getElementById("night-action-text").textContent = action.role + " action: " + action.action +
@@ -570,4 +725,5 @@ function playerHasStartingRoleOf(player, startingRoles = []) {
 export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElement,
     resetNightActionTexts, createLobbyDisplay, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
-    removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf, getPublicRole};
+    removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf, getPublicRole, getMarkElement, setMarkFace,
+    resetMarkCursors, clearMarkSelection, setCenterMarkVisible, showMarkViewing, animateMarkSwap, updateMarkTokens};

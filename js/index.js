@@ -1,7 +1,8 @@
 import {
     showErrorPopup, createLobbyDisplay, displayCards, setupButtonEvents,
     viewCard, resetNightActionTexts, clearEverything, getCardElement,
-    updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isHost
+    updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isHost, showMarkViewing,
+    resetMarkCursors, setCenterMarkVisible, updateMarkTokens
 } from "./functions.js";
 import {showVoteResults, showVoteResultBoard} from "./voteResults.js";
 import {setupTokens} from "./tokens.js";
@@ -198,14 +199,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 }
             }
-            if (lobby.state === "night") {
+            if (lobby.state === "night" || lobby.state === "dusk") {
                 for (const player of players) {
                     document.getElementById("ready-banner" + player.id).style.display = "none";
                 }
                 document.body.style.backgroundImage = `url("./assets/wherewolf_background_night.png")`;
                 document.getElementById("display-text").textContent = lobby.displayText;
-                if (lobby.nightTimer > 2) {
+                if (lobby.state === "dusk" && lobby.duskActionsDone) {
+                    showMarkViewing(you);
+                } else if (lobby.nightTimer > 2) {
                     showRoleActions();
+                } else if (lobby.state === "night") {
+                    resetMarkCursors();
+                    setCenterMarkVisible(false);
                 }
                 document.getElementById("chat-container").style.display = "none";
                 document.getElementById("display-text").style.color = "white";
@@ -349,6 +355,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket.on("update-selected-roles", (lobby) => {
         updateSelectedRoles(lobby);
+        updateMarkTokens(lobby);
     });
 
     document.getElementById("yes-button").addEventListener("click", () => {

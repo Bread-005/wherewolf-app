@@ -50,6 +50,7 @@ images/           # Role card images (one PNG per role, snake_case filename)
 | `waiting` | Lobby view, waiting for players |
 | `select-roles` | Host configures the role pool |
 | `look-at-role` | Players view their own card |
+| `dusk` | Only if a selected role has `isDuskRole: true`. Roles with `nightOrder < 0` act, then everyone looks at their mark |
 | `night` | Night phase — role actions shown via `roleActions.js` |
 | `day` | Discussion phase |
 | `voting` | Players click another card to vote |
@@ -126,8 +127,12 @@ Pure function `evaluateVotingResults(lobby, players)` — no I/O. Mutates `lobby
 ### Game State Machine
 
 ```
-waiting → select-roles → look-at-role → night → day → voting → voting-results
+waiting → select-roles → look-at-role → [dusk →] night → day → voting → voting-results
 ```
+
+- `dusk` is skipped if no selected role has `isDuskRole: true` in `roles.json` (`hasDuskRole` in `server.js`).
+- In a dusk game every player starts with `mark = "Clarity"`. Mark roles overwrite it (Assassin: `"Assassin"`).
+- Dusk ends when `duskActionsDone` is true and every player has `hasSeenMark` (`check-has-seen-mark`).
 
 - The night cycle runs as a `setInterval` on the server, advancing once all players have acted and all `randomActions` have been acknowledged.
 - Card swaps (Robber, Troublemaker, etc.) are queued in `lobby.pendingSwaps` during the night and executed in priority order when early-acting roles finish.

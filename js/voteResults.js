@@ -1,6 +1,6 @@
 import {myId} from "./index.js";
 import {getCurrentLobby} from "./lobby.js";
-import {viewCard, getCardElement} from "./functions.js";
+import {viewCard, getCardElement, getMarkElement, setMarkFace} from "./functions.js";
 
 /**
  * Reveals all role cards and displays the vote result board.
@@ -66,6 +66,9 @@ function showVoteResultBoard(lobby, players) {
 function showEndingRoles(lobby) {
     for (const card of lobby.cards) {
         viewCard(card);
+        if (getMarkElement(card.id)) {
+            setMarkFace(card.id, card.mark);
+        }
         document.getElementById("role-show-stage").textContent = "Shows Ending Roles";
         if (card.dies) {
             document.getElementById("death-overlay" + card.id).style.display = "flex";

@@ -2,7 +2,7 @@ function appendWinResult(lobby, team, text) {
     const canAppend = lobby.winningTeam.length > 0 && lobby.winningTeam !== "No-one";
     if (canAppend) {
         lobby.winningTeam += " and " + team;
-        lobby.voteResultText += " and " + text[0].toLowerCase() + text.slice(1);
+        lobby.voteResultText = lobby.voteResultText.replace(/\.$/, "") + " and " + text[0].toLowerCase() + text.slice(1);
     } else {
         lobby.winningTeam = team;
         lobby.voteResultText = text;
@@ -204,7 +204,15 @@ function evaluateVotingResults(lobby, players) {
         }
     }
 
+    // evaluate if Assassin (and Doppelganger-Assassin) has won
+    const hasMarkedPlayerDied = players.some(player => player.mark === "Assassin" && player.dies);
+    const assassinTeams = [...new Set(players.filter(player => player.team.includes("Assassin")).map(player => player.team))];
+    if (hasMarkedPlayerDied && assassinTeams.length > 0) {
+        appendWinResult(lobby, assassinTeams.join(" and "), "The player with the Mark of the Assassin died.");
+    }
+
     // evaluate if Sly Fox has won
+    // If the Sly Fox wins, everyone else loses. So the Sly Fox replaces all earlier wins on purpose.
     for (const player of players) {
         if (player.team.includes("Sly Fox") && player.voteAmount === 0) {
             if (lobby.winningTeam.includes("Sly Fox")) {

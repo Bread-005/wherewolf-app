@@ -1,6 +1,6 @@
 import {allRoles} from "./index.js";
 
-const ROLES_WITH_OWN_COPY_ENTRY = ["Insomniac", "Minion", "Squire", "Beholder", "Apprentice Tanner", "Mortician"];
+const ROLES_WITH_OWN_COPY_ENTRY = ["Insomniac", "Minion", "Squire", "Beholder", "Apprentice Tanner", "Mortician", "Assassin"];
 
 function findCopiedRole(doppelganger, cards) {
     const target = doppelganger.selectedCards[0];
@@ -121,6 +121,9 @@ function buildGameSummary(lobby) {
         if (player.beginningRole === "Thing") {
             actionText.textContent = "bumped";
         }
+        if (role.name === "Assassin") {
+            actionText.textContent = "gave the Mark of the Assassin to";
+        }
         if (player.selectedCards.length === 0) {
             actionText.textContent = "did nothing";
         }
@@ -147,7 +150,7 @@ function buildGameSummary(lobby) {
             if (player.doppelgangerCopy === "Copycat") {
                 player.doppelgangerCopy = player.selectedCards[1].role;
             }
-            if (player.selectedCards.length > 1 && player.doppelgangerCopy !== "Mortician") {
+            if (player.selectedCards.length > 1 && !["Mortician", "Assassin"].includes(player.doppelgangerCopy)) {
                 const andText = document.createElement("span");
                 andText.className = "summary-and-text";
                 andText.textContent = "and then selected";
@@ -291,8 +294,8 @@ function buildGameSummary(lobby) {
         }
 
         if (player.selectedCards.length > 0) {
-            const isDoppelgangerMortician = role.name === "Doppelganger" && player.doppelgangerCopy === "Mortician";
-            if (role.name !== "Copycat" && role.name !== "Werewolf" && role.name !== "Village Idiot" && !isDoppelgangerMortician) {
+            const isDoppelgangerWithOwnEntry = role.name === "Doppelganger" && ["Mortician", "Assassin"].includes(player.doppelgangerCopy);
+            if (role.name !== "Copycat" && role.name !== "Werewolf" && role.name !== "Village Idiot" && !isDoppelgangerWithOwnEntry) {
                 if ((role.name === "Seer" || role.name === "Doppelganger" && player.doppelgangerCopy === "Seer") &&
                     player.selectedCards.at(-1).name.includes("middle-card") && player.selectedCards.at(-2).name.includes("middle-card")) {
                     buildCenterCards([player.selectedCards.at(-2), player.selectedCards.at(-1)], targetsContainer);

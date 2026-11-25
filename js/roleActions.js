@@ -1,6 +1,6 @@
 import {
-    animateCardSwap, getCardElement, hasToSeeRandomActions, isDoppelganger,
-    playerHasStartingRoleOf, removeAllImg, viewCard
+    animateCardSwap, animateMarkSwap, clearMarkSelection, getCardElement, getMarkElement, hasToSeeRandomActions, isDoppelganger,
+    playerHasStartingRoleOf, removeAllImg, resetMarkCursors, setCenterMarkVisible, viewCard
 } from "./functions.js";
 import {allRoles, myId, socket} from "./index.js";
 import {getCurrentLobby} from "./lobby.js";
@@ -146,6 +146,22 @@ function makeCardsClickable(type, player, lobby, myIndex, players, yourRandomAct
     }
 }
 
+/**
+ * The Assassin sees the Assassin mark in the middle and can select any player's mark.
+ */
+function makeMarksClickable(player, players) {
+    if (player.hasClickedConfirm) {
+        return;
+    }
+    setCenterMarkVisible(true);
+    for (const target of players) {
+        getMarkElement(target.id).style.cursor = "pointer";
+    }
+    if (document.querySelectorAll(".selected-mark").length === 0) {
+        document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === "Assassin").nightAction;
+    }
+}
+
 function wakeUpMultiple(roleName) {
 
     const lobby = getCurrentLobby();
@@ -252,7 +268,11 @@ function showRoleActions() {
     const lobby = getCurrentLobby();
     if (!lobby) return;
     lobby.cards.forEach(card => getCardElement(card.id).style.cursor = "default");
-    if (lobby.state !== "night") return;
+    resetMarkCursors();
+    if (!document.getElementById("center-mark").style.transition) {
+        setCenterMarkVisible(false);
+    }
+    if (lobby.state !== "night" && lobby.state !== "dusk") return;
     const players = lobby.cards.filter(card => !card.isMiddleCard);
     const centerCards = lobby.cards.filter(card => card.isMiddleCard);
     const player = players.find(player => player.id === myId);
@@ -288,13 +308,22 @@ function showRoleActions() {
         return;
     }
     if (document.getElementById("ok-button").style.display === "flex") return;
+    if (lobby.state === "dusk" && allRoles.find(role => role.name === player.startingRole).nightOrder >= 0) {
+        // Dusk only ends after everyone has seen the dusk random actions (Oracle).
+        if (hasToSeeRandomActions(lobby, player)) {
+            return;
+        }
+        document.getElementById("night-action-text").textContent = "waiting for the dusk phase to end ...";
+        return;
+    }
     if (allRoles.find(role => role.name === player.startingRole).nightOrder > 100) {
         document.getElementById("night-action-text").textContent = "You do not have a night action.";
         document.getElementById("ok-button").style.display = "flex";
     }
     if (document.getElementById("ok-button").style.display === "flex") return;
     if (document.getElementById("confirm-seen-button").style.display === "flex") return;
-    if (lobby.cards.find(card => getCardElement(card.id).style.transition)) return;
+    if (lobby.cards.find(card => getCardElement(card.id).style.transition) ||
+        document.getElementById("center-mark").style.transition) return;
 
     if (document.getElementById("do-nothing-button").style.display !== "flex" && document.getElementById("confirm-button").style.display !== "flex" &&
         document.getElementById("ok-button").style.display !== "flex") {
@@ -386,6 +415,11 @@ function showRoleActions() {
 
     if (player.startingRole === "Sentinel") {
         makeCardsClickable("players", player, lobby, myIndex, players, yourRandomAction);
+    }
+
+    if (player.startingRole === "Assassin") {
+        makeMarksClickable(player, players);
+        return;
     }
 
     if (isDoppelganger(player) && (player.startingRole === "Alpha Wolf" || player.startingRole === "Mystic Wolf") && !player.hasDoneExtraWolfAction) {
@@ -497,6 +531,20 @@ function confirmButtonAction() {
     lobby.cards.forEach(card => getCardElement(card.id).style.cursor = "default");
     document.getElementById("do-nothing-button").style.display = "none";
     document.getElementById("confirm-button").style.display = "none";
+
+    if (player.startingRole === "Assassin") {
+        const idTarget = document.querySelector(".selected-mark").id.replace("mark", "");
+        const target = lobby.cards.find(card => card.id === idTarget);
+        socket.emit("exchange-marks", target.name);
+        clearMarkSelection();
+        resetMarkCursors();
+        animateMarkSwap(idTarget).then(() => {
+            setCenterMarkVisible(false);
+            document.getElementById("night-action-text").textContent = "You gave the Mark of the Assassin to " + target.name;
+            document.getElementById("ok-button").style.display = "flex";
+        });
+        return;
+    }
 
     if (player.roleChain[0] === "Oracle") {
         if (lobby.oracleAnswer.includes("go ahead")) {

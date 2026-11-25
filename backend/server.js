@@ -95,6 +95,59 @@ function toLobbySummary(lobby) {
     };
 }
 
+function getNightOrder(roleName) {
+    return allRoles.find(role => role.name === roleName)?.nightOrder;
+}
+
+/**
+ * A lobby has a dusk phase if any selected role has isDuskRole in roles.json.
+ * The role is looked up in allRoles, so the client cannot fake the flag.
+ * @param {{name: string}[]} selectedRoles
+ * @returns {boolean}
+ */
+function hasDuskRole(selectedRoles) {
+    return selectedRoles.some(role => allRoles.find(role1 => role1.name === role.name)?.isDuskRole === true);
+}
+
+/**
+ * Dusk ends when no player with a dusk action (nightOrder below 0) is still open
+ * and everyone has seen the random actions of those roles (Oracle).
+ * Copycat and Doppelganger stop blocking once they have copied, because their startingRole changes.
+ * @param {object} lobby
+ * @param {object[]} players
+ * @returns {boolean}
+ */
+function areDuskActionsDone(lobby, players) {
+    const isAnyDuskActionOpen = players.some(player =>
+        !player.hasDoneNightAction && getNightOrder(player.startingRole) < 0);
+    const areDuskRandomActionsSeen = lobby.randomActions
+        .filter(action => action.nightOrder < 0)
+        .every(action => players.every(player => action.seenPlayers.includes(player.name)));
+    return !isAnyDuskActionOpen && areDuskRandomActionsSeen;
+}
+
+/**
+ * Gives out all marks that were chosen during dusk, lowest priority first.
+ * @param {object} lobby
+ */
+function applyMarkExchanges(lobby) {
+    lobby.pendingMarkExchanges.sort((first, second) => first.priority - second.priority);
+    for (const exchange of lobby.pendingMarkExchanges) {
+        const target = lobby.cards.find(card => card.name === exchange.targetName);
+        target.mark = exchange.mark;
+    }
+    lobby.pendingMarkExchanges = [];
+}
+
+/**
+ * True during the phases in which night actions are performed.
+ * @param {object} lobby
+ * @returns {boolean}
+ */
+function isNightOrDusk(lobby) {
+    return lobby.state === "night" || lobby.state === "dusk";
+}
+
 /**
  * Sends the full lobby to its own players only.
  */
@@ -152,6 +205,8 @@ io.on("connection", async (socket) => {
         card.viewableCopycatRole = "";
         card.viewableCopycatTeam = "";
         card.bumpedList = [];
+        card.mark = "";
+        card.hasSeenMark = false;
 
         if (!card.isMiddleCard) {
             card.vote = "";
@@ -219,6 +274,9 @@ io.on("connection", async (socket) => {
             tempMessages: [],
             selectedEditions: ["base game"],
             oracleAnswer: "",
+            hasDusk: false,
+            duskActionsDone: false,
+            pendingMarkExchanges: [],
             round: 0
         }
 
@@ -291,9 +349,13 @@ io.on("connection", async (socket) => {
                 const player = lobby.cards.find(player => player.id === targetId);
                 player.vote = "No-one";
                 player.hasSeenRole = true;
+                player.hasSeenMark = true;
                 player.hasDoneNightAction = true;
                 player.hasSkippedToVote = true;
                 checkEveryoneHasSeenRole();
+                if (lobby.state === "dusk") {
+                    startNightIfEveryoneSawMark(lobby);
+                }
                 checkEveryoneHasSkippedToVote();
                 await checkEveryoneHasVoted(player.vote, targetId);
                 player.id = crypto.randomUUID() + "-disconnected";
@@ -396,6 +458,13 @@ io.on("connection", async (socket) => {
                 }
             }
             const players = getPlayers(lobby);
+            lobby.hasDusk = hasDuskRole(lobby.selectedRoles);
+            lobby.duskActionsDone = false;
+            if (lobby.hasDusk) {
+                for (const player of players) {
+                    player.mark = "Clarity";
+                }
+            }
             addRandomAction("Oracle", -9, [
                 {text: "Would you like to turn into a Werewolf?", amount: 10},
                 {text: "Would you like to exchange your card with one from the center?", amount: 20},
@@ -457,6 +526,9 @@ io.on("connection", async (socket) => {
             lobby.randomActions = [];
             lobby.tempMessages = [];
             lobby.oracleAnswer = "";
+            lobby.hasDusk = false;
+            lobby.duskActionsDone = false;
+            lobby.pendingMarkExchanges = [];
             emitLobbyUpdate(lobby);
         }
     });
@@ -474,16 +546,19 @@ io.on("connection", async (socket) => {
                 updateLobby();
                 return;
             }
-            lobby.state = "night";
+            lobby.state = lobby.hasDusk ? "dusk" : "night";
 
-            // night cycle
+            // dusk and night cycle
             lobby.nightTimer = 0;
             emitLobbyUpdate(lobby);
             let swapsHappened = false;
             let nightEnds = false;
+            let duskActionsDoneAt = null;
+            // dusk lasts at least 10 to 15 seconds, so nobody can tell from its length if a dusk role acts
+            const minDuskDuration = 10 + Math.floor(Math.random() * 6);
             const nightCycle = setInterval(() => {
                 lobby.nightTimer++;
-                lobby.displayText = "It is night time - " + formatTime(lobby.nightTimer);
+                lobby.displayText = (lobby.state === "dusk" ? "It is dusk - " : "It is night time - ") + formatTime(lobby.nightTimer);
                 emitToLobby(lobby);
 
                 const players = getPlayers(lobby);
@@ -496,6 +571,23 @@ io.on("connection", async (socket) => {
                         }
                         const randomOracleAnswer = shuffle(randomAnswers)[0];
                         submitOracleAnswer(randomOracleAnswer);
+                    }
+                    return;
+                }
+
+                if (lobby.state === "dusk") {
+                    if (lobby.duskActionsDone) {
+                        return;
+                    }
+                    if (!areDuskActionsDone(lobby, players)) {
+                        duskActionsDoneAt = null;
+                        return;
+                    }
+                    // wait a random 1 to 5 seconds, so nobody can tell who acted last
+                    duskActionsDoneAt ??= lobby.nightTimer + 1 + Math.floor(Math.random() * 5);
+                    if (lobby.nightTimer >= duskActionsDoneAt && lobby.nightTimer >= minDuskDuration) {
+                        applyMarkExchanges(lobby);
+                        lobby.duskActionsDone = true;
                     }
                     return;
                 }
@@ -556,9 +648,35 @@ io.on("connection", async (socket) => {
         }
     }
 
+    /**
+     * Starts the night once every player has looked at their mark.
+     * Takes the lobby as a parameter, because a player can also be removed by another socket.
+     */
+    function startNightIfEveryoneSawMark(lobby) {
+        const isDuskFinished = lobby.state === "dusk" && lobby.duskActionsDone;
+        if (!isDuskFinished || !getPlayers(lobby).every(player => player.hasSeenMark)) {
+            emitToLobby(lobby);
+            return;
+        }
+        lobby.state = "night";
+        lobby.nightTimer = 0;
+        for (const player of getPlayers(lobby)) {
+            player.sawWaitMessage = false;
+        }
+        emitLobbyUpdate(lobby);
+    }
+
+    socket.on("check-has-seen-mark", () => {
+        const lobby = findLobbyBySocketId();
+        if (lobby && lobby.state === "dusk" && lobby.duskActionsDone) {
+            lobby.cards.find(card => card.id === socket.id).hasSeenMark = true;
+            startNightIfEveryoneSawMark(lobby);
+        }
+    });
+
     socket.on("has-clicked-ok-or-do-nothing", (hasClickedOk) => {
         const lobby = findLobbyBySocketId();
-        if (lobby && lobby.state === "night") {
+        if (lobby && isNightOrDusk(lobby)) {
             const player = lobby.cards.find(player => player.id === socket.id);
             if ((player.roleChain[0] === "Doppelganger" || player.roleChain[0] === "Copycat") && !player.hasCopiedRole) {
                 if (player.startingRole !== "Copycat" && player.startingRole !== "Doppelganger") {
@@ -647,7 +765,7 @@ io.on("connection", async (socket) => {
     const allowedSwapPriorities = [-9, 2.1, 6, 6.1, 7, 7.1, 8];
 
     function isValidSwapRequest(lobby, priority, swap) {
-        if (lobby.state !== "night" || !allowedSwapPriorities.includes(priority) || !Array.isArray(swap)) {
+        if (!isNightOrDusk(lobby) || !allowedSwapPriorities.includes(priority) || !Array.isArray(swap)) {
             return false;
         }
         const swapNames = swap.map(swapItem => swapItem?.name);
@@ -673,10 +791,12 @@ io.on("connection", async (socket) => {
             if (player) {
                 player.id = socket.id;
                 leavingPlayerNames = leavingPlayerNames.filter(name => name !== player.name);
-                if (lobby.state === "night" && !player.hasDoneNightAction) {
+                if (isNightOrDusk(lobby) && !player.hasDoneNightAction) {
+                    const hasOpenMarkAction = player.startingRole === "Assassin" && !player.hasClickedConfirm;
                     player.hasDoneNightAction = true;
                     player.hasClickedConfirm = true;
-                    if (player.roleChain[0] === "Oracle" && lobby.oracleAnswer?.includes("go ahead") && player.roleChain.length === 1 ||
+                    if (hasOpenMarkAction ||
+                        player.roleChain[0] === "Oracle" && lobby.oracleAnswer?.includes("go ahead") && player.roleChain.length === 1 ||
                         player.startingRole === "Copycat" || player.startingRole === "Doppelganger" || player.startingRole === "Alpha Wolf" && !player.hasDoneExtraWolfAction ||
                         player.startingRole === "Witch" && (player.witchHasViewedCard || player.didFirstPart) || player.startingRole === "Drunk" && !lobby.pendingSwaps.find(swap => swap.priority === 8) ||
                         !player.mayDoLateAction && allRoles.find(role => role.name === player.startingRole)?.nightOrder >= 9) {
@@ -809,7 +929,7 @@ io.on("connection", async (socket) => {
 
     socket.on("has-clicked-confirm", ({selectedCards, oracleAnswer}) => {
         const lobby = findLobbyBySocketId();
-        if (lobby && lobby.state === "night") {
+        if (lobby && isNightOrDusk(lobby)) {
             const player = lobby.cards.find(player => player.id === socket.id);
             if (player.hasClickedConfirm) {
                 return;
@@ -881,6 +1001,35 @@ io.on("connection", async (socket) => {
 
     socket.on("set-is-sentinelled", (name) => {
         getPlayer(name).isSentinelled = true;
+        updateLobby();
+    });
+
+    socket.on("exchange-marks", (targetName) => {
+        const lobby = findLobbyBySocketId();
+        if (!lobby || lobby.state !== "dusk") {
+            return;
+        }
+        const assassin = lobby.cards.find(card => card.id === socket.id);
+        const target = lobby.cards.find(card => card.name === targetName && !card.isMiddleCard);
+        if (assassin?.startingRole !== "Assassin" || assassin.hasClickedConfirm || !target) {
+            return;
+        }
+        // Like pending swaps: the exchange runs when dusk ends, ordered by priority.
+        // A copy (e.g. Doppelganger-Assassin) comes right after the original Assassin.
+        const isCopy = assassin.roleChain[0] !== "Assassin";
+        lobby.pendingMarkExchanges.push({
+            priority: getNightOrder("Assassin") + (isCopy ? 0.01 : 0),
+            mark: "Assassin",
+            targetName: target.name
+        });
+        assassin.selectedCards.push({
+            name: target.name,
+            role: target.role,
+            team: target.team,
+            viewableStartingRole: target.viewableStartingRole,
+            viewableStartingTeam: target.viewableStartingTeam
+        });
+        assassin.hasClickedConfirm = true;
         updateLobby();
     });
 

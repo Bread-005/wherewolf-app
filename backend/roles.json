@@ -25,7 +25,7 @@
     "id": 19,
     "name": "Sentinel",
     "team": "Villager",
-    "nightOrder": 0,
+    "nightOrder": -7.9,
     "text": "May place a shield token",
     "description": "The Sentinel may place a Shield Token on any other player's card. A card with a Shield Token cannot be moved or viewed by any player.",
     "nightAction": "You place a shield token on any player's card except your own.",
@@ -36,13 +36,25 @@
     "id": 16,
     "name": "Doppelganger",
     "team": "Villager",
-    "nightOrder": 1,
+    "nightOrder": -7.8,
     "text": "View another player's card. Copy their role",
     "description": "The Doppelganger must look at another player's card, which causes them to take on the properties of the card they looked at. If they viewed a card that has a night action, they immediately do that action (with some exceptions).",
     "nightAction": "Look at another player's card. You are now a copy of that role. If your new role has a night action, do it now.",
     "nightActionDetailed": "If you click another player's card you select. If you click 'confirm' you view that card and copy it. If your viewed card has a night action, you immediately do it (with some exceptions).",
     "specialInteractions": "If the Doppelganger looks at the Copycat, the Doppelganger immediately looks at a center card and copies that role. If that new role has a night action, the Doppelganger immediately does it (with some exceptions).",
     "edition": "base game"
+  },
+  {
+    "id": 42,
+    "name": "Assassin",
+    "team": "Assassin",
+    "nightOrder": -1,
+    "text": "Give assassin mark to player and try to kill them",
+    "description": "The Assassin must give any player the Mark of the Assassin. Their target knows they were given the mark. If the player with the Mark of the Assassin dies, the Assassin wins. Additionally, the Assassin learns who the Apprentice Assassin is.",
+    "nightAction": "Exchange the Mark of the Assassin with any player's mark.",
+    "nightActionDetailed": "If you click the mark of any player, you select it. If you click 'confirm' you exchange the Mark of the Assassin with the selected mark.",
+    "isDuskRole": true,
+    "edition": "vampire"
   },
   {
     "id": 4,
@@ -409,7 +421,7 @@
     "team": "Sly Fox",
     "nightOrder": 108,
     "text": "Wins if they get 0 votes (others lose then)",
-    "description": "The Sly Fox doesn't wake up during the night. They win if they receive 0 votes. All other roles lose, if the Sly Fox wins.",
+    "description": "The Sly Fox doesn't wake up during the night. They win if they receive 0 votes. All other players lose, if the Sly Fox wins.",
     "edition": "custom"
   },
   {
