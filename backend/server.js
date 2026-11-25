@@ -49,6 +49,8 @@ let leavingPlayerNames = [];
 let allRoles = [];
 
 const MAX_COPIES_PER_ROLE = {"Werewolf": 2, "Mason": 2, "Villager": 3};
+// Dusk roles that give out a mark. The mark is named like the role.
+const MARK_GIVER_ROLES = ["Assassin", "Instigator"];
 
 function findLobbyByCardId(cardId) {
     return lobbies.find(lobby => lobby.cards.find(card => card.id === cardId));
@@ -792,7 +794,7 @@ io.on("connection", async (socket) => {
                 player.id = socket.id;
                 leavingPlayerNames = leavingPlayerNames.filter(name => name !== player.name);
                 if (isNightOrDusk(lobby) && !player.hasDoneNightAction) {
-                    const hasOpenMarkAction = player.startingRole === "Assassin" && !player.hasClickedConfirm;
+                    const hasOpenMarkAction = MARK_GIVER_ROLES.includes(player.startingRole) && !player.hasClickedConfirm;
                     player.hasDoneNightAction = true;
                     player.hasClickedConfirm = true;
                     if (hasOpenMarkAction ||
@@ -1009,27 +1011,29 @@ io.on("connection", async (socket) => {
         if (!lobby || lobby.state !== "dusk") {
             return;
         }
-        const assassin = lobby.cards.find(card => card.id === socket.id);
+        const markGiver = lobby.cards.find(card => card.id === socket.id);
         const target = lobby.cards.find(card => card.name === targetName && !card.isMiddleCard);
-        if (assassin?.startingRole !== "Assassin" || assassin.hasClickedConfirm || !target) {
+        if (!MARK_GIVER_ROLES.includes(markGiver?.startingRole) || markGiver.hasClickedConfirm || !target) {
             return;
         }
         // Like pending swaps: the exchange runs when dusk ends, ordered by priority.
-        // A copy (e.g. Doppelganger-Assassin) comes right after the original Assassin.
-        const isCopy = assassin.roleChain[0] !== "Assassin";
+        // Order: Doppelganger-Instigator, Instigator, Assassin, Doppelganger-Assassin.
+        // The Instigator copy acts immediately (before the original). The Assassin copy acts when called (after).
+        const isCopy = markGiver.roleChain[0] !== markGiver.startingRole;
+        const copyOffset = markGiver.startingRole === "Instigator" ? -0.01 : 0.01;
         lobby.pendingMarkExchanges.push({
-            priority: getNightOrder("Assassin") + (isCopy ? 0.01 : 0),
-            mark: "Assassin",
+            priority: getNightOrder(markGiver.startingRole) + (isCopy ? copyOffset : 0),
+            mark: markGiver.startingRole,
             targetName: target.name
         });
-        assassin.selectedCards.push({
+        markGiver.selectedCards.push({
             name: target.name,
             role: target.role,
             team: target.team,
             viewableStartingRole: target.viewableStartingRole,
             viewableStartingTeam: target.viewableStartingTeam
         });
-        assassin.hasClickedConfirm = true;
+        markGiver.hasClickedConfirm = true;
         updateLobby();
     });
 

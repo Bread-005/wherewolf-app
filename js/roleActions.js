@@ -1,6 +1,6 @@
 import {
     animateCardSwap, animateMarkSwap, clearMarkSelection, getCardElement, getMarkElement, hasToSeeRandomActions, isDoppelganger,
-    playerHasStartingRoleOf, removeAllImg, resetMarkCursors, setCenterMarkVisible, viewCard
+    getMarkTitle, isMarkGiver, playerHasStartingRoleOf, removeAllImg, resetMarkCursors, setCenterMarkVisible, viewCard
 } from "./functions.js";
 import {allRoles, myId, socket} from "./index.js";
 import {getCurrentLobby} from "./lobby.js";
@@ -147,18 +147,18 @@ function makeCardsClickable(type, player, lobby, myIndex, players, yourRandomAct
 }
 
 /**
- * The Assassin sees the Assassin mark in the middle and can select any player's mark.
+ * A mark giver (Assassin, Instigator) sees their mark in the middle and can select any player's mark.
  */
 function makeMarksClickable(player, players) {
     if (player.hasClickedConfirm) {
         return;
     }
-    setCenterMarkVisible(true);
+    setCenterMarkVisible(true, player.startingRole);
     for (const target of players) {
         getMarkElement(target.id).style.cursor = "pointer";
     }
     if (document.querySelectorAll(".selected-mark").length === 0) {
-        document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === "Assassin").nightAction;
+        document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === player.startingRole).nightAction;
     }
 }
 
@@ -417,7 +417,7 @@ function showRoleActions() {
         makeCardsClickable("players", player, lobby, myIndex, players, yourRandomAction);
     }
 
-    if (player.startingRole === "Assassin") {
+    if (isMarkGiver(player)) {
         makeMarksClickable(player, players);
         return;
     }
@@ -532,7 +532,7 @@ function confirmButtonAction() {
     document.getElementById("do-nothing-button").style.display = "none";
     document.getElementById("confirm-button").style.display = "none";
 
-    if (player.startingRole === "Assassin") {
+    if (isMarkGiver(player)) {
         const idTarget = document.querySelector(".selected-mark").id.replace("mark", "");
         const target = lobby.cards.find(card => card.id === idTarget);
         socket.emit("exchange-marks", target.name);
@@ -540,7 +540,7 @@ function confirmButtonAction() {
         resetMarkCursors();
         animateMarkSwap(idTarget).then(() => {
             setCenterMarkVisible(false);
-            document.getElementById("night-action-text").textContent = "You gave the Mark of the Assassin to " + target.name;
+            document.getElementById("night-action-text").textContent = "You gave the Mark of " + getMarkTitle(player.startingRole) + " to " + target.name;
             document.getElementById("ok-button").style.display = "flex";
         });
         return;

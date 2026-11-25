@@ -14,6 +14,39 @@ function findVotedPlayer(players, voter) {
     return players.find(player => player.name === voter.vote);
 }
 
+/**
+ * Moves players with the Mark of the Traitor to a Traitor team and checks if they have won.
+ * The first Traitor gets Team "Traitor".
+ * A Traitor from a different old team gets Team "Traitor-1", and so on.
+ * A Traitor wins only if another member of their old team died.
+ * A Traitor who is alone in their team keeps their team.
+ * @param {object} lobby
+ * @param {object[]} players
+ */
+function evaluateTraitors(lobby, players) {
+    const traitors = players
+        .filter(player => player.mark === "Instigator")
+        .map(player => ({
+            player,
+            oldTeam: player.team,
+            teammates: players.filter(other => other.id !== player.id && other.team === player.team)
+        }))
+        .filter(({teammates}) => teammates.length > 0);
+
+    const oldTeams = [...new Set(traitors.map(({oldTeam}) => oldTeam))];
+    oldTeams.forEach((oldTeam, index) => {
+        const traitorTeam = index === 0 ? "Traitor" : "Traitor-" + index;
+        const teamTraitors = traitors.filter(traitor => traitor.oldTeam === oldTeam);
+        for (const {player} of teamTraitors) {
+            player.team = traitorTeam;
+        }
+        if (teamTraitors.some(({teammates}) => teammates.some(teammate => teammate.dies))) {
+            const names = teamTraitors.map(({player}) => player.name).join(" and ");
+            appendWinResult(lobby, traitorTeam, "A teammate of " + names + " died.");
+        }
+    });
+}
+
 function evaluateVotingResults(lobby, players) {
 
     // check Cursed Transform three times because Doppelganger-Cursed and Copycat-Cursed
@@ -203,6 +236,17 @@ function evaluateVotingResults(lobby, players) {
             }
         }
     }
+
+    // Without an Assassin mark there is no target. This happens if the Assassin was in the center at dusk.
+    // A player who got the Assassin card later (e.g. Drunk) is on Team Villager.
+    if (!players.some(player => player.mark === "Assassin")) {
+        for (const player of players.filter(player => player.team.includes("Assassin"))) {
+            player.team = "Villager";
+        }
+    }
+
+    // evaluate if Traitor has won
+    evaluateTraitors(lobby, players);
 
     // evaluate if Assassin (and Doppelganger-Assassin) has won
     const hasMarkedPlayerDied = players.some(player => player.mark === "Assassin" && player.dies);

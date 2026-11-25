@@ -124,6 +124,9 @@ function buildGameSummary(lobby) {
         if (role.name === "Assassin") {
             actionText.textContent = "gave the Mark of the Assassin to";
         }
+        if (role.name === "Instigator") {
+            actionText.textContent = "gave the Mark of the Traitor to";
+        }
         if (player.selectedCards.length === 0) {
             actionText.textContent = "did nothing";
         }

@@ -1,7 +1,8 @@
 import {allRoles, myId} from "./index.js";
 import {getCurrentLobby} from "./lobby.js";
 import {
-    getCardElement, getMarkElement, isDoppelganger, playerHasStartingRoleOf, resetMarkCursors, setMarkFace
+    getCardElement, getMarkElement, getMarkTitle, isDoppelganger, playerHasStartingRoleOf, resetMarkCursors,
+    setMarkFace
 } from "./functions.js";
 
 function setCardClickEvent(id) {
@@ -96,26 +97,28 @@ function setCardClickEvent(id) {
 function lookAtOwnMark(you) {
     setMarkFace(myId, you.mark);
     resetMarkCursors();
-    const markName = you.mark === "Assassin" ? "the Assassin" : you.mark;
-    document.getElementById("night-action-text").textContent = "You have the mark of " + markName;
+    document.getElementById("night-action-text").textContent = "You have the mark of " + getMarkTitle(you.mark);
     document.getElementById("continue-button").style.display = "flex";
 }
 
 /**
- * Dusk: the Assassin selects the player who gets the Assassin mark. Only one mark can be selected.
+ * Dusk: a mark giver (Assassin, Instigator) selects the player who gets their mark.
+ * Only one mark can be selected.
  */
-function selectMarkForAssassin(lobby, idPlayer) {
+function selectMarkForMarkGiver(lobby, idPlayer) {
+    const markGiverRole = lobby.cards.find(card => card.id === myId).startingRole;
     const markElement = getMarkElement(idPlayer);
     const wasSelected = markElement.classList.contains("selected-mark");
     document.querySelectorAll(".selected-mark").forEach(selectedMark => selectedMark.classList.remove("selected-mark"));
     document.getElementById("confirm-button").style.display = "none";
     if (wasSelected) {
-        document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === "Assassin").nightAction;
+        document.getElementById("night-action-text").textContent = allRoles.find(role => role.name === markGiverRole).nightAction;
         return;
     }
     markElement.classList.add("selected-mark");
     const target = lobby.cards.find(card => card.id === idPlayer);
-    document.getElementById("night-action-text").textContent = "Would you like to give the Assassin mark to " + target.name + "?";
+    document.getElementById("night-action-text").textContent =
+        "Would you like to give the mark of " + getMarkTitle(markGiverRole) + " to " + target.name + "?";
     document.getElementById("confirm-button").style.display = "flex";
 }
 
@@ -130,7 +133,7 @@ function setMarkClickEvent(idPlayer) {
             lookAtOwnMark(lobby.cards.find(card => card.id === myId));
             return;
         }
-        selectMarkForAssassin(lobby, idPlayer);
+        selectMarkForMarkGiver(lobby, idPlayer);
     });
 }
 

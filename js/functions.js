@@ -4,6 +4,10 @@ import {wakeUpMultiple} from "./roleActions.js";
 import {setCardClickEvent, setMarkClickEvent} from "./CardClickEvent.js";
 import {saveName} from "./appStorage.js";
 
+// Dusk roles that give out a mark. The mark is named like the role.
+const MARK_GIVER_ROLES = ["Assassin", "Instigator"];
+const MARK_TITLES = {Assassin: "the Assassin", Instigator: "the Traitor"};
+
 function showErrorPopup(message) {
     const container = document.getElementById("toast-container");
 
@@ -234,11 +238,32 @@ function clearMarkSelection() {
 }
 
 /**
- * Shows or hides the Assassin mark in the middle of the table.
- * @param {boolean} isVisible
+ * True if the player's current role gives a mark during dusk.
+ * @param {object} player
  */
-function setCenterMarkVisible(isVisible) {
-    document.getElementById("center-mark").style.display = isVisible ? "block" : "none";
+function isMarkGiver(player) {
+    return MARK_GIVER_ROLES.includes(player.startingRole);
+}
+
+/**
+ * Name of a mark as shown to players, e.g. "the Traitor".
+ * @param {string} markName Mark name, e.g. "Instigator".
+ */
+function getMarkTitle(markName) {
+    return MARK_TITLES[markName] ?? markName;
+}
+
+/**
+ * Shows or hides the mark in the middle of the table.
+ * @param {boolean} isVisible
+ * @param {string} markName Mark to show, e.g. "Assassin". Ignored when hiding.
+ */
+function setCenterMarkVisible(isVisible, markName = "Assassin") {
+    const centerMark = document.getElementById("center-mark");
+    centerMark.style.display = isVisible ? "block" : "none";
+    if (isVisible) {
+        centerMark.style.backgroundImage = `url("./assets/marks/${markName.toLowerCase()}_mark.png")`;
+    }
 }
 
 /**
@@ -726,4 +751,5 @@ export {showErrorPopup, displayCards, viewCard, setupButtonEvents, getCardElemen
     resetNightActionTexts, createLobbyDisplay, clearEverything, animateCardSwap,
     updateKickMenu, openRolesDisplay, setupGeneralInfo, displaySentinelShieldToken, isDoppelganger, isHost,
     removeAllImg, hasToSeeRandomActions, playerHasStartingRoleOf, getPublicRole, getMarkElement, setMarkFace,
-    resetMarkCursors, clearMarkSelection, setCenterMarkVisible, showMarkViewing, animateMarkSwap, updateMarkTokens};
+    resetMarkCursors, clearMarkSelection, setCenterMarkVisible, showMarkViewing, animateMarkSwap, updateMarkTokens,
+    isMarkGiver, getMarkTitle};

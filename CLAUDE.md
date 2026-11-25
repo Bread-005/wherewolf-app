@@ -8,6 +8,13 @@ Wherewolf is a browser-based companion app for the "One Night Ultimate Werewolf"
 
 The game logic runs on a backend server (Socket.IO), deployed at `https://wherewolf-server-bhut.onrender.com`. Frontend and backend live together in this repository — the `backend/` directory contains the server-side code.
 
+## Test Project
+
+This is a test project, not a production project.
+
+- Pushing from `main` is allowed.
+- Commit messages need no ticket number. Use `added Instigator with Traitor mark` style messages without a prefix.
+
 ## Repository Structure
 
 ```

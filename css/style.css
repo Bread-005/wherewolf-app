@@ -321,7 +321,7 @@ body {
             transform: translate(-50%, -50%);
             width: 70px;
             height: 70px;
-            background: url("../assets/marks/assassin_mark.png") center / contain no-repeat;
+            background: center / contain no-repeat;
         }
 
         #host-admin-area {

@@ -45,6 +45,18 @@
     "edition": "base game"
   },
   {
+    "id": 43,
+    "name": "Instigator",
+    "team": "Villager",
+    "nightOrder": -3,
+    "text": "Give traitor mark to any player",
+    "description": "The Instigator gives any player the Mark of the Traitor. The player with that mark, if they are not the only member of their team, wins only if someone else on their team is killed. If the player with the Mark of the Traitor is the only one on their team, the mark has no effect.",
+    "nightAction": "Exchange the Mark of the Traitor with any player's mark.",
+    "nightActionDetailed": "If you click the mark of any player, you select it. If you click 'confirm' you exchange the Mark of the Traitor with the selected mark.",
+    "isDuskRole": true,
+    "edition": "vampire"
+  },
+  {
     "id": 42,
     "name": "Assassin",
     "team": "Assassin",
