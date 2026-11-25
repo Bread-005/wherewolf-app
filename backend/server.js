@@ -258,6 +258,9 @@ io.on("connection", async (socket) => {
             socket.emit("broadcast-message", invalidNameMessage);
             return;
         }
+        if (findLobbyBySocketId()) {
+            return;
+        }
 
         const lobby = {
             id: crypto.randomUUID(),
@@ -296,6 +299,10 @@ io.on("connection", async (socket) => {
         const invalidNameMessage = getInvalidNameMessage(name);
         if (invalidNameMessage) {
             socket.emit("broadcast-message", invalidNameMessage);
+            return;
+        }
+        // A double click sends the event twice. Ignore it if the player is already in a lobby.
+        if (findLobbyBySocketId()) {
             return;
         }
         const lobby = lobbies.find(l => l.id === lobbyId);
